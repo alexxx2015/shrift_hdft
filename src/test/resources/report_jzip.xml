@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<mapping>
+  <sources>
+    <source>
+      <id>Source0</id>
+      <location>jzip.JZip.loadConfig(Ljava/lang/String;)V:41</location>
+      <signature>java.util.Properties.load(Ljava/io/InputStream;)V</signature>
+      <exception/>
+    </source>
+    <source>
+      <id>Source1</id>
+      <location>jzip.JZip.start()V:34</location>
+      <signature>java.io.BufferedReader.readLine()Ljava/lang/String;</signature>
+      <return/>
+    </source>
+    <source>
+      <id>Source2</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:191</location>
+      <signature>java.io.FileInputStream.read([B)I</signature>
+      <return/>
+    </source>
+    <source>
+      <id>Source3</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:167</location>
+      <signature>java.io.FilterInputStream.read([B)I</signature>
+      <param index="1"/>
+    </source>
+    <source>
+      <id>Source4</id>
+      <location>jzip.JZip.loadConfig(Ljava/lang/String;)V:41</location>
+      <signature>java.util.Properties.load(Ljava/io/InputStream;)V</signature>
+      <param index="1"/>
+    </source>
+    <source>
+      <id>Source5</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:167</location>
+      <signature>java.io.FilterInputStream.read([B)I</signature>
+      <return/>
+    </source>
+    <source>
+      <id>Source6</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:191</location>
+      <signature>java.io.FileInputStream.read([B)I</signature>
+      <param index="1"/>
+    </source>
+    <source>
+      <id>Source7</id>
+      <location>jzip.JZip.loadConfig(Ljava/lang/String;)V:41</location>
+      <signature>java.util.Properties.load(Ljava/io/InputStream;)V</signature>
+      <param index="0"/>
+    </source>
+    <source>
+      <id>Source8</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:183</location>
+      <signature>java.util.zip.ZipInputStream.getNextEntry()Ljava/util/zip/ZipEntry;</signature>
+      <return/>
+    </source>
+    <source>
+      <id>Source9</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:49</location>
+      <signature>java.util.zip.ZipInputStream.getNextEntry()Ljava/util/zip/ZipEntry;</signature>
+      <return/>
+    </source>
+  </sources>
+  <sinks>
+    <sink>
+      <id>Sink0</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:139</location>
+      <signature>java.util.zip.ZipOutputStream.putNextEntry(Ljava/util/zip/ZipEntry;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink1</id>
+      <location>jzip.JZip.storeConfig(Ljava/lang/String;)V:26</location>
+      <signature>java.util.Properties.store(Ljava/io/OutputStream;Ljava/lang/String;)V</signature>
+      <param index="0"/>
+    </sink>
+    <sink>
+      <id>Sink2</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:161</location>
+      <signature>java.io.FileOutputStream.write([BII)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink3</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:185</location>
+      <signature>java.util.zip.ZipOutputStream.write([BII)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink4</id>
+      <location>jzip.JZip.storeConfig(Ljava/lang/String;)V:26</location>
+      <signature>java.util.Properties.store(Ljava/io/OutputStream;Ljava/lang/String;)V</signature>
+      <exception/>
+    </sink>
+    <sink>
+      <id>Sink5</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:217</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink6</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:161</location>
+      <signature>java.io.FileOutputStream.write([BII)V</signature>
+      <param index="2"/>
+    </sink>
+    <sink>
+      <id>Sink7</id>
+      <location>jzip.JZip.parseAndRun([Ljava/lang/String;)V:406</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink8</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:231</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink9</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:185</location>
+      <signature>java.util.zip.ZipOutputStream.write([BII)V</signature>
+      <param index="3"/>
+    </sink>
+    <sink>
+      <id>Sink10</id>
+      <location>jzip.JZip.showConfig()V:88</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink11</id>
+      <location>jzip.JZip.storeConfig(Ljava/lang/String;)V:26</location>
+      <signature>java.util.Properties.store(Ljava/io/OutputStream;Ljava/lang/String;)V</signature>
+      <param index="2"/>
+    </sink>
+    <sink>
+      <id>Sink12</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:161</location>
+      <signature>java.io.FileOutputStream.write([BII)V</signature>
+      <param index="3"/>
+    </sink>
+    <sink>
+      <id>Sink13</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:185</location>
+      <signature>java.util.zip.ZipOutputStream.write([BII)V</signature>
+      <param index="2"/>
+    </sink>
+    <sink>
+      <id>Sink14</id>
+      <location>jzip.JZip.showConfig()V:67</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink15</id>
+      <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:122</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink16</id>
+      <location>jzip.JZip.start()V:9</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink17</id>
+      <location>jzip.JZip.parseAndRun([Ljava/lang/String;)V:396</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink18</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:71</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink19</id>
+      <location>jzip.JZip.storeConfig(Ljava/lang/String;)V:26</location>
+      <signature>java.util.Properties.store(Ljava/io/OutputStream;Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink20</id>
+      <location>jzip.JZip.zipIt(Ljava/lang/String;Ljava/lang/String;)V:121</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+  </sinks>
+  <flows>
+    <sink id="Sink0">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink1">
+      <source id="Source1">Source1</source>
+      <source id="Source2">Source2</source>
+      <source id="Source6">Source6</source>
+      <source id="Source7">Source7</source>
+    </sink>
+    <sink id="Sink2">
+      <source id="Source1">Source1</source>
+      <source id="Source3">Source3</source>
+      <source id="Source5">Source5</source>
+      <source id="Source8">Source8</source>
+      <source id="Source9">Source9</source>
+    </sink>
+    <sink id="Sink3">
+      <source id="Source1">Source1</source>
+      <source id="Source2">Source2</source>
+    </sink>
+    <sink id="Sink4">
+      <source id="Source1">Source1</source>
+      <source id="Source2">Source2</source>
+      <source id="Source6">Source6</source>
+      <source id="Source7">Source7</source>
+    </sink>
+    <sink id="Sink5">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink6">
+      <source id="Source1">Source1</source>
+      <source id="Source3">Source3</source>
+      <source id="Source5">Source5</source>
+      <source id="Source8">Source8</source>
+      <source id="Source9">Source9</source>
+    </sink>
+    <sink id="Sink7">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink8">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink9">
+      <source id="Source1">Source1</source>
+      <source id="Source2">Source2</source>
+    </sink>
+    <sink id="Sink10">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink11">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink12">
+      <source id="Source1">Source1</source>
+      <source id="Source3">Source3</source>
+      <source id="Source5">Source5</source>
+      <source id="Source8">Source8</source>
+      <source id="Source9">Source9</source>
+    </sink>
+    <sink id="Sink13">
+      <source id="Source1">Source1</source>
+      <source id="Source2">Source2</source>
+    </sink>
+    <sink id="Sink14">
+      <source id="Source1">Source1</source>
+      <source id="Source2">Source2</source>
+      <source id="Source6">Source6</source>
+      <source id="Source7">Source7</source>
+    </sink>
+    <sink id="Sink15">
+      <source id="Source1">Source1</source>
+      <source id="Source3">Source3</source>
+      <source id="Source5">Source5</source>
+      <source id="Source8">Source8</source>
+      <source id="Source9">Source9</source>
+    </sink>
+    <sink id="Sink17">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink18">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink19">
+      <source id="Source1">Source1</source>
+    </sink>
+    <sink id="Sink20">
+      <source id="Source1">Source1</source>
+    </sink>
+  </flows>
+</mapping>

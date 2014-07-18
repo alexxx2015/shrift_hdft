@@ -1,0 +1,16 @@
+contains:tum.uc.jvm
+contains:de.in.tum
+contains:com.vaadin
+contains:org.jsoup
+contains:com.google
+startswith:java
+contains:org.apache
+contains:com.github
+contains:org.json
+contains:org.slf4j
+contains:sun.misc
+contains:sun.net
+contains:sun.reflect
+contains:sun.launcher
+contains:sun.nio
+contains:sun.util

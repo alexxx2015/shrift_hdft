@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<mapping>
+  <sources>
+    <source>
+      <id>Source0</id>
+      <location>test.MyTest2.getResponse(Ljava/lang/String;)Lorg/json/simple/JSONObject;:50</location>
+      <signature>java.io.BufferedReader.readLine()Ljava/lang/String;</signature>
+      <return/>
+    </source>
+  </sources>
+  <sinks>
+    <sink>
+      <id>Sink0</id>
+      <location>test.MyTest2.showLastNValueDeviceSensor(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String;:42</location>
+      <signature>java.io.PrintStream.println(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+    <sink>
+      <id>Sink1</id>
+      <location>test.MyTest2.writeConsumption(Lorg/json/simple/JSONObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V:219</location>
+      <signature>java.io.Writer.write(Ljava/lang/String;)V</signature>
+      <param index="1"/>
+    </sink>
+  </sinks>
+  <flows>
+    <sink id="Sink1">
+      <source id="Source0">Source0</source>
+    </sink>
+    <chop>
+      <chopNode byteCodeIndex="1" label="v3 = this.markedChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="5" label="if (v3 &gt; #(-1)) goto 14" operation="IF" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="14" label="v5 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="18" label="v6 = this.markedChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="21" label="v7 = v5 - v6" operation="ASSIGN" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="25" label="v8 = this.readAheadLimit" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="28" label="if (v7 &lt; v8) goto 48" operation="IF" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="34" label="this.markedChar = #(-2)" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="39" label="this.readAheadLimit = #(0)" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="48" label="v9 = this.readAheadLimit" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="52" label="v10 = this.cb" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="55" label="v11 = v10.length" operation="ASSIGN" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="56" label="if (v9 &gt; v11) goto 87" operation="IF" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="73" label="arraycopy(v18, v19, v20, #(0), v7)" operation="CALL" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="78" label="this.markedChar = #(0)" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="87" label="v12 = this.readAheadLimit" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="90" label="v13 = new []" operation="DECLARATION" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="104" label="arraycopy(v14, v15, v13, #(0), v7)" operation="CALL" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="109" label="this.cb = v13" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="114" label="this.markedChar = #(0)" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="123" label="this.nChars = v7" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="126" label="this.nextChar = v7" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="130" label="v24 = this.in" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="134" label="v25 = this.cb" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="139" label="v26 = this.cb" operation="REFERENCE" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="142" label="v27 = v26.length" operation="ASSIGN" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="144" label="v28 = v27 - v23" operation="ASSIGN" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="145" label="v30 = v24.read(v25, v23, v28)" operation="CALL" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="150" label="if (v30 == #(0)) goto 130" operation="IF" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="154" label="if (v30 &lt;= #(0)) goto 169" operation="IF" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="160" label="v31 = v23 + v30" operation="ASSIGN" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="161" label="this.nChars = v31" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="166" label="this.nextChar = v23" operation="MODIFY" ownerMethod="java.io.BufferedReader.fill()V"/>
+      <chopNode byteCodeIndex="2" label="v5 = this.readLine(#(0))" operation="CALL" ownerMethod="java.io.BufferedReader.readLine()Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="5" label="return v5" operation="COMPOUND" ownerMethod="java.io.BufferedReader.readLine()Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="3" label="if (p1 != #(0)) goto 14" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="7" label="v6 = this.skipLF" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="10" label="if (v6 == #(0)) goto 21" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="33" label="v11 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="37" label="v12 = this.nChars" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="40" label="if (v11 &lt; v12) goto 48" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="44" label="this.fill()" operation="CALL" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="48" label="v14 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="52" label="v15 = this.nChars" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="55" label="if (v14 &lt; v15) goto 90" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="59" label="if (v41 == #(null)) goto 80" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="63" label="v58 = v41.length()" operation="CALL" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="66" label="if (v58 &lt;= #(0)) goto 80" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="70" label="v60 = v41.toString()" operation="CALL" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="76" label="return v60" operation="COMPOUND" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="81" label="return #(null)" operation="COMPOUND" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="90" label="if (v42 == #(0)) goto 119" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="94" label="v16 = this.cb" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="98" label="v17 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="101" label="v18 = v16[v17]" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="104" label="if (v18 != #(10)) goto 119" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="109" label="v20 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="113" label="v21 = v20 + #(1)" operation="ASSIGN" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="114" label="this.nextChar = v21" operation="MODIFY" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="119" label="this.skipLF = #(0)" operation="MODIFY" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="126" label="v22 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="134" label="v23 = this.nChars" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="137" label="if (v29 &gt;= v23) goto 176" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="141" label="v24 = this.cb" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="146" label="v25 = v24[v29]" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="153" label="if (v25 == #(10)) goto 166" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="160" label="if (v25 != #(13)) goto 169" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="169" label="v27 = v29 + #(1)" operation="ASSIGN" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="176" label="v32 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="183" label="this.nextChar = v29" operation="MODIFY" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="188" label="if (v30 == #(0)) goto 265" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="192" label="if (v43 != #(null)) goto 218" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="195" label="v50 = new java.lang.String" operation="DECLARATION" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="231" label="v49 = v43.toString()" operation="CALL" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="238" label="v55 = this.nextChar" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="242" label="v56 = v55 + #(1)" operation="ASSIGN" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="243" label="this.nextChar = v56" operation="MODIFY" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="250" label="if (v31 != #(13)) goto 262" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="255" label="this.skipLF = #(1)" operation="MODIFY" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="263" label="return v54" operation="COMPOUND" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="265" label="if (v43 != #(null)) goto 281" operation="IF" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="268" label="v33 = new java.lang.StringBuffer" operation="DECLARATION" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="272" label="v34 = java.io.BufferedReader.defaultExpectedLineLength" operation="REFERENCE" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="275" label="v33.&lt;init&gt;(v34)" operation="CALL" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="288" label="v38 = v29 - v32" operation="ASSIGN" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="289" label="v40 = v36.append(v37, v32, v38)" operation="CALL" ownerMethod="java.io.BufferedReader.readLine(Z)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="1" label="v6 = this.sd" operation="REFERENCE" ownerMethod="java.io.InputStreamReader.read([CII)I"/>
+      <chopNode byteCodeIndex="7" label="v8 = v6.read(p1, p2, p3)" operation="CALL" ownerMethod="java.io.InputStreamReader.read([CII)I"/>
+      <chopNode byteCodeIndex="10" label="return v8" operation="COMPOUND" ownerMethod="java.io.InputStreamReader.read([CII)I"/>
+      <chopNode byteCodeIndex="6" label="v5 = new []" operation="DECLARATION" ownerMethod="java.lang.AbstractStringBuilder.&lt;init&gt;(I)V"/>
+      <chopNode byteCodeIndex="8" label="this.value = v5" operation="MODIFY" ownerMethod="java.lang.AbstractStringBuilder.&lt;init&gt;(I)V"/>
+      <chopNode byteCodeIndex="1" label="v6 = this.count" operation="REFERENCE" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="5" label="v7 = v6 + p3" operation="ASSIGN" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="11" label="v8 = this.value" operation="REFERENCE" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="14" label="v9 = v8.length" operation="ASSIGN" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="15" label="if (v7 &lt;= v9) goto 27" operation="IF" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="21" label="this.expandCapacity(v7)" operation="CALL" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="35" label="arraycopy(p1, p2, v11, v12, p3)" operation="CALL" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="41" label="this.count = v7" operation="MODIFY" ownerMethod="java.lang.AbstractStringBuilder.append([CII)Ljava/lang/AbstractStringBuilder;"/>
+      <chopNode byteCodeIndex="2" label="this.&lt;init&gt;(p1)" operation="CALL" ownerMethod="java.lang.StringBuffer.&lt;init&gt;(I)V"/>
+      <chopNode byteCodeIndex="4" label="v7 = this.append(p1, p2, p3)" operation="CALL" ownerMethod="java.lang.StringBuffer.append([CII)Ljava/lang/StringBuffer;"/>
+      <chopNode byteCodeIndex="1" label="v3 = this.count" operation="REFERENCE" ownerMethod="java.lang.StringBuffer.length()I"/>
+      <chopNode byteCodeIndex="4" label="return v3" operation="COMPOUND" ownerMethod="java.lang.StringBuffer.length()I"/>
+      <chopNode byteCodeIndex="0" label="v3 = new java.lang.String" operation="DECLARATION" ownerMethod="java.lang.StringBuffer.toString()Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="16" label="return v3" operation="COMPOUND" ownerMethod="java.lang.StringBuffer.toString()Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="7" label="return this" operation="COMPOUND" ownerMethod="java.lang.StringBuilder.append(Ljava/lang/String;)Ljava/lang/StringBuilder;"/>
+      <chopNode byteCodeIndex="0" label="v3 = new java.lang.String" operation="DECLARATION" ownerMethod="java.lang.StringBuilder.toString()Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="16" label="return v3" operation="COMPOUND" ownerMethod="java.lang.StringBuilder.toString()Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="1" label="v7=p1 INSTANCEOF java.lang.Object[]" operation="ASSIGN" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="4" label="if (v7 == #(0)) goto 50" operation="IF" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="50" label="v9=p1 INSTANCEOF []" operation="ASSIGN" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="53" label="if (v9 == #(0)) goto 99" operation="IF" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="99" label="v10=p1 INSTANCEOF []" operation="ASSIGN" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="102" label="if (v10 == #(0)) goto 148" operation="IF" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="106" label="v56 = CHECKCAST p1" operation="ASSIGN" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="112" label="v57 = CHECKCAST p3" operation="ASSIGN" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="131" label="v59 = v56[v61]" operation="REFERENCE" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="132" label="v57[v61] = v59" operation="MODIFY" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="133" label="v60 = v61 + #(1)" operation="ASSIGN" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="140" label="v58 = v56.length" operation="ASSIGN" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="141" label="if (v61 &lt; v58) goto 131" operation="IF" ownerMethod="java.lang.System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V"/>
+      <chopNode byteCodeIndex="17" label="v9 = this.showLastNValueDeviceSensor(v5, v6, #(00:34:FE:D2:88:CF), #(ID1), #(20))" operation="CALL" ownerMethod="test.MyTest2.getData()V"/>
+      <chopNode byteCodeIndex="28" label="this.writeConsumption(v9, v10, #(00:34:FE:D2:88:CF), #(ID1))" operation="CALL" ownerMethod="test.MyTest2.getData()V"/>
+      <chopNode byteCodeIndex="51" label="v20 = new java.lang.StringBuilder" operation="DECLARATION" ownerMethod="test.MyTest2.getResponse(Ljava/lang/String;)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="64" label="v25 = v20.append(v18)" operation="CALL" ownerMethod="test.MyTest2.getResponse(Ljava/lang/String;)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="67" label="v27 = v25.toString()" operation="CALL" ownerMethod="test.MyTest2.getResponse(Ljava/lang/String;)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="73" label="v18 = v9.readLine()" operation="CALL" ownerMethod="test.MyTest2.getResponse(Ljava/lang/String;)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="79" label="if (v18 != #(null)) goto 51" operation="IF" ownerMethod="test.MyTest2.getResponse(Ljava/lang/String;)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="99" label="return v35" operation="COMPOUND" ownerMethod="test.MyTest2.getResponse(Ljava/lang/String;)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="48" label="v23 = this.getResponse(v19)" operation="CALL" ownerMethod="test.MyTest2.showLastNValueDeviceSensor(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="51" label="return v23" operation="COMPOUND" ownerMethod="test.MyTest2.showLastNValueDeviceSensor(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String;"/>
+      <chopNode byteCodeIndex="171" label="v65.write(p1)" operation="CALL" ownerMethod="test.MyTest2.writeConsumption(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"/>
+    </chop>
+  </flows>
+</mapping>

@@ -137,7 +137,7 @@ public class UcCommunicator {
 	
 	public boolean sendKillProcessEvent2Pdp(){
 		Map<String,String> param = new HashMap<String,String>();
-		param.put("PEP", "Java");
+		param.put("PEP", "Windows");
 		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
 		String[] runningVmComp = runningVm.split("@");
 		if (runningVmComp.length > 0) {

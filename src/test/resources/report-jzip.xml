@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mapping analysistime="57502">
   <sources>
-    <source>
+    <source><!-- Comment -->
       <id>Source0</id>
       <location>jzip.JZip.unZipIt(Ljava/lang/String;Ljava/lang/String;)V:49</location>
       <possible-signatures>

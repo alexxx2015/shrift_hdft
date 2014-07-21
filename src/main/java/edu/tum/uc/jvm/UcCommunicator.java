@@ -94,7 +94,7 @@ public class UcCommunicator {
 		}
 
 		String sinkSource = "Sink";
-		if (event.getSinkSource().toLowerCase().equals("source")) {
+		if (event.getSinkSource().toLowerCase().startsWith("source")) {
 			sinkSource = "Source";
 		}
 

@@ -142,7 +142,9 @@ public class MethEvent {
 	public void addContextIds(String ids) {
 		for (String s : ids.split(",")) {
 			s = s.replace("[", "").replace("]", "");
-			this.addContextIds(Integer.parseInt(s));
+			if(!"".equals(s.trim())){
+				this.addContextIds(Integer.parseInt(s));
+			}
 		}
 	}
 

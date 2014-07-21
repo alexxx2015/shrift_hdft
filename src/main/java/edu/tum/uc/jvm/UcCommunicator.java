@@ -66,7 +66,7 @@ public class UcCommunicator {
 		}
 	}
 
-	public boolean sendEvent2PDP2(IEvent event) {
+	public boolean sendInitPdpEvent(IEvent event) {
 		this.initPDP();
 		IResponse response = this.pdpClient.notifyEventSync(event);
 		if (response != null)
@@ -74,7 +74,7 @@ public class UcCommunicator {
 		return false;
 	}
 
-	public boolean sendEvent2PDP(MethEvent event) {
+	public boolean sendEvent2Pdp(MethEvent event) {
 		this.initPDP();
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("location",
@@ -131,6 +131,23 @@ public class UcCommunicator {
 		IResponse response = this.pdpClient.notifyEventSync(event);
 
 		if (response != null)
+			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+		return false;
+	}
+	
+	public boolean sendKillProcessEvent2Pdp(){
+		Map<String,String> param = new HashMap<String,String>();
+		param.put("PEP", "Java");
+		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
+		String[] runningVmComp = runningVm.split("@");
+		if (runningVmComp.length > 0) {
+			param.put("PID", runningVmComp[0]);// Add process id
+		}
+		IMessageFactory _messageFactory = MessageFactoryCreator
+				.createMessageFactory();
+		IEvent event = _messageFactory.createActualEvent("KillProcess", param);
+		IResponse response = this.pdpClient.notifyEventSync(event);
+		if(response != null)
 			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
 		return false;
 	}

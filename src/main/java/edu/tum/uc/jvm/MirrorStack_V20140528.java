@@ -449,7 +449,7 @@ public class MirrorStack_V20140528 {
 			}
 			
 			event.setActual(false);
-			_return = ucCom.sendEvent2PDP(event);			
+			_return = ucCom.sendEvent2Pdp(event);			
 //			System.out.println("MIRRORSTACK: "+event.toString()+" --- "+_return);
 			 
 			if(_return == true){
@@ -464,7 +464,7 @@ public class MirrorStack_V20140528 {
 //				ucCom.sendEvent2PIP(pipEvent);	
 //				event.setType(MethEvent.Type.START);
 				event.setActual(true);
-				_return = ucCom.sendEvent2PDP(event);
+				_return = ucCom.sendEvent2Pdp(event);
 			}
 			MirrorStack_V20140528.unlock();
 			
@@ -638,7 +638,7 @@ public class MirrorStack_V20140528 {
 				event.setSinkSource(methNameCmp[6]);
 			}
 			event.setActual(true);
-			ucCom.sendEvent2PDP(event);
+			ucCom.sendEvent2Pdp(event);
 //			String pipEvent = "METHODINVOKED";
 //			
 //			if(event.getInvokationType().equals(MethInvokeEvent.Type.END)){

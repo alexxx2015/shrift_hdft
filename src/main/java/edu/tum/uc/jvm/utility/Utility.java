@@ -685,7 +685,7 @@ public class Utility {
 				}
 				IEvent initEvent = _messageFactory.createActualEvent(
 						"JoanaInitInfoFlow", param);
-				ucom.sendEvent2PDP2(initEvent);
+				ucom.sendInitPdpEvent(initEvent);
 			}
 		} catch (Exception e) {
 			System.out.println("Error while pasrsing sources. ");
@@ -731,7 +731,7 @@ public class Utility {
 				}
 				IEvent initEvent = _messageFactory.createActualEvent(
 						"JoanaInitInfoFlow", param);
-				ucom.sendEvent2PDP2(initEvent);
+				ucom.sendInitPdpEvent(initEvent);
 			}
 		} catch (Exception e) {
 			System.err.println("Error while pasrsing sinks. ");
@@ -778,7 +778,7 @@ public class Utility {
 			param.put("source", sources);
 			IEvent initEvent = _messageFactory.createActualEvent(
 					"JoanaInitInfoFlow", param);
-			ucom.sendEvent2PDP2(initEvent);
+			ucom.sendInitPdpEvent(initEvent);
 		}
 	}
 

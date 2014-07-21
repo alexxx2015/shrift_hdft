@@ -541,7 +541,11 @@ public class MirrorStack {
 	// }
 	// return _return;
 	// }
-
+	
+	public static void sendKillProcess(){//Helper method, sended when the end of main is reached
+		ucCom.sendKillProcessEvent2Pdp();
+	}
+	
 	public static boolean methodInvoked(Object o, String p_methName) {
 		String fileDescriptor = Utility.extractFileDescriptor(o);
 		p_methName += UcTransformer.STRDELIM + fileDescriptor;
@@ -561,15 +565,15 @@ public class MirrorStack {
 			boolean enforcement = new Boolean(e);
 			if (enforcement) {
 				event.setActual(false);
-				_return = ucCom.sendEvent2PDP(event);
+				_return = ucCom.sendEvent2Pdp(event);
 
 				if (_return == true) {
 					event.setActual(true);
-					_return = ucCom.sendEvent2PDP(event);
+					_return = ucCom.sendEvent2Pdp(event);
 				}
 			} else {
 				event.setActual(true);
-				_return = ucCom.sendEvent2PDP(event);
+				_return = ucCom.sendEvent2Pdp(event);
 			}
 			MirrorStack.unlock();
 			// if (_return != true) {
@@ -604,7 +608,7 @@ public class MirrorStack {
 			event.setType(MethEvent.Type.END);
 			event.setActual(true);
 
-			ucCom.sendEvent2PDP(event);
+			ucCom.sendEvent2Pdp(event);
 
 			MirrorStack.unlock();
 		}

@@ -201,6 +201,13 @@ public class MyMethodVisitor extends MethodVisitor {
 			// mv.visitLabel(lab);
 		}
 
+		
+		if(p_opcode == Opcodes.RETURN && "main".equals(this.methodName)){
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "sendKillProcess",
+					"()V", false);
+		}
+
 		mv.visitInsn(p_opcode);
 	}
 

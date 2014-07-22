@@ -493,6 +493,7 @@ public class MirrorStack {
 		final String delim = UcTransformer.STRDELIM;
 		MethEvent event = new MethEvent(MethEvent.Type.START);
 		String[] methNameCmp = p_methName.split(delim);
+		System.out.println(p_methName);
 		// Extract invoker method
 		if ((methNameCmp.length >= 1) && (methNameCmp[0] != null)) {
 			event.setMethodInvoker(methNameCmp[0]);

@@ -371,8 +371,8 @@ public class Utility {
 			}
 			Type[] myArgT = Type.getArgumentTypes(desc.toString());
 
-			if(p_name.equals("<init>")){
-				p_name = p_owner.replace("/", "_")+"_init";
+			if (p_name.equals("<init>")) {
+				p_name = p_owner.replace("/", "_") + "_init";
 			}
 			String id = classname + "." + p_name + ":" + desc.toString();
 			if (Utility.METHODS.containsKey(id)) {
@@ -465,7 +465,8 @@ public class Utility {
 				mv.visitInsn(Opcodes.FRETURN);
 			} else if (retT.getSort() == Type.LONG) {
 				mv.visitInsn(Opcodes.LRETURN);
-			} else if (retT.getSort() == Type.INT || retT.getSort() == Type.BOOLEAN) {
+			} else if (retT.getSort() == Type.INT
+					|| retT.getSort() == Type.BOOLEAN) {
 				mv.visitInsn(Opcodes.IRETURN);
 			} else {
 				mv.visitInsn(Opcodes.RETURN);
@@ -647,20 +648,41 @@ public class Utility {
 			pid = runningVmComp[0];
 		}
 
+		String sep1 = Settings.getInstance().getJoanaDelimiter1();
+		String sep2 = Settings.getInstance().getJoanaDelimiter2();
+
 		// Generate Sources
+		String listOfSources = "";
 		try {
-			param.put("PEP", "Java");
-			param.put("type", "source");
-			param.put("PID", pid);
+			// param.put("PEP", "Java");
+			// param.put("type", "source");
+			// param.put("PID", pid);
 			Iterator<SinkSource> it = StaticAnalysis.getSources().iterator();
 			while (it.hasNext()) {
+				String currSource = "";
 				SinkSource source = it.next();
 
-				// Add offset
-				param.put("offset", String.valueOf(source.getOffset()));
+				// Add id
+				// param.put("id", source.getId());
+				currSource += "id" + sep1 + source.getId()+ sep1;
 
 				// Add location
-				param.put("location", source.getLocation());
+				// param.put("location", source.getLocation());
+				currSource += "location" + sep1 + source.getLocation()+ sep1;
+
+				// Add offset
+				// param.put("offset", String.valueOf(source.getOffset()));
+				currSource += "offset" + sep1
+						+ String.valueOf(source.getOffset()) + sep1;
+
+				if (source.is_return()) {
+					// param.put("parampos", "-1");
+					currSource += "parampos" + sep1 + "-1" + sep1;
+				} else if (source.getParam() != -1000) {
+					// param.put("parampos", String.valueOf(source.getParam()));
+					currSource += "parampos" + sep1
+							+ String.valueOf(source.getParam()) + sep1;
+				}
 
 				// Add signature
 				List<String> signatures = source.getPossibleSignatures();
@@ -668,70 +690,78 @@ public class Utility {
 				String signature = "";
 				while (sigIt.hasNext()) {
 					signature += sigIt.next()
-							+ Settings.getInstance().getJoanaInitDelimiter();
+							+ Settings.getInstance().getJoanaDelimiter1();
 				}
 				if (signature.length() > 0) {
 					signature = signature.substring(0, signature.length() - 1);
 				}
-				param.put("signature", signature);
+				// param.put("signature", signature);
+				currSource += "signature" + sep1 + signature+ sep1;
 
-				// Add id
-				param.put("id", source.getId());
-
-				if (source.is_return()) {
-					param.put("parampos", "-1");
-				} else if (source.getParam() != -1000) {
-					param.put("parampos", String.valueOf(source.getParam()));
-				}
-				IEvent initEvent = _messageFactory.createActualEvent(
-						"JoanaInitInfoFlow", param);
-				ucom.sendInitPdpEvent(initEvent);
+				// IEvent initEvent = _messageFactory.createActualEvent(
+				// "JoanaInitInfoFlow", param);
+				// ucom.sendInitPdpEvent(initEvent);
+				listOfSources += currSource + sep2;
 			}
 		} catch (Exception e) {
 			System.out.println("Error while pasrsing sources. ");
 			e.printStackTrace();
 		}
 
+		String listOfSinks = "";
 		// Generate Sinks
 		try {
-			param.clear();
-			param.put("PEP", "Java");
-			param.put("type", "sink");
-			param.put("PID", pid);
+			// param.clear();
+			// param.put("PEP", "Java");
+			// param.put("type", "sink");
+			// param.put("PID", pid);
 			Iterator<SinkSource> it = StaticAnalysis.getSinks().iterator();
 			while (it.hasNext()) {
+				String currSink = "";
 				SinkSource source = it.next();
 
-				// Add offset
-				param.put("offset", String.valueOf(source.getOffset()));
+				// Add id
+				//param.put("id", source.getId());
+				currSink += "id" + sep1 + source.getId()+ sep1;
 
 				// Add location
-				param.put("location", source.getLocation());
+				// param.put("location", source.getLocation());
+				currSink += "location" + sep1 + source.getLocation() + sep1;
+				
+				// Add offset
+				// param.put("offset", String.valueOf(source.getOffset()));
+				currSink += "offset" + sep1
+						+ String.valueOf(source.getOffset()) +sep1;
 
+
+				if (source.is_return()) {
+					//param.put("parampos", "-1");
+					currSink += "parampos" + sep1 + "-1" + sep1;
+				} else if (source.getParam() != -1000) {
+					//param.put("parampos", String.valueOf(source.getParam()));
+					currSink += "parampos" +sep1 + String.valueOf(source.getParam()) + sep1;
+				}
+
+				
 				// Add signature
 				List<String> signatures = source.getPossibleSignatures();
 				Iterator<String> sigIt = signatures.iterator();
 				String signature = "";
 				while (sigIt.hasNext()) {
 					signature += sigIt.next()
-							+ Settings.getInstance().getJoanaInitDelimiter();
+							+ Settings.getInstance().getJoanaDelimiter1();
 				}
 				if (signature.length() > 0) {
 					signature = signature.substring(0, signature.length() - 1);
 				}
-				param.put("signature", signature);
-
-				// Add id
-				param.put("id", source.getId());
-
-				if (source.is_return()) {
-					param.put("parampos", "-1");
-				} else if (source.getParam() != -1000) {
-					param.put("parampos", String.valueOf(source.getParam()));
-				}
-				IEvent initEvent = _messageFactory.createActualEvent(
-						"JoanaInitInfoFlow", param);
-				ucom.sendInitPdpEvent(initEvent);
+				//param.put("signature", signature);
+				currSink += "signature" + sep1 + signature + sep1;
+				
+				
+//				IEvent initEvent = _messageFactory.createActualEvent(
+//						"JoanaInitInfoFlow", param);
+//				ucom.sendInitPdpEvent(initEvent);
+				listOfSinks += currSink + sep2;
 			}
 		} catch (Exception e) {
 			System.err.println("Error while pasrsing sinks. ");
@@ -739,25 +769,31 @@ public class Utility {
 		}
 
 		// Generate Flow
-		param.clear();
-		param.put("type", "iflow");
-		param.put("PEP", "Java");
-		param.put("PID", pid);
+//		param.clear();
+//		param.put("type", "iflow");
+//		param.put("PEP", "Java");
+//		param.put("PID", pid);
+		
+		String listOfFlows = "";
 		Iterator<Flow> flowIt = StaticAnalysis.getFlows().iterator();
-		int i = 0; 
+		int i = 0;
 		while (flowIt.hasNext()) {
+			String currFlow="";
 			Flow flow = flowIt.next();
 			SinkSource sink = StaticAnalysis.getSinkSourceById(flow.getSink(),
 					NODETYPE.SINK);
+
+			//param.put("sink", "");
 			
-			param.put("sink", "");
-			
+
 			String parampos = String.valueOf(sink.getParam());
-			if(sink.is_return()){
+			if (sink.is_return()) {
 				parampos = "-1";
-			}						
+			}
 			if (sink != null) {
-				param.put("sink", sink.getLocation()+":"+sink.getOffset()+":"+parampos);
+				//param.put("sink", sink.getLocation() + ":" + sink.getOffset()
+				//		+ ":" + parampos);
+				currFlow += sink.getId() + sep1;
 			}
 
 			String sources = "";
@@ -767,19 +803,38 @@ public class Utility {
 				SinkSource source = StaticAnalysis.getSinkSourceById(sourceId,
 						NODETYPE.SOURCE);
 				parampos = String.valueOf(source.getParam());
-				if(source.is_return()){
+				if (source.is_return()) {
 					parampos = "-1";
-				}	
-				sources += source.getLocation()+":"+source.getOffset()+":"+parampos+Settings.getInstance().getJoanaInitDelimiter();
+				}
+				//sources += source.getLocation() + ":" + source.getOffset()
+				//		+ ":" + parampos
+				//		+ Settings.getInstance().getJoanaInitDelimiter();
+				currFlow += source.getId()+sep1;
 			}
-			if (sources.length() > 0){
-				sources = sources.substring(0, sources.length() - 1);
-			}
-			param.put("source", sources);
-			IEvent initEvent = _messageFactory.createActualEvent(
-					"JoanaInitInfoFlow", param);
-			ucom.sendInitPdpEvent(initEvent);
+//			if (sources.length() > 0) {
+//				sources = sources.substring(0, sources.length() - 1);
+//			}
+//			param.put("source", sources);
+			
+//			IEvent initEvent = _messageFactory.createActualEvent(
+//					"JoanaInitInfoFlow", param);
+//			ucom.sendInitPdpEvent(initEvent);
+			
+			listOfFlows += currFlow + sep2;
 		}
+	
+		param.clear();
+		param.put("PEP", "Java");
+		param.put("PID", pid);
+
+		param.put("listOfSources", listOfSources);
+		param.put("listOfSinks", listOfSinks);
+		param.put("listOfFlows", listOfFlows);
+		
+		IEvent initEvent = _messageFactory.createActualEvent(
+			"JoanaInitInfoFlow", param);
+		ucom.sendInitPdpEvent(initEvent);
+			
 	}
 
 	public static boolean isBlackisted(String classname) {

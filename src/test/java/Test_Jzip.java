@@ -60,8 +60,10 @@ public class Test_Jzip extends AbstractTest{
 							.toString());
 			if ((s != null) && !s.equals("")) {
 				try {
-					File f = new File(s + cr.getClassName().replace("/", "_")
-							+ "_2.class");
+					String path = s + cr.getClassName().replace("/", "_")
+							+ "_2.class";
+					System.out.println(path);
+					File f = new File(path);
 					if (!f.exists()) {
 						f.createNewFile();
 					}

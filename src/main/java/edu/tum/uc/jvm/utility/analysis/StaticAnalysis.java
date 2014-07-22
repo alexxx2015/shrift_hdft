@@ -19,7 +19,7 @@ public class StaticAnalysis {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Utility.populatePip("/home/alex/git_repos/uc4java/java-pep/src/test/resources/report-myobj-jzip.xml");
+		Utility.populatePip("../src/test/resources/report-myobj-jzip.xml");
 	}
 	
 //	public StaticAnalysis() {

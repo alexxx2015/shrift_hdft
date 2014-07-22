@@ -94,13 +94,16 @@ public class UcCommunicator {
 		}
 
 		String sinkSource = "Sink";
-		if (event.getSinkSource().toLowerCase().equals("source")) {
+		if (event.getSinkSource().toLowerCase().startsWith("source")) {
 			sinkSource = "Source";
 		}
+		map.put("id", event.getSinkSource().toLowerCase());
 
 		// IEvent ievent = new
 		// EventBasic(event.getMethodInvokee(),map,event.isActual());
 		IEvent ievent = new EventBasic(sinkSource, map, event.isActual());
+		System.out.println("E: " + ievent);
+
 		IResponse response = this.pdpClient.notifyEventSync(ievent);
 
 		if (response != null)

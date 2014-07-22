@@ -83,8 +83,6 @@ public class MyMethodVisitor extends MethodVisitor {
 				String byteCodeIndex = p.getProperty("byteCodeIndex");
 				if ((byteCodeIndex != null)
 						&& (Integer.parseInt(byteCodeIndex) == offset)) {
-					System.out.println("\nHurra Method " + label.getOffset()
-							+ ", " + this.methodName);
 					_return = true;
 				}
 			}
@@ -102,7 +100,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	public void visitVarInsn(int p_opcode, int p_var) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			System.out.println("visitVarInsn " + p_opcode + ", " + p_var);
 
 			String varInsStr = this.getFullName();
 			// System.out.println("UCAPT LOADVAR 1: "+p_var+", "+p_opcode);
@@ -137,8 +134,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	public void visitInsn(int p_opcode) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			System.out.println("visitInsn " + p_opcode);
-
 			String ucaHAStr = this.getFullName();
 			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
 			// null, null);
@@ -215,7 +210,6 @@ public class MyMethodVisitor extends MethodVisitor {
 			String p_desc) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			System.out.println("visitFieldInsn " + p_opcode);
 			String ldcInsn = p_owner + "/" + p_name + ":" + p_desc;
 			switch (p_opcode) {
 			case Opcodes.GETFIELD:
@@ -254,7 +248,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	public void visitJumpInsn(int p_opcode, Label p_label) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			System.out.println("visitJumpInsn " + p_opcode);
 			// InsnList il = this.methNode.instructions;
 			// ListIterator<AbstractInsnNode> ilIt = il.iterator();
 			// while(ilIt.hasNext()){
@@ -286,8 +279,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	public void visitIntInsn(int p_opcode, int p_operand) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			System.out.println("visitIntInsn " + p_opcode);
-
 			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
 			// null, null);
 			String ucaHAStr;
@@ -355,8 +346,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	public void visitMultiANewArrayInsn(String p_desc, int p_dim) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			System.out.println("visitMultiANewArrayInsn " + p_desc);
-
 			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
 			// null, null);
 
@@ -374,7 +363,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	public void visitLdcInsn(Object cst) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			System.out.println("visitLdcInsn " + cst);
 
 			String ucaHAStr = this.getFullName() + ":"
 					+ cst.toString().replace(":", "&#58;");
@@ -424,7 +412,6 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		if (sors.size() == 0) {
 			if (this.checkChopNode(label)) {
-				System.out.println("visitMethodInsn " + p_opcode);
 				// Label lab = this.insertChecks(mv,
 				// Disassembler.class.getName(), null, null);
 				mv.visitLdcInsn(invokerFQN);
@@ -614,8 +601,6 @@ public class MyMethodVisitor extends MethodVisitor {
 						"(Ljava/lang/String;)V", false);
 			}
 		}
-		// System.out.println("MYMETHODVISIT: "+invokerFQN);
-
 		// mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out",
 		// "Ljava/io/PrintStream;");
 		// mv.visitLdcInsn("ADDED: "+invokerFQN);

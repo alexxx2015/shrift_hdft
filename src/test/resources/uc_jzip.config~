@@ -1,11 +1,13 @@
 PIP_HOST=localhost
-PIP_PORT=9090
+PIP_PORT=40011
 PDP_HOST=localhost
-PDP_PORT=9090
+PDP_PORT=40010
+PMP_HOST=localhost
+PMP_PORT=40012
 MYPEP_HOST=localhost
 MYPEP_PORT=9090
-ANALYSIS_REPORT=/home/alex/git_repos/uc4java/java-pep/src/test/resources/report-my-jzip.xml
+ANALYSIS_REPORT=/home/alex/git_repos/uc4java/src/test/resources/report-myobj-jzip-all.xml
 INSTREMENTED_CLASS_PATH=/home/alex/instrumented/
 ENFORCEMENT=
 STATISTICS=
-BLACKLIST=/home/alex/git_repos/uc4java/java-pep/src/test/resources/blacklist.list
+BLACKLIST=/home/alex/git_repos/uc4java/src/test/resources/blacklist.list

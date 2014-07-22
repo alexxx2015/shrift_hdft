@@ -1,8 +1,11 @@
+package edu.tum.uc.jvm.archive;
 //package edu.tum.uc.jvm.asm;
 //
 //import java.io.File;
 //import java.io.FileWriter;
 //import java.io.IOException;
+//import java.lang.reflect.InvocationTargetException;
+//import java.lang.reflect.Method;
 //import java.util.ArrayList;
 //import java.util.HashMap;
 //import java.util.Iterator;
@@ -16,30 +19,30 @@
 //import org.objectweb.asm.tree.LocalVariableNode;
 //import org.objectweb.asm.tree.MethodNode;
 //
+//import edu.tum.XMLtools.StaticAnalysis;
+//import edu.tum.XMLtools.StaticAnalysis.nodeType;
+//import edu.tum.uc.jvm.MirrorStack;
 //import edu.tum.uc.jvm.UcTransformer;
+//import edu.tum.uc.jvm.utility.ConfigProperties;
 //import edu.tum.uc.jvm.utility.Mnemonic;
 //import edu.tum.uc.jvm.utility.Utility;
-//import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 //
-//public class MyMethodVisitor_V20140527 extends MethodVisitor {
+//public class MyMethodVisitor_V2 extends MethodVisitor {
 //	private String methodName;
 //	private String className;
 //	private MethodNode methNode;
 //	private String signature;
 //	private boolean isInstance;
 //	private String description;
-//	private ArrayList<Properties> chopNodes;
 //
-//	protected MyMethodVisitor_V20140527(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc, String p_signature, String p_className, MethodNode p_methNode, ArrayList<Properties> p_chopNodes) {
+//	protected MyMethodVisitor_V2(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc, String p_signature, String p_className, MethodNode p_methNode) {
 //		super(p_api, p_mv);
 //				
 //		this.methodName = p_name;
 //		this.className = p_className;
 //		this.methNode = p_methNode;
 //		this.signature = p_signature;
-//		this.description = p_desc;	
-//		
-//		this.chopNodes = p_chopNodes;
+//		this.description = p_desc;
 //		
 //		if( ((this.methNode.access & Opcodes.ACC_STATIC) != Opcodes.ACC_STATIC)
 //				&& ((this.methNode.access & Opcodes.ACC_ABSTRACT) != Opcodes.ACC_ABSTRACT)){
@@ -88,21 +91,6 @@
 //		}
 ////		mv.visitLabel(lab);		
 //		mv.visitVarInsn(p_opcode, p_var);
-//	}
-//	public void visitInsn(int p_opcode){
-//		if((this.chopNodes != null) && (this.chopNodes.size() > 0)){
-//			MyLabel label = (MyLabel)this.getCurrentLabel();			
-//			Iterator<Properties> it = this.chopNodes.iterator();
-//			while(it.hasNext()){
-//				Properties p = it.next();
-//				int offset = label.getOffset();
-//				String byteCodeIndex = p.getProperty("byteCodeIndex");
-//				if((byteCodeIndex != null) && (Integer.parseInt(byteCodeIndex) == offset)){
-//					System.out.println(label.getOffset());					
-//				}
-//			}
-//		}
-//		mv.visitInsn(p_opcode);
 //	}
 //	
 //	public void _visitInsn(int p_opcode){
@@ -309,35 +297,31 @@
 //	
 //	public void _visitTypeInsn(int p_opcode, String p_type){
 ////		Label lab = this.insertChecks(mv, Disassembler.class.getName(), null, null);
-////		String ucaHAStr = "";
-////		if(p_opcode == Opcodes.ANEWARRAY){
-////			ucaHAStr = this.getFullName()+":"+p_type+":"+p_opcode;
-////			if(this.isInstance == false){
-////				mv.visitLdcInsn(ucaHAStr);
-////				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newArray", "(Ljava/lang/String;)V");
-////			}else{
-////				mv.visitVarInsn(Opcodes.ALOAD, 0);
-//////				mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Object.class.getName().replace(".", "/"), "hashCode", "()I");
-////				mv.visitLdcInsn(ucaHAStr);
-////				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newArray", "(Ljava/lang/Object;Ljava/lang/String;)V");
-////			}
-////		}
-////		else if (p_opcode == Opcodes.NEW){
-////			ucaHAStr = this.getFullName()+":"+p_type+":"+p_opcode;
-////			if(this.isInstance == false){
-////				mv.visitLdcInsn(ucaHAStr);
-////				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newInstr", "(Ljava/lang/String;)V");
-////			}else{
-////				mv.visitVarInsn(Opcodes.ALOAD, 0);
-//////				mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Object.class.getName().replace(".", "/"), "hashCode", "()I");
-////				mv.visitLdcInsn(ucaHAStr);
-////				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newInstr", "(Ljava/lang/Object;Ljava/lang/String;)V");
-////			}
-////		}
-//		MyLabel label = (MyLabel)this.getCurrentLabel();
-//		String invokerFQN = this.className.replace("/", ".")+"."+this.methodName+this.description;
-//		
-//		String flowLabel = StaticAnalysis.getChopLabel(invokerFQN, label.getOffset());
+//		String ucaHAStr = "";
+//		if(p_opcode == Opcodes.ANEWARRAY){
+//			ucaHAStr = this.getFullName()+":"+p_type+":"+p_opcode;
+//			if(this.isInstance == false){
+//				mv.visitLdcInsn(ucaHAStr);
+//				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newArray", "(Ljava/lang/String;)V");
+//			}else{
+//				mv.visitVarInsn(Opcodes.ALOAD, 0);
+////				mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Object.class.getName().replace(".", "/"), "hashCode", "()I");
+//				mv.visitLdcInsn(ucaHAStr);
+//				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newArray", "(Ljava/lang/Object;Ljava/lang/String;)V");
+//			}
+//		}
+//		else if (p_opcode == Opcodes.NEW){
+//			ucaHAStr = this.getFullName()+":"+p_type+":"+p_opcode;
+//			if(this.isInstance == false){
+//				mv.visitLdcInsn(ucaHAStr);
+//				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newInstr", "(Ljava/lang/String;)V");
+//			}else{
+//				mv.visitVarInsn(Opcodes.ALOAD, 0);
+////				mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Object.class.getName().replace(".", "/"), "hashCode", "()I");
+//				mv.visitLdcInsn(ucaHAStr);
+//				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "newInstr", "(Ljava/lang/Object;Ljava/lang/String;)V");
+//			}
+//		}
 //		
 ////		mv.visitLabel(lab);
 //		mv.visitTypeInsn(p_opcode, p_type);
@@ -361,7 +345,7 @@
 //		mv.visitMultiANewArrayInsn(p_desc, p_dim);
 //	}
 //	
-//	public void _visitLdcInsn(Object cst){			
+//	public void _visitLdcInsn(Object cst){		
 //		String ucaHAStr = this.getFullName()+":"+cst.toString().replace(":", "&#58;");
 ////		Label lab = this.insertChecks(mv, Disassembler.class.getName(), null, null);
 //		if(!this.isInstance){
@@ -380,7 +364,7 @@
 //	public void visitMethodInsn(int p_opcode, String p_owner, String p_name, String p_desc){
 //		MyLabel label = (MyLabel)this.getCurrentLabel();
 //		String invokerFQN = this.className.replace("/", ".")+"."+this.methodName+this.description;
-//		Map<Integer, StaticAna> sors = StaticAnalysis.getType(invokerFQN, label.getOffset());
+//		Map<Integer, nodeType> sors = StaticAnalysis.getType(invokerFQN, label.getOffset());
 //		if(sors.size() == 0){
 //			boolean isIntf = false;
 //			if(p_opcode == Opcodes.INVOKEINTERFACE){
@@ -389,17 +373,15 @@
 //			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, isIntf);
 //			return;
 //		}
-//
-//		String sinkSource = "";				
+//		
 //		Iterator<Integer> it = sors.keySet().iterator();
 //		while(it.hasNext()){
 //			int key = it.next();
-////			String s = StaticAnalysis.getIdOfPar(invokerFQN, label.getOffset(), key);
-//			sinkSource = sors.get(key).toString();
+//			String s = StaticAnalysis.getIdOfPar(invokerFQN, label.getOffset(), key);
+////			System.out.println(key+"; "+sors.get(key)+", "+s);
 //		}
-//		
 //		final String delim = UcTransformer.STRDELIM;
-//		invokerFQN = this.getFullName() + delim + this.description + delim + p_owner.replace("/", ".")+"."+p_name + delim + p_desc + delim + label.getOffset() + delim + p_opcode + delim + sinkSource;
+//		invokerFQN = this.getFullName() + delim + this.description + delim + p_owner.replace("/", ".")+"."+p_name + delim + p_desc + delim + label.getOffset() + delim + p_opcode;
 //		mv.visitLdcInsn(invokerFQN);
 //		mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "methodInvoked", "(Ljava/lang/String;)Z", false);
 ////		mv.visitInsn(Opcodes.POP);
@@ -663,7 +645,7 @@
 //	//Return the local variable node of a method by index
 //	private LocalVariableNode getLocVarByIdx(int p_indx){
 //		LocalVariableNode lvn = null;
-//		Iterator<?> locVarIt = this.methNode.localVariables.iterator();
+//		Iterator locVarIt = this.methNode.localVariables.iterator();
 //		while(locVarIt.hasNext()){
 //			lvn = (LocalVariableNode)locVarIt.next();
 ////			System.out.println("UCAPT GLVBI: "+this.methodName+", "+this.methNode.name+", "+lvn.name+", "+lvn.index);
@@ -677,7 +659,7 @@
 //	//Return the local variable node of a method by index
 //	private LocalVariableNode getLocVarByName(String p_name){
 //		LocalVariableNode lvn = null;
-//		Iterator<?> locVarIt = this.methNode.localVariables.iterator();
+//		Iterator locVarIt = this.methNode.localVariables.iterator();
 //		while(locVarIt.hasNext()){
 //			lvn = (LocalVariableNode)locVarIt.next();
 //			if(lvn.name.equals(p_name)){

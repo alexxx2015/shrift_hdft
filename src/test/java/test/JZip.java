@@ -103,6 +103,7 @@ public class JZip implements TestIntf{
 					System.in));
 			try {
 				String instruction = br.readLine();
+				System.out.println("READ "+instruction);
 				if ("help".equals(instruction.trim())) {
 					HelpFormatter formatter = new HelpFormatter();
 					formatter.printHelp("JZip", opt);

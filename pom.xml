@@ -20,7 +20,17 @@
 		</dependency>
 		<dependency>
 			<groupId>UsageControlSystem</groupId>
+			<artifactId>CommunicationManager</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>UsageControlSystem</groupId>
 			<artifactId>CommunicationBase</artifactId>
+			<version>1.0</version>
+		</dependency>		
+		<dependency>
+			<groupId>UsageControlSystem</groupId>
+			<artifactId>Pdp</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>
@@ -37,8 +47,7 @@
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>catalina</artifactId>
 			<version>6.0.29</version>
-		</dependency>
-		
+		</dependency>		
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>

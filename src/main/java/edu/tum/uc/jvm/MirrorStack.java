@@ -50,7 +50,8 @@ public class MirrorStack {
 	private static UcCommunicator ucCom = UcCommunicator.getInstance();
 
 	private static Stack<CreationSite> creationSiteScopes = new Stack<CreationSite>();
-
+	protected static Map<String, String> contextToObject = new HashMap<String, String>();
+	
 	public static void pushCreationSiteScope(String creationSite) {
 		// [0] = id
 		// [1] = location
@@ -82,7 +83,8 @@ public class MirrorStack {
 			if (cs_old.getLocation().equals(cs.getLocation())
 					&& cs_old.getOffset() <= cs.getOffset()
 					&& cs_old.getId().equals(cs.getId())) {
-				ucCom.sendContextEvent2PDP(obj, cs);
+				
+//				ucCom.sendContextEvent2PDP(obj, cs);
 			}
 		} catch (Exception e) {
 		}
@@ -493,7 +495,6 @@ public class MirrorStack {
 		final String delim = UcTransformer.STRDELIM;
 		MethEvent event = new MethEvent(MethEvent.Type.START);
 		String[] methNameCmp = p_methName.split(delim);
-		System.out.println(p_methName);
 		// Extract invoker method
 		if ((methNameCmp.length >= 1) && (methNameCmp[0] != null)) {
 			event.setMethodInvoker(methNameCmp[0]);
@@ -728,7 +729,7 @@ public class MirrorStack {
 			}
 			MirrorStack.unlock();
 		}
-	}
+	}	
 
 	// *** Branch instruction ***
 	public static void ifInstr(String p_ifInstr) {
@@ -906,7 +907,6 @@ public class MirrorStack {
 		if (MirrorStack.lock()) {
 			_logger.info("SWAP-Instr");
 			try {
-				System.out.println("UCAHA SWAPINSTR");
 				Container c1 = Stack.pop(), c2 = Stack.pop();
 				Stack.push(c1);
 				Stack.push(c2);

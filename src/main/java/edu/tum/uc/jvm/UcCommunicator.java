@@ -102,7 +102,6 @@ public class UcCommunicator {
 		// IEvent ievent = new
 		// EventBasic(event.getMethodInvokee(),map,event.isActual());
 		IEvent ievent = new EventBasic(sinkSource, map, event.isActual());
-		System.out.println("E: " + ievent);
 
 		IResponse response = this.pdpClient.notifyEventSync(ievent);
 
@@ -144,7 +143,7 @@ public class UcCommunicator {
 		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
 		String[] runningVmComp = runningVm.split("@");
 		if (runningVmComp.length > 0) {
-			param.put("PID", runningVmComp[0]);// Add process id
+			param.put("PID_Child", runningVmComp[0]);// Add process id
 		}
 		IMessageFactory _messageFactory = MessageFactoryCreator
 				.createMessageFactory();

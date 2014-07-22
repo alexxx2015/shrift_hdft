@@ -1,3 +1,4 @@
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -92,7 +93,11 @@ public class Test_Jzip extends AbstractTest{
 					.define("test.JZip", cw.toByteArray());
 			Object obj = reloadClass.newInstance();
 			test.TestIntf myTest2 = (test.TestIntf) obj;
+			String instruction = "exit";//"zip /home/alex/test.zip /home/alex/instrumented/";
+			InputStream is2 = System.in;
+			System.setIn(new ByteArrayInputStream(instruction.getBytes()));			
 			myTest2.runtest();
+			System.setIn(is2);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

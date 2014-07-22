@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.instrument.IllegalClassFormatException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
@@ -18,6 +19,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
+import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.asm.MyClassAdapter;
 import edu.tum.uc.jvm.asm.MyClassWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
@@ -42,62 +44,16 @@ public class Test_Jzip extends AbstractTest{
 					+ ".class";
 			InputStream is = clazz.getClassLoader().getResourceAsStream(
 					className);
-			byte[] b = IOUtils.toByteArray(is);
-
-			// MyClassReader cr = new MyClassReader(b);
-			ClassReader cr = new ClassReader(b);
-			ClassNode cn = new ClassNode();
-			cr.accept(cn, 0);
-
-			MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS
-					| ClassWriter.COMPUTE_FRAMES);
-			// ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS
-			// |ClassWriter.COMPUTE_FRAMES);
-			// ClassWriter.COMPUTE_FRAMES);
-			ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
-			cr.accept(cv, ClassReader.EXPAND_FRAMES);
-
-			String s = ConfigProperties
-					.getProperty(ConfigProperties.PROPERTIES.INSTREMENTED_CLASS_PATH
-							.toString());
-			if ((s != null) && !s.equals("")) {
-				try {
-					String path = s + cr.getClassName().replace("/", "_")
-							+ "_2.class";
-					System.out.println(path);
-					File f = new File(path);
-					if (!f.exists()) {
-						f.createNewFile();
-					}
-					DataOutputStream dos = new DataOutputStream(
-							new FileOutputStream(f));
-					dos.write(cw.toByteArray());
-					DataOutputStream dos2 = new DataOutputStream(
-							new FileOutputStream(s
-									+ cr.getClassName().replace("/", "_")
-									+ "_1.class"));
-					dos2.write(cr.b);
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println("INSTRUMENTED CLASS " + className);
-			}
-
+			byte[] raw_bytecode = IOUtils.toByteArray(is);
+			
+			UcTransformer u = new UcTransformer();
+			byte[] instrumented_bytecode = u.transform(null, className, null, null, raw_bytecode);
+			
 			ClassLoader parent = this.getClass().getClassLoader();
-			MyClassLoader mcl = new MyClassLoader(parent);
-			
-			String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
-			if(!"".equals(statistic)){
-				StatisticsWriter.write(statistic, cn, cw.toByteArray());
-			}
-			
+			MyClassLoader mcl = new MyClassLoader(parent);			
 
 			Class<?> reloadClass = mcl
-					.define("test.JZip", cw.toByteArray());
+					.define("test.JZip", instrumented_bytecode);
 			Object obj = reloadClass.newInstance();
 			test.TestIntf myTest2 = (test.TestIntf) obj;			
 			String instruction = "exit";//"zip /home/alex/test.zip /home/alex/instrumented/";
@@ -115,6 +71,9 @@ public class Test_Jzip extends AbstractTest{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalClassFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

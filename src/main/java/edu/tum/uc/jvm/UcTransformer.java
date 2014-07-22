@@ -80,40 +80,29 @@ public class UcTransformer implements ClassFileTransformer {
 		if(Utility.isBlackisted(className)){
 			return null;
 		}
-
-		Date d = new Date();
-		/*
-		 * else if(className.contains("objectweb") ||
-		 * className.startsWith("apple") || className.startsWith("com") ||
-		 * className.startsWith("java") || className.startsWith("oracle") ||
-		 * className.startsWith("org") || className.startsWith("sun") ||
-		 * className.startsWith("Wrapper")){ return null; } else
-		 * if(className.toLowerCase().contains("apache")){
-		 * if(className.toLowerCase().contains("catalina") ||
-		 * className.toLowerCase().contains("coyote") ||
-		 * className.toLowerCase().contains("jk") ||
-		 * className.toLowerCase().contains("naming") ||
-		 * className.toLowerCase().contains("tomcat")){ return null;
-		 * }sitVarInsn(Opcodes.ALOAD, 0); //
-		 * mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
-		 * Object.class.getName().replace(".", "/"), "hashCode", "()I");
-		 * mv.visitLdcInsn
-		 * (this.getFullName()+":"+p_owner+"/"+p_name+":"+p_desc+":"+p_opcode);
-		 * mv.visitMethodInsn(Opcodes.INVOKESTATIC, ucaHA.class.getName(),
-		 * "methodExited", "(Ljava/lang/Object;Ljava/lang/String;)V"); } }
-		 */
+		
+		//For statstic purposes
+		Date start = new Date();
 
 		MyClassReader cr = new MyClassReader(classfileBuffer);
-//		System.out.println("LOAD CLASS " + className + ", "	+ classfileBuffer.length);
 		ClassNode cn = new ClassNode();
 		cr.accept(cn, 0);
 
-		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS);// |ClassWriter.COMPUTE_FRAMES);
+		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		// ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS |
 		// ClassWriter.COMPUTE_FRAMES);
 		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
-
+		
+		//For statistic purposes
+		Date end = new Date();
+		
+		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
+		if(!"".equals(statistic)){
+			StatisticsWriter.write(statistic, cn, cw.toByteArray(), end.getTime() - start.getTime());
+		}
+		
+		//Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in configuration file
 		String s = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.INSTREMENTED_CLASS_PATH
 						.toString());
@@ -126,23 +115,11 @@ public class UcTransformer implements ClassFileTransformer {
 				DataOutputStream dos = new DataOutputStream(
 						new FileOutputStream(f));
 				dos.write(cw.toByteArray());
-//				DataOutputStream dos2 = new DataOutputStream(
-//						new FileOutputStream(s
-//								+ cr.getClassName().replace("/", "_")
-//								+ "_1.class"));
-//				dos2.write(cr.b);
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-		
-		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
-		if(!"".equals(statistic)){
-			StatisticsWriter.write(statistic, cn, cw.toByteArray());
 		}
 		return cw.toByteArray();
 	}

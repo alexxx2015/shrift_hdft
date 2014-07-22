@@ -41,14 +41,10 @@ public class MyClassAdapter extends ClassVisitor {
 					"findLoadedClass", new Class[] { String.class });
 			method.setAccessible(true);
 			
-			ClassLoader cl1 = ClassLoader.getSystemClassLoader();
+			ClassLoader cl = ClassLoader.getSystemClassLoader();
 			Object clazz = method
-					.invoke(cl1, "edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
+					.invoke(cl, "edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
 			if (clazz == null) {
-//				StaticAnalysis	
-//				.importXML(ConfigProperties
-//						.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT
-//								.toString()));
 				Utility.populatePip(ConfigProperties
 						.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT
 								.toString()));

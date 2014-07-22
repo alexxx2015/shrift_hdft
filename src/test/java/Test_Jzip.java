@@ -21,6 +21,7 @@ import org.objectweb.asm.tree.ClassNode;
 import edu.tum.uc.jvm.asm.MyClassAdapter;
 import edu.tum.uc.jvm.asm.MyClassWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
+import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
 
 public class Test_Jzip extends AbstractTest{
@@ -88,11 +89,17 @@ public class Test_Jzip extends AbstractTest{
 
 			ClassLoader parent = this.getClass().getClassLoader();
 			MyClassLoader mcl = new MyClassLoader(parent);
+			
+			String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
+			if(!"".equals(statistic)){
+				StatisticsWriter.write(statistic, cn, cw.toByteArray());
+			}
+			
 
 			Class<?> reloadClass = mcl
 					.define("test.JZip", cw.toByteArray());
 			Object obj = reloadClass.newInstance();
-			test.TestIntf myTest2 = (test.TestIntf) obj;
+			test.TestIntf myTest2 = (test.TestIntf) obj;			
 			String instruction = "exit";//"zip /home/alex/test.zip /home/alex/instrumented/";
 			InputStream is2 = System.in;
 			System.setIn(new ByteArrayInputStream(instruction.getBytes()));			

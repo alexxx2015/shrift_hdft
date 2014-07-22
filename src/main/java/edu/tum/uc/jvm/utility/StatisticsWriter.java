@@ -31,7 +31,7 @@ public class StatisticsWriter implements Runnable {
 
 	@Override
 	public void run() {
-		if (this.classNode.name.toLowerCase().contains("org/pec/uc")) {
+		// if (this.classNode.name.toLowerCase().contains("org/pec/uc")) {
 			
 			File f = new File(this.filename);
 			FileWriter fw;
@@ -96,7 +96,7 @@ public class StatisticsWriter implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+//		}
 	}
 
 	synchronized private void addTotalNumBytecode(int i) {
@@ -127,7 +127,9 @@ public class StatisticsWriter implements Runnable {
 
 	public static void write(String filename, ClassNode cn, byte[] instrumented) {
 		StatisticsWriter sw = new StatisticsWriter(filename, cn, instrumented);
-		new Thread(sw).start();
+		Thread t = new Thread(sw);
+//		t.start();
+		t.run();
 	}
 
 }

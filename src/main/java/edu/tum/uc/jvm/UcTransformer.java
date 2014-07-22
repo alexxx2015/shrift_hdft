@@ -8,15 +8,17 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.Date;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
+import edu.tum.uc.jvm.asm.MyClassAdapter;
 import edu.tum.uc.jvm.asm.MyClassReader;
 import edu.tum.uc.jvm.asm.MyClassWriter;
-import edu.tum.uc.jvm.asm.MyClassAdapter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
@@ -75,33 +77,11 @@ public class UcTransformer implements ClassFileTransformer {
 			this.setProtectionDomain(protectionDomain);
 		}
 		
-//		if (className.toLowerCase().contains("tum")
-//				&& className.toLowerCase().contains("uc/jvm")) {		
-//			// if(!className.contains("simple")){
-//			return null;
-//		}
-//		if (className.toLowerCase().contains("tum/in") || className.toLowerCase().contains("de/tum/in")){
-//			return null;
-//		}
-//		if (className.contains("com/vaadin")
-//				|| className.contains("org/jsoup")
-//				|| className.contains("com/google")
-//				|| className.startsWith("java")
-//				|| className.contains("org/apache")
-//				|| className.contains("com/github")
-//				|| className.contains("org/json")
-//				|| className.contains("org/slf4j")
-//				|| className.contains("sun/misc")
-//				|| className.contains("sun/net")
-//				|| className.contains("sun/reflect")
-//				|| className.contains("sun/launcher")
-//				) {
-//			return null;
-//		}
 		if(Utility.isBlackisted(className)){
 			return null;
 		}
 
+		Date d = new Date();
 		/*
 		 * else if(className.contains("objectweb") ||
 		 * className.startsWith("apple") || className.startsWith("com") ||

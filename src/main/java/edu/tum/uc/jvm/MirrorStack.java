@@ -83,7 +83,7 @@ public class MirrorStack {
 			if (cs_old.getLocation().equals(cs.getLocation())
 					&& cs_old.getOffset() <= cs.getOffset()
 					&& cs_old.getId().equals(cs.getId())) {
-				
+				contextToObject.put(cs.getId(), String.valueOf(obj.hashCode()));
 //				ucCom.sendContextEvent2PDP(obj, cs);
 			}
 		} catch (Exception e) {

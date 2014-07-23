@@ -19,6 +19,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
+import test.JZip2;
+
 import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.asm.MyClassAdapter;
 import edu.tum.uc.jvm.asm.MyClassWriter;
@@ -32,11 +34,10 @@ public class Test_Jzip extends AbstractTest{
 	public void init() throws Exception{
 		init("/uc_jzip.config");
 	}
-
+	
 	@Test
 	public void testInstrumentation() {
 		try {
-
 			Class<?> clazz = test.JZip.class;
 			
 			String className = clazz.getName().replace(".",

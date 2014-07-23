@@ -44,7 +44,7 @@ public class MirrorStack {
 	
 	protected static long lastNetworkAccess;
 	
-	private static Date startMain;
+	private static long startMain;
 
 	public static enum COMP_TYPE_CAT {
 		COMP_TYPE_CAT_1, COMP_TYPE_CAT_2
@@ -550,26 +550,26 @@ public class MirrorStack {
 	// return _return;
 	// }
 	public static void startMain(){//Helper method, sended when the end of main is reached
-		startMain = new Date();
+		startMain = System.currentTimeMillis();
 	}
 	
 	public static void endMain(){//Helper method, sended when the end of main is reached		
 		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
 		if(!"".equals(statistic)){
-			StatisticsWriter.logExecutionTime(startMain, new Date());			
+			StatisticsWriter.logExecutionTime(startMain, System.currentTimeMillis());			
 			StatisticsWriter.dumpFile(statistic);
 		}
 		ucCom.sendKillProcessEvent2Pdp();
 	}
 	
 	public static boolean methodInvoked(Object o, String p_methName) {
-		Date start = new Date();
+		long start = System.currentTimeMillis();
 		String fileDescriptor = Utility.extractFileDescriptor(o);
 		p_methName += UcTransformer.STRDELIM + fileDescriptor;
 		// System.out.println("MIRROR STACK " + p_methName);
 		boolean _return = methodInvoked(p_methName);
-		Date end = new Date();
-		long time = end.getTime()-start.getTime();
+		long end = System.currentTimeMillis();
+		long time = end - start;
 		StatisticsWriter.logRuntimeExection(p_methName, time, MirrorStack.lastNetworkAccess);
 		
 		return _return;

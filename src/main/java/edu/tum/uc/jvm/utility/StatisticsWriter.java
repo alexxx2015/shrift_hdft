@@ -41,8 +41,8 @@ public class StatisticsWriter implements Runnable {
 		runtimeExec.put(event, totalTime+","+networkTime);
 	}
 	
-	public static void logExecutionTime(Date start, Date end){
-		executionTimeTotal = end.getTime() - start.getTime();
+	public static void logExecutionTime(long start, long end){
+		executionTimeTotal = end - start;
 	}
 
 	public static void dumpFile(String filename) {

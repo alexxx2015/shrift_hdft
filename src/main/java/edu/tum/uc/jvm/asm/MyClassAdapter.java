@@ -115,13 +115,26 @@ public class MyClassAdapter extends ClassVisitor {
 		// System.out.println("LOC: "+this.className+", "+methNode.name+", "+methNode.instructions.size());
 		// }
 		if ((p_access & Opcodes.ACC_NATIVE) != Opcodes.ACC_NATIVE) {
-			JSRInlinerAdapter ja = new JSRInlinerAdapter(mv, p_access, p_name,
-					p_desc, p_signature, p_exceptions);
-			AdviceAdapter aa = new MyAdviceAdapter(Opcodes.ASM4, ja, p_access,
-					p_name, p_desc, p_signature, this.className, methNode);
-			mv = new MyMethodVisitor(Opcodes.ASM4, aa, p_access, p_name,
-					p_desc, p_signature, this.className, methNode, chopNodes,
-					this.classWriter);
+			Boolean instrumentation = true;
+			String s = ConfigProperties
+					.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION
+							.toString());
+			if (s != null) {
+				instrumentation = new Boolean(s);
+			}
+			if (instrumentation) {
+				JSRInlinerAdapter ja = new JSRInlinerAdapter(mv, p_access,
+						p_name, p_desc, p_signature, p_exceptions);
+				AdviceAdapter aa = new MyAdviceAdapter(Opcodes.ASM4, ja,
+						p_access, p_name, p_desc, p_signature, this.className,
+						methNode);
+				mv = new MyMethodVisitor(Opcodes.ASM4, aa, p_access, p_name,
+						p_desc, p_signature, this.className, methNode,
+						chopNodes, this.classWriter);
+			} else {
+				mv = new MyAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name,
+						p_desc, p_signature, this.className, methNode);
+			}
 		}
 		return mv;
 		// }

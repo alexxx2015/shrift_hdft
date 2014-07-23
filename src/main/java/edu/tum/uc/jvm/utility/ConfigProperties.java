@@ -18,6 +18,7 @@ public final class ConfigProperties {
 		, ENFORCEMENT
 		, STATISTICS
 		, BLACKLIST
+		, INSTRUMENTATION
 	}
 	
 	private static Properties CONFIGURATION = null;	

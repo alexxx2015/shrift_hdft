@@ -33,7 +33,7 @@ public class Test_Jzip extends AbstractTest{
 	@Before
 	public void init() throws Exception{
 		init("/uc_jzip.config");
-	}
+	}	
 	
 	@Test
 	public void testInstrumentation() {

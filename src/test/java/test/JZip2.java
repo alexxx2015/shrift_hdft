@@ -37,13 +37,11 @@ public class JZip2 implements TestIntf {
 	private boolean run;
 
 	public static void main(String[] args) {
-//		long start = System.currentTimeMillis();
-		Stopwatch timer = Stopwatch.createStarted();
+		long start = System.currentTimeMillis();
 		JZip2 zipper = new JZip2();
 		zipper.start();
-//		long end = System.currentTimeMillis();
-		System.out.println("Total runtime "+timer.stop());
-//		System.out.println("Total runtime "+(end - start));
+		long end = System.currentTimeMillis();
+		System.out.println("Total runtime "+(end - start));
 	}
 
 	private void init() {

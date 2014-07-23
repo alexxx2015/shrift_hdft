@@ -103,13 +103,13 @@ public class UcCommunicator {
 		// IEvent ievent = new
 		// EventBasic(event.getMethodInvokee(),map,event.isActual());
 		IEvent ievent = new EventBasic(sinkSource, map, event.isActual());
-		Date start = new Date();
+		long start = System.currentTimeMillis();
 		IResponse response = this.pdpClient.notifyEventSync(ievent);
-		Date end = new Date();
-		MirrorStack.lastNetworkAccess = end.getTime() - start.getTime();
+		MirrorStack.lastNetworkAccess = System.currentTimeMillis() - start;
 		
-		if (response != null)
+		if (response != null){
 			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+		}
 		return false;
 	}
 

@@ -26,7 +26,8 @@ public class StatisticsWriter implements Runnable {
 	private static int totalNumInstrBytecode = 0;
 	private static int totalNumInstrClasses = 0;
 
-	private static Map<String, String> runtimeExec = new HashMap<String, String>();
+	private static Map<String, Long> runtimeTotalExec = new HashMap<String, Long>();
+	private static Map<String, Long> runtimeNetworkExec = new HashMap<String, Long>();
 	private static StringBuilder ToBeDumpedData = new StringBuilder();
 	
 	private static long executionTimeTotal = 0;
@@ -37,8 +38,30 @@ public class StatisticsWriter implements Runnable {
 		this.time = time;
 	}
 	
-	public static void logRuntimeExection(String event, long totalTime, long networkTime){
-		runtimeExec.put(event, totalTime+","+networkTime);
+	public static void clear(){
+		totalNumMethods = 0;
+		totalNumBytecode = 0;
+		totalNumClasses = 0;
+
+		totalNumInstrMethods = 0;
+		totalNumInstrBytecode = 0;
+		totalNumInstrClasses = 0;
+
+		runtimeTotalExec = new HashMap<String, Long>();
+		runtimeNetworkExec = new HashMap<String, Long>();
+		ToBeDumpedData = new StringBuilder();
+		
+		executionTimeTotal = 0;
+	}
+	
+	public static void logRuntimeExection(String event, long totalTime, long networkTime){		
+		if(runtimeTotalExec.containsKey(event))
+			totalTime += runtimeTotalExec.get(event);
+		runtimeTotalExec.put(event, totalTime);
+		
+		if(runtimeNetworkExec.containsKey(event))
+			networkTime += runtimeNetworkExec.get(event);
+		runtimeNetworkExec.put(event, networkTime);
 	}
 	
 	public static void logExecutionTime(long start, long end){
@@ -61,18 +84,16 @@ public class StatisticsWriter implements Runnable {
 			sb.append(ToBeDumpedData).append("\n");
 			
 			sb.append("---- RUNTIME STATISTIC ----\n");
-			Iterator<String> runtimeExecIt = runtimeExec.keySet().iterator();
+			Iterator<String> runtimeExecIt = runtimeTotalExec.keySet().iterator();
 			long totalTime = 0;
 			long totalNetwork = 0;
 			while(runtimeExecIt.hasNext()){
 				String key = runtimeExecIt.next();
-				String[] time = runtimeExec.get(key).split(",");
-				if(time.length != 2){
-					continue;
-				}
-				sb.append("TotalTime (TT): "+time[0]+" ms, Time Network (TN): "+time[1]+" ms, "+key + "\n");
-				totalTime += Long.valueOf(time[0]);
-				totalNetwork += Long.valueOf(time[1]);
+				long t1 = runtimeTotalExec.get(key);
+				long t2 = runtimeNetworkExec.get(key);
+				sb.append("TotalTime (TT): "+t1+" ms, Time Network (TN): "+t2+" ms, "+key + "\n");
+				totalTime += t1;
+				totalNetwork += t2;
 			}
 			sb.append("=== TT: "+totalTime+" ms, TN: "+totalNetwork+" ms ===\n");
 			sb.append("=== Total Execution Time: "+executionTimeTotal+" ms ===\n");

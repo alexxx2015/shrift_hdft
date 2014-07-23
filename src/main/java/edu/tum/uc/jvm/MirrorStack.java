@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.UUID;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
@@ -569,8 +570,7 @@ public class MirrorStack {
 		// System.out.println("MIRROR STACK " + p_methName);
 		boolean _return = methodInvoked(p_methName);
 		long end = System.currentTimeMillis();
-		long time = end - start;
-		StatisticsWriter.logRuntimeExection(p_methName, time, MirrorStack.lastNetworkAccess);
+		StatisticsWriter.logRuntimeExection(p_methName, end-start, MirrorStack.lastNetworkAccess);
 		
 		return _return;
 	}
@@ -615,10 +615,13 @@ public class MirrorStack {
 	// }
 
 	public static void methodExited(Object o, String p_methName) {
+		long start = System.currentTimeMillis();
 		String fileDescriptor = Utility.extractFileDescriptor(o);
 		p_methName += UcTransformer.STRDELIM + fileDescriptor;
 		// System.out.println("MIRROR STACK " + p_methName);
 		methodExited(p_methName);
+		long end = System.currentTimeMillis();
+		StatisticsWriter.logRuntimeExection(p_methName, end-start, MirrorStack.lastNetworkAccess);
 	}
 
 	public static void methodExited(String p_methName) {

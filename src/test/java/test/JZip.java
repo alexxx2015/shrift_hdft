@@ -104,7 +104,6 @@ public class JZip implements TestIntf {
 			try {
 				String instruction = br.readLine();
 				do{
-					System.out.println("READ " + instruction);
 					if(instruction == null)
 						continue;
 					if (instruction == null) {

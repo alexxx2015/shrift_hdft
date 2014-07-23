@@ -104,8 +104,8 @@ public class MethEvent {
 	public String toString() {
 		return this.getMethodInvoker() + ":" + this.getMethodInvokerSig() + ":"
 				+ this.getMethodInvokee() + ":" + this.getMethodInvokeeSig()
-				+ ":" + this.getOpcode() + ":" + this.getOffset() + ":"
-				+ this.sinkSource;
+				+ ":" + this.getOffset() + ":" + this.getOpcode() + ":"
+				+ this.sinkSource+":"+this.getContextIds();
 	}
 
 	public String getSinkSource() {
@@ -142,7 +142,7 @@ public class MethEvent {
 	public void addContextIds(String ids) {
 		for (String s : ids.split(",")) {
 			s = s.replace("[", "").replace("]", "");
-			if(!"".equals(s.trim())){
+			if (!"".equals(s.trim())) {
 				this.addContextIds(Integer.parseInt(s));
 			}
 		}
@@ -160,4 +160,12 @@ public class MethEvent {
 		}
 		return _return + "]";
 	}
+
+//	public String toString() {
+//		return this.getMethodInvoker() + ":" + this.getMethodInvokerSig() + ":"
+//				+ this.getMethodInvokee() + ":" + this.getMethodInvokeeSig()
+//				+ ":" + this.getOffset() + ":" + this.getOpcode() + ":"
+//				+ this.getSinkSource() + ":" + this.getContextIds() + ":"
+//				+ this.getFileDescriptor();
+//	}
 }

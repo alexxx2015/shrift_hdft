@@ -10,6 +10,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -34,16 +35,16 @@ public class MyClassAdapter extends ClassVisitor {
 		super(p_api, p_cv);
 		this.cn = p_cn;
 		this.className = this.cn.name;
-		this.classWriter = (ClassWriter)p_cv;
+		this.classWriter = (ClassWriter) p_cv;
 
-		try {			
+		try {
 			Method method = ClassLoader.class.getDeclaredMethod(
 					"findLoadedClass", new Class[] { String.class });
 			method.setAccessible(true);
-			
+
 			ClassLoader cl = ClassLoader.getSystemClassLoader();
-			Object clazz = method
-					.invoke(cl, "edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
+			Object clazz = method.invoke(cl,
+					"edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
 			if (clazz == null) {
 				Utility.populatePip(ConfigProperties
 						.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT
@@ -114,12 +115,13 @@ public class MyClassAdapter extends ClassVisitor {
 		// System.out.println("LOC: "+this.className+", "+methNode.name+", "+methNode.instructions.size());
 		// }
 		if ((p_access & Opcodes.ACC_NATIVE) != Opcodes.ACC_NATIVE) {
-			// AdviceAdapter aa = new MyAdviceAdapter(Opcodes.ASM4, mv,
-			// p_access, p_name, p_desc, p_signature, this.className, methNode);
 			JSRInlinerAdapter ja = new JSRInlinerAdapter(mv, p_access, p_name,
 					p_desc, p_signature, p_exceptions);
-			mv = new MyMethodVisitor(Opcodes.ASM4, ja, p_access, p_name,
-					p_desc, p_signature, this.className, methNode, chopNodes, this.classWriter);
+			AdviceAdapter aa = new MyAdviceAdapter(Opcodes.ASM4, ja, p_access,
+					p_name, p_desc, p_signature, this.className, methNode);
+			mv = new MyMethodVisitor(Opcodes.ASM4, aa, p_access, p_name,
+					p_desc, p_signature, this.className, methNode, chopNodes,
+					this.classWriter);
 		}
 		return mv;
 		// }

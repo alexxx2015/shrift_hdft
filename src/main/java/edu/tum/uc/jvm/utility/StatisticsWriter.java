@@ -3,9 +3,9 @@ package edu.tum.uc.jvm.utility;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
@@ -21,103 +21,140 @@ public class StatisticsWriter implements Runnable {
 	private static int totalNumMethods = 0;
 	private static int totalNumBytecode = 0;
 	private static int totalNumClasses = 0;
-	
 
 	private static int totalNumInstrMethods = 0;
 	private static int totalNumInstrBytecode = 0;
 	private static int totalNumInstrClasses = 0;
-	
-	protected static Map<String, List<Long>> runtimeExec = new HashMap<String,List<Long>>();
 
-	StatisticsWriter(String filename, ClassNode cn, byte[] instrumented, long time) {
-		this.filename = filename;
+	private static Map<String, String> runtimeExec = new HashMap<String, String>();
+	private static StringBuilder ToBeDumpedData = new StringBuilder();
+	
+	private static long executionTimeTotal = 0;
+
+	StatisticsWriter(ClassNode cn, byte[] instrumented, long time) {
 		this.classNode = cn;
 		this.instrumented = instrumented;
 		this.time = time;
 	}
+	
+	public static void logRuntimeExection(String event, long totalTime, long networkTime){
+		runtimeExec.put(event, totalTime+","+networkTime);
+	}
+	
+	public static void logExecutionTime(Date start, Date end){
+		executionTimeTotal = end.getTime() - start.getTime();
+	}
+
+	public static void dumpFile(String filename) {
+		File f = new File(filename);
+		FileWriter fw;
+		try {
+			if (!f.getParentFile().exists()) {
+				f.getParentFile().mkdirs();
+				fw = new FileWriter(f);
+			} else {
+				fw = new FileWriter(f, true);
+			}
+			//Add Instrumentationdata
+			StringBuilder sb = new StringBuilder();
+			sb.append("---- INSTRUMENTATION STATISTIC ----\n");
+			sb.append(ToBeDumpedData).append("\n");
+			
+			sb.append("---- RUNTIME STATISTIC ----\n");
+			Iterator<String> runtimeExecIt = runtimeExec.keySet().iterator();
+			long totalTime = 0;
+			long totalNetwork = 0;
+			while(runtimeExecIt.hasNext()){
+				String key = runtimeExecIt.next();
+				String[] time = runtimeExec.get(key).split(",");
+				if(time.length != 2){
+					continue;
+				}
+				sb.append("TotalTime (TT): "+time[0]+" ms, Time Network (TN): "+time[1]+" ms, "+key + "\n");
+				totalTime += Long.valueOf(time[0]);
+				totalNetwork += Long.valueOf(time[1]);
+			}
+			sb.append("=== TT: "+totalTime+" ms, TN: "+totalNetwork+" ms ===\n");
+			sb.append("=== Total Execution Time: "+executionTimeTotal+" ms ===\n");
+			fw.append(sb.toString());
+			fw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	public void run() {
-		// if (this.classNode.name.toLowerCase().contains("org/pec/uc")) {
-			
-			File f = new File(this.filename);
-			FileWriter fw;
-			try {
-				if (!f.getParentFile().exists()) {
-					f.getParentFile().mkdirs();
-					fw = new FileWriter(f);
-				} else {
-					fw = new FileWriter(f, true);
+		// Prepare non-instrumented data
+		int numBytecodes = 0;
+		if (this.classNode.methods != null) {
+			Iterator<MethodNode> it = this.classNode.methods.iterator();
+			while (it.hasNext()) {
+				MethodNode md = it.next();
+				if (md.instructions != null) {
+					numBytecodes += md.instructions.size();
+					this.addTotalNumBytecode(md.instructions.size());
 				}
-				
-				//Prepare non-instrumented data
-				int numBytecodes = 0;
-				if (this.classNode.methods != null) {
-					Iterator<MethodNode> it = this.classNode.methods.iterator();
-					while (it.hasNext()) {
-						MethodNode md = it.next();
-						if (md.instructions != null) {
-							numBytecodes += md.instructions.size();
-							this.addTotalNumBytecode(md.instructions.size());
-						}
-					}
-					this.addTotalNumMethods(this.classNode.methods.size());
-				}				
-				this.addTotalNumClasses(1);
-				
-
-				StringBuilder sb = new StringBuilder("=== ").append("Class:").append(this.classNode.name).append(" ===\n");				
-				
-				//Prepare instrumented-data
-				ClassReader cr = new ClassReader(this.instrumented);
-				ClassNode cnInstrumentd = new ClassNode();
-				cr.accept(cnInstrumentd, 0);
-				int numInstrBytecodes = 0;
-				if(cnInstrumentd.methods != null){
-					Iterator<MethodNode> it = cnInstrumentd.methods.iterator();
-					while(it.hasNext()){
-						MethodNode md = it.next();
-						if(md.instructions != null){		
-							sb.append(">Method: ").append(md.name).append("\n");
-							sb.append("#Bytecodes (instr): ").append(md.instructions.size()).append("\n");
-							Iterator<MethodNode> it2 = this.classNode.methods.iterator();
-							while (it2.hasNext()) {
-								MethodNode md2 = it2.next();
-								if (md2.instructions != null && md.name.equals(md2.name)) {
-									sb.append("#Bytecodes: ").append(md2.instructions.size()).append("\n");
-								}
-							}
-							sb.append("\n");
-							numInstrBytecodes += md.instructions.size();
-							this.addTotalNumInstrBytecode(md.instructions.size());
-						}
-					}
-					this.addTotalNumInstrMethods(cnInstrumentd.methods.size());
-				}
-				this.addTotalNumInstrClasses(1);
-				
-				
-				
-				sb.append("Total #Method: ").append(this.classNode.methods.size())
-						.append("\n");
-				sb.append("Total #Bytecodes: ").append(numBytecodes).append("\n");
-				sb.append("Total #Bytecodes (instrumented): ").append(numInstrBytecodes).append("\n");
-				sb.append("Total time for instrumentation: ").append(this.time).append(" ms").append("\n	===\n");
-//				sb.append("=== ").append("#totalClasses: ")
-//						.append(totalNumClasses).append(", #totalMethod: ")
-//						.append(StatisticsWriter.totalNumMethods)
-//						.append(", #totalByteCode: ").append(totalNumBytecode)
-//						.append(", #totalByteCode (instr): ").append(totalNumInstrBytecode)
-//						.append(", time for instrumentation: ").append(this.time).append(" ms")
-//						.append(" ===\n");
-				fw.append(sb.toString());
-				fw.close();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-//		}
+			this.addTotalNumMethods(this.classNode.methods.size());
+		}
+		this.addTotalNumClasses(1);
+
+		StringBuilder sb = new StringBuilder("=== ").append("Class:")
+				.append(this.classNode.name).append(" ===\n");
+
+		// Prepare instrumented-data
+		ClassReader cr = new ClassReader(this.instrumented);
+		ClassNode cnInstrumentd = new ClassNode();
+		cr.accept(cnInstrumentd, 0);
+		int numInstrBytecodes = 0;
+		if (cnInstrumentd.methods != null) {
+			Iterator<MethodNode> it = cnInstrumentd.methods.iterator();
+			while (it.hasNext()) {
+				MethodNode md = it.next();
+				if (md.instructions != null) {
+					sb.append(">Method: ").append(md.name)
+							.append("\n");
+					sb.append("#Bytecodes (instr): ")
+							.append(md.instructions.size()).append("\n");
+					Iterator<MethodNode> it2 = this.classNode.methods
+							.iterator();
+					while (it2.hasNext()) {
+						MethodNode md2 = it2.next();
+						if (md2.instructions != null
+								&& md.name.equals(md2.name)) {
+							sb.append("#Bytecodes: ")
+									.append(md2.instructions.size())
+									.append("\n");
+						}
+					}
+					sb.append("\n");
+					numInstrBytecodes += md.instructions.size();
+					this.addTotalNumInstrBytecode(md.instructions.size());
+				}
+			}
+			this.addTotalNumInstrMethods(cnInstrumentd.methods.size());
+		}
+		this.addTotalNumInstrClasses(1);
+
+		sb.append("Total #Method: ")
+				.append(this.classNode.methods.size()).append("\n");
+		sb.append("Total #Bytecodes: ").append(numBytecodes)
+				.append("\n");
+		sb.append("Total #Bytecodes (instrumented): ")
+				.append(numInstrBytecodes).append("\n");
+		sb.append("Total time for instrumentation: ")
+				.append(this.time).append(" ms").append("\n===");
+		ToBeDumpedData.append(sb);
+		// sb.append("=== ").append("#totalClasses: ")
+		// .append(totalNumClasses).append(", #totalMethod: ")
+		// .append(StatisticsWriter.totalNumMethods)
+		// .append(", #totalByteCode: ").append(totalNumBytecode)
+		// .append(", #totalByteCode (instr): ").append(totalNumInstrBytecode)
+		// .append(", time for instrumentation: ").append(this.time).append(" ms")
+		// .append(" ===\n");
+		// }
 	}
 
 	synchronized private void addTotalNumBytecode(int i) {
@@ -131,8 +168,6 @@ public class StatisticsWriter implements Runnable {
 	synchronized private void addTotalNumMethods(int i) {
 		this.totalNumMethods += i;
 	}
-	
-
 
 	synchronized private void addTotalNumInstrBytecode(int i) {
 		this.totalNumInstrBytecode += i;
@@ -146,10 +181,10 @@ public class StatisticsWriter implements Runnable {
 		this.totalNumInstrMethods += i;
 	}
 
-	public static void write(String filename, ClassNode cn, byte[] instrumented, long time) {
-		StatisticsWriter sw = new StatisticsWriter(filename, cn, instrumented, time);
+	public static void logInstrumentation(ClassNode cn, byte[] instrumented, long time) {
+		StatisticsWriter sw = new StatisticsWriter(cn, instrumented, time);
 		Thread t = new Thread(sw);
-//		t.start();
+		// t.start();
 		t.run();
 	}
 

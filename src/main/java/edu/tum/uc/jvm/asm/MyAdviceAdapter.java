@@ -24,7 +24,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
 	
 	private boolean isInstance;
 	
-	private Label tcStart, tcEnd, tcHandler;
+	private Label tcStart, tcEnd, tcHandler;	
 
 	protected MyAdviceAdapter(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc, String p_signature, String p_className, MethodNode p_methNode) {
 		super(p_api, p_mv, p_access, p_name, p_desc);
@@ -47,6 +47,25 @@ public class MyAdviceAdapter extends AdviceAdapter {
 //		System.out.println(this.className+", "+this.methodName+", "+this.methNode.access+", "+this.isInstance);
 //		if(this.className.contains("DefaultSystemMessagesProvider") && this.methodName.equals("get"))
 //			this.isInstance = false;
+	}
+	
+	protected void onMethodEnter(){
+		if(this.methodName.equals("main")){
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "startMain",
+					"()V", false);	
+		}
+	}
+	
+	protected void onMethodExit(int opcode){
+		if(this.methodName.equals("main")){			
+//			mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+//			mv.visitLdcInsn("Test");
+//			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V",false);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "endMain",
+					"()V", false);
+		}
 	}
 	
 	protected void _onMethodEnter(){

@@ -1,6 +1,7 @@
 package edu.tum.uc.jvm;
 
 import java.lang.management.ManagementFactory;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,16 +103,17 @@ public class UcCommunicator {
 		// IEvent ievent = new
 		// EventBasic(event.getMethodInvokee(),map,event.isActual());
 		IEvent ievent = new EventBasic(sinkSource, map, event.isActual());
-
+		Date start = new Date();
 		IResponse response = this.pdpClient.notifyEventSync(ievent);
-
+		Date end = new Date();
+		MirrorStack.lastNetworkAccess = end.getTime() - start.getTime();
+		
 		if (response != null)
 			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
 		return false;
 	}
 
 	public boolean sendContextEvent2PDP(Object obj, CreationSite cs) {
-
 		Map<String, String> param = new HashMap<String, String>();
 		param.put("objectId", String.valueOf(obj.hashCode()));
 		param.put("context", cs.getId());

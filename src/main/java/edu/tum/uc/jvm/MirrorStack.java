@@ -26,6 +26,7 @@ import edu.tum.uc.jvm.container.ObjectReference;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.MethEvent;
 import edu.tum.uc.jvm.utility.Mnemonic;
+import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.CreationSite;
 
@@ -40,6 +41,10 @@ public class MirrorStack {
 											// classes are loaded. This variable
 											// is only needed for instrumenting
 											// Java system classes
+	
+	protected static long lastNetworkAccess;
+	
+	private static Date startMain;
 
 	public static enum COMP_TYPE_CAT {
 		COMP_TYPE_CAT_1, COMP_TYPE_CAT_2
@@ -544,8 +549,16 @@ public class MirrorStack {
 	// }
 	// return _return;
 	// }
+	public static void startMain(){//Helper method, sended when the end of main is reached
+		startMain = new Date();
+	}
 	
-	public static void sendKillProcess(){//Helper method, sended when the end of main is reached
+	public static void endMain(){//Helper method, sended when the end of main is reached		
+		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
+		if(!"".equals(statistic)){
+			StatisticsWriter.logExecutionTime(startMain, new Date());			
+			StatisticsWriter.dumpFile(statistic);
+		}
 		ucCom.sendKillProcessEvent2Pdp();
 	}
 	
@@ -556,7 +569,8 @@ public class MirrorStack {
 		// System.out.println("MIRROR STACK " + p_methName);
 		boolean _return = methodInvoked(p_methName);
 		Date end = new Date();
-	
+		long time = end.getTime()-start.getTime();
+		StatisticsWriter.logRuntimeExection(p_methName, time, MirrorStack.lastNetworkAccess);
 		
 		return _return;
 	}

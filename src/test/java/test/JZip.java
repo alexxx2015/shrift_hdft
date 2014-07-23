@@ -116,6 +116,7 @@ public class JZip implements TestIntf {
 						formatter.printHelp("JZip", opt);
 					} else if ("exit".equals(instruction.trim())) {
 						this.run = false;
+						break;
 					} else {
 						String[] myArgs = instruction.split(" ");
 						if (myArgs.length > 0) {
@@ -408,10 +409,6 @@ public class JZip implements TestIntf {
 	@Override
 	public void runtest() {
 		// TODO Auto-generated method stub
-		// main(new String[]{});
-		if (myJZip == null)
-			myJZip = new JZip();
-
-		myJZip.start();
+		 main(new String[]{});
 	}
 }

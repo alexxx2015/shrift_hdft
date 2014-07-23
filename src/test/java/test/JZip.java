@@ -24,7 +24,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class JZip implements TestIntf{
+public class JZip implements TestIntf {
 	List<String> fileList;
 
 	private Properties CONFIGURATION = null;
@@ -103,19 +103,28 @@ public class JZip implements TestIntf{
 					System.in));
 			try {
 				String instruction = br.readLine();
-				System.out.println("READ "+instruction);
-				if ("help".equals(instruction.trim())) {
-					HelpFormatter formatter = new HelpFormatter();
-					formatter.printHelp("JZip", opt);
-				} else if ("exit".equals(instruction.trim())) {
-					this.run = false;
-				} else {
-					String[] myArgs = instruction.split(" ");
-					if (myArgs.length > 0) {
-						myArgs[0] = "-" + myArgs[0];
-						this.parseAndRun(myArgs);
+				do{
+					System.out.println("READ " + instruction);
+					if(instruction == null)
+						continue;
+					if (instruction == null) {
+						this.run = false;
+						continue;
 					}
-				}
+					if ("help".equals(instruction.trim())) {
+						HelpFormatter formatter = new HelpFormatter();
+						formatter.printHelp("JZip", opt);
+					} else if ("exit".equals(instruction.trim())) {
+						this.run = false;
+					} else {
+						String[] myArgs = instruction.split(" ");
+						if (myArgs.length > 0) {
+							myArgs[0] = "-" + myArgs[0];
+							this.parseAndRun(myArgs);
+						}
+					}
+
+				}while((instruction = br.readLine())!= null);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -157,13 +166,15 @@ public class JZip implements TestIntf{
 						sourceFolder = zipValue[1];
 					} else if (zipValue.length == 1) {
 						zipFile = zipValue[0];
-						if ((this.CONFIGURATION != null) && (this.CONFIGURATION.contains("zip-source"))) {
+						if ((this.CONFIGURATION != null)
+								&& (this.CONFIGURATION.contains("zip-source"))) {
 							sourceFolder = this.CONFIGURATION
 									.getProperty("zip-source");
 						}
 					}
 				} else {
-					if ((this.CONFIGURATION != null) && (this.CONFIGURATION.containsKey("zip-source")) ){
+					if ((this.CONFIGURATION != null)
+							&& (this.CONFIGURATION.containsKey("zip-source"))) {
 						sourceFolder = this.CONFIGURATION
 								.getProperty("zip-source");
 					}
@@ -176,22 +187,27 @@ public class JZip implements TestIntf{
 				String unzipFile, unzipDestination = ".";
 				if ((unzipValue != null) && (unzipValue.length > 0)) {
 					unzipFile = unzipValue[0];
-					if ((this.CONFIGURATION != null) && (this.CONFIGURATION.containsKey("unzip-destination"))) {
+					if ((this.CONFIGURATION != null)
+							&& (this.CONFIGURATION
+									.containsKey("unzip-destination"))) {
 						unzipDestination = this.CONFIGURATION
 								.getProperty("unzip-destination");
 					}
 				} else {
 					throw new ParseException("Parameter <file> not found.");
 				}
-				if((this.CONFIGURATION != null) && (this.CONFIGURATION.containsKey("unzip-destination-autogenerate"))){
-					if("true".equals(this.CONFIGURATION.getProperty("unzip-destination-autogenerate").toLowerCase())){
+				if ((this.CONFIGURATION != null)
+						&& (this.CONFIGURATION
+								.containsKey("unzip-destination-autogenerate"))) {
+					if ("true".equals(this.CONFIGURATION.getProperty(
+							"unzip-destination-autogenerate").toLowerCase())) {
 						File f = new File(unzipDestination);
-						if(!f.exists()){
+						if (!f.exists()) {
 							f.mkdirs();
 						}
 					}
 				}
-				 this.unZipIt(unzipFile, unzipDestination);
+				this.unZipIt(unzipFile, unzipDestination);
 			}
 
 		} catch (ParseException e) {
@@ -344,7 +360,7 @@ public class JZip implements TestIntf{
 	}
 
 	private void storeConfig(String file) {
-		try {		
+		try {
 			File f = new File(file);
 			FileOutputStream fos = new FileOutputStream(f);
 			this.CONFIGURATION.store(fos, "JZip configuration dump");
@@ -387,9 +403,15 @@ public class JZip implements TestIntf{
 		}
 	}
 
+	private static JZip myJZip = null;
+
 	@Override
 	public void runtest() {
 		// TODO Auto-generated method stub
-		main(new String[]{});
+		// main(new String[]{});
+		if (myJZip == null)
+			myJZip = new JZip();
+
+		myJZip.start();
 	}
 }

@@ -2,6 +2,7 @@ package edu.tum.uc.jvm;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -549,10 +550,15 @@ public class MirrorStack {
 	}
 	
 	public static boolean methodInvoked(Object o, String p_methName) {
+		Date start = new Date();
 		String fileDescriptor = Utility.extractFileDescriptor(o);
 		p_methName += UcTransformer.STRDELIM + fileDescriptor;
 		// System.out.println("MIRROR STACK " + p_methName);
-		return methodInvoked(p_methName);
+		boolean _return = methodInvoked(p_methName);
+		Date end = new Date();
+	
+		
+		return _return;
 	}
 
 	public static boolean methodInvoked(String p_methName) {

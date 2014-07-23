@@ -3,7 +3,10 @@ package edu.tum.uc.jvm.utility;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -23,6 +26,8 @@ public class StatisticsWriter implements Runnable {
 	private static int totalNumInstrMethods = 0;
 	private static int totalNumInstrBytecode = 0;
 	private static int totalNumInstrClasses = 0;
+	
+	protected static Map<String, List<Long>> runtimeExec = new HashMap<String,List<Long>>();
 
 	StatisticsWriter(String filename, ClassNode cn, byte[] instrumented, long time) {
 		this.filename = filename;

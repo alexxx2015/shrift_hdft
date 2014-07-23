@@ -55,8 +55,16 @@ public class Test_Jzip extends AbstractTest{
 			Class<?> reloadClass = mcl
 					.define("test.JZip", instrumented_bytecode);
 			Object obj = reloadClass.newInstance();
-			test.TestIntf myTest2 = (test.TestIntf) obj;			
-			String instruction = "exit";//"zip /home/alex/test.zip /home/alex/instrumented/";
+			test.TestIntf myTest2 = (test.TestIntf) obj;
+			
+			String instruction = "";
+			URL url = this.getClass().getResource("/toBeZippedFiles");
+			if(url != null){
+				File f = new File(url.getFile());
+				instruction = "zip "+f.getParent()+"/toBeZipped.zip "+f.getAbsolutePath()+"/";
+			}
+			
+			instruction += "\n exit";
 			InputStream is2 = System.in;
 			System.setIn(new ByteArrayInputStream(instruction.getBytes()));			
 			myTest2.runtest();

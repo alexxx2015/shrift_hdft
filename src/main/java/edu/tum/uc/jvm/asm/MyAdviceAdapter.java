@@ -50,7 +50,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
 	}
 	
 	protected void onMethodEnter(){
-		if(this.methodName.equals("main")){
+		if(this.methodName.equals("main") || this.methodName.equals("getData")){
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 					UcTransformer.HOOKMETHOD, "startMain",
 					"()V", false);	
@@ -58,7 +58,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
 	}
 	
 	protected void onMethodExit(int opcode){
-		if(this.methodName.equals("main")){			
+		if(this.methodName.equals("main") || this.methodName.equals("getData")){			
 //			mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
 //			mv.visitLdcInsn("Test");
 //			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V",false);

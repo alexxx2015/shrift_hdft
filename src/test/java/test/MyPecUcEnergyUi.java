@@ -25,7 +25,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 
-public class MyTest2 implements TestIntf {
+public class MyPecUcEnergyUi implements TestIntf {
 	static String ip = "localhost:80";// "93.186.13.243:29003";
 	static String gatewayIP = "192.168.0.225";
 	// http://localhost:80/gateways/192.168.0.225/devices/00:13:A2:00:40:9C:5A:04/sensors/59555bf7-64d9-3462-aec4-4fb2a2d7ed49/values?limit=20
@@ -35,19 +35,19 @@ public class MyTest2 implements TestIntf {
 	static HashMap<String, String> mac2device = new HashMap<String, String>();
 
 	public void getData() {
-		String sensorUuid = "59555bf7-64d9-3462-aec4-4fb2a2d7ed49";
+ 		String sensorUuid = "59555bf7-64d9-3462-aec4-4fb2a2d7ed49";
 		String mac = "00:13:A2:00:40:9C:5A:04";
-		JSONObject measure = this.showLastNValueDeviceSensor(MyTest2.ip,
-				MyTest2.gatewayIP, mac, sensorUuid, 20);
+		JSONObject measure = this.showLastNValueDeviceSensor(MyPecUcEnergyUi.ip,
+				MyPecUcEnergyUi.gatewayIP, mac, sensorUuid, 20);
 		JSONArray sensor_values = (JSONArray) measure.get("sensor_values");
 		for (int j = 0; j < sensor_values.size(); j++)
 			this.writeConsumption((JSONObject) sensor_values.get(j),
-					MyTest2.gatewayIP, mac, sensorUuid);
+					MyPecUcEnergyUi.gatewayIP, mac, sensorUuid);
 	}
 
 	public void writeConsumption(JSONObject p_value, String p_gateway,
 			String p_device, String p_sensor) {
-		String dirStr = "./" + p_gateway.replace(".", "_") + "/mrData/"
+		String dirStr = p_gateway.replace(".", "_") + "/mrData/"
 				+ p_device.replace(":", "_");
 		File dir = new File(dirStr);
 		if (!dir.isDirectory()) {
@@ -66,7 +66,6 @@ public class MyTest2 implements TestIntf {
 			e1.printStackTrace();
 		}
 		File f = new File(fileName);
-		if (!f.exists()) {
 			try {
 				// f.createNewFile();
 				FileWriter fos = new FileWriter(f);
@@ -76,7 +75,6 @@ public class MyTest2 implements TestIntf {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
 	}
 
 	public JSONObject showLastNValueDeviceSensor(String p_ip,

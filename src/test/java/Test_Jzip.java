@@ -59,7 +59,7 @@ public class Test_Jzip extends AbstractTest {
 			Object obj = reloadClass.newInstance();
 			test.TestIntf myTest2 = (test.TestIntf) obj;
 
-			for (int i = 0; i < 50; i++) {
+			for (int i = 0; i < 1; i++) {
 				String instruction = "";
 				URL url = this.getClass().getResource("/toBeZippedFiles");
 				if (url != null) {

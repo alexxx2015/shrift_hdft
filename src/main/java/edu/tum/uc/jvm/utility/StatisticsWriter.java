@@ -26,19 +26,23 @@ public class StatisticsWriter implements Runnable {
 	private static int totalNumInstrBytecode = 0;
 	private static int totalNumInstrClasses = 0;
 
-	private static Map<String, Long> runtimeTotalExec = new HashMap<String, Long>();
-	private static Map<String, Long> runtimeNetworkExec = new HashMap<String, Long>();
+	private static Map<String, Long> executionTimeT3 = new HashMap<String, Long>();// Per
+																					// Source/Sink
+	private static Map<String, Long> executionTimeT4 = new HashMap<String, Long>();// Native
+																					// Execution
+	private static Map<String, Long> executionTimeT5 = new HashMap<String, Long>();// Network
 	private static StringBuilder ToBeDumpedData = new StringBuilder();
-	
-	private static long executionTimeTotal = 0;
+
+	private static long executionTimeT1 = 0;
+	private static long executionTimerT2 = 0;
 
 	StatisticsWriter(ClassNode cn, byte[] instrumented, long time) {
 		this.classNode = cn;
 		this.instrumented = instrumented;
 		this.time = time;
 	}
-	
-	public static void clear(){
+
+	public static void clear() {
 		totalNumMethods = 0;
 		totalNumBytecode = 0;
 		totalNumClasses = 0;
@@ -47,25 +51,39 @@ public class StatisticsWriter implements Runnable {
 		totalNumInstrBytecode = 0;
 		totalNumInstrClasses = 0;
 
-		runtimeTotalExec = new HashMap<String, Long>();
-		runtimeNetworkExec = new HashMap<String, Long>();
+		executionTimeT3 = new HashMap<String, Long>();
+		executionTimeT5 = new HashMap<String, Long>();
 		ToBeDumpedData = new StringBuilder();
-		
-		executionTimeTotal = 0;
+
+		executionTimeT1 = 0;
 	}
-	
-	public static void logRuntimeExection(String event, long totalTime, long networkTime){		
-		if(runtimeTotalExec.containsKey(event))
-			totalTime += runtimeTotalExec.get(event);
-		runtimeTotalExec.put(event, totalTime);
-		
-		if(runtimeNetworkExec.containsKey(event))
-			networkTime += runtimeNetworkExec.get(event);
-		runtimeNetworkExec.put(event, networkTime);
+
+	public static void logExecutionTimerT1(long start, long end) {
+		executionTimeT1 = end - start;
+		// System.out.println("Execution "+executionTimeTotal+", Start "+start+", End "+end);
 	}
-	
-	public static void logExecutionTime(long start, long end){
-		executionTimeTotal = end - start;
+
+	public static void logExectionTimerT2(long start, long end) {
+		executionTimerT2 += end - start;
+		// System.out.println("Execution "+executionTimeTotal+", Start "+start+", End "+end);
+	}
+
+	public static void logExecutionTimerT3(String event, long totalTime) {
+		if (executionTimeT3.containsKey(event))
+			totalTime += executionTimeT3.get(event);
+		executionTimeT3.put(event, totalTime);
+	}
+
+	public static void logExecutionTimerT4(String event, long totalTime) {
+		if (executionTimeT4.containsKey(event))
+			totalTime += executionTimeT4.get(event);
+		executionTimeT4.put(event, totalTime);
+	}
+
+	public static void logExecutionTimerT5(String event, long networkTime) {
+		if (executionTimeT5.containsKey(event))
+			networkTime += executionTimeT5.get(event);
+		executionTimeT5.put(event, networkTime);
 	}
 
 	public static void dumpFile(String filename) {
@@ -78,25 +96,31 @@ public class StatisticsWriter implements Runnable {
 			} else {
 				fw = new FileWriter(f, true);
 			}
-			//Add Instrumentationdata
+			// Add Instrumentationdata
 			StringBuilder sb = new StringBuilder();
 			sb.append("---- INSTRUMENTATION STATISTIC ----\n");
 			sb.append(ToBeDumpedData).append("\n");
-			
+
 			sb.append("---- RUNTIME STATISTIC ----\n");
-			Iterator<String> runtimeExecIt = runtimeTotalExec.keySet().iterator();
-			long totalTime = 0;
-			long totalNetwork = 0;
-			while(runtimeExecIt.hasNext()){
+			Iterator<String> runtimeExecIt = executionTimeT3.keySet()
+					.iterator();
+			long timer3 = 0;
+			long timer4 = 0;
+			long timer5 = 0;
+			while (runtimeExecIt.hasNext()) {
 				String key = runtimeExecIt.next();
-				long t1 = runtimeTotalExec.get(key);
-				long t2 = runtimeNetworkExec.get(key);
-				sb.append("TotalTime (TT): "+t1+" ms, Time Network (TN): "+t2+" ms, "+key + "\n");
-				totalTime += t1;
-				totalNetwork += t2;
+				long t3 = executionTimeT3.get(key);
+				long t4 = executionTimeT4.get(key);
+				long t5 = executionTimeT5.get(key);
+				sb.append("Timer 3: " + t3 + " ns, Timer 4: " + t4
+						+ " ns, Timer 5:" + t5 + " ns, " + key + "\n");
+				timer3 += t3;
+				timer4 += t4;
+				timer5 += t5;
 			}
-			sb.append("=== TT: "+totalTime+" ms, TN: "+totalNetwork+" ms ===\n");
-			sb.append("=== Total Execution Time: "+executionTimeTotal+" ms ===\n");
+			sb.append("=== Timer3 total: " + timer3 + " ns, Timer4 total: "
+					+ timer4 + " ns, Timer5 total: " + timer5 + " ns ===\n");
+			sb.append("===Timer1 total: " + executionTimeT1+" ns, Timer2 total: "+executionTimerT2+" ns===\n");
 			fw.append(sb.toString());
 			fw.close();
 		} catch (IOException e) {
@@ -135,8 +159,7 @@ public class StatisticsWriter implements Runnable {
 			while (it.hasNext()) {
 				MethodNode md = it.next();
 				if (md.instructions != null) {
-					sb.append(">Method: ").append(md.name)
-							.append("\n");
+					sb.append(">Method: ").append(md.name).append("\n");
 					sb.append("#Bytecodes (instr): ")
 							.append(md.instructions.size()).append("\n");
 					Iterator<MethodNode> it2 = this.classNode.methods
@@ -159,14 +182,13 @@ public class StatisticsWriter implements Runnable {
 		}
 		this.addTotalNumInstrClasses(1);
 
-		sb.append("Total #Method: ")
-				.append(this.classNode.methods.size()).append("\n");
-		sb.append("Total #Bytecodes: ").append(numBytecodes)
+		sb.append("Total #Method: ").append(this.classNode.methods.size())
 				.append("\n");
+		sb.append("Total #Bytecodes: ").append(numBytecodes).append("\n");
 		sb.append("Total #Bytecodes (instrumented): ")
 				.append(numInstrBytecodes).append("\n");
-		sb.append("Total time for instrumentation: ")
-				.append(this.time).append(" ms").append("\n===");
+		sb.append("Total time for instrumentation: ").append(this.time)
+				.append(" ns").append("\n===");
 		ToBeDumpedData.append(sb);
 		// sb.append("=== ").append("#totalClasses: ")
 		// .append(totalNumClasses).append(", #totalMethod: ")
@@ -202,7 +224,8 @@ public class StatisticsWriter implements Runnable {
 		this.totalNumInstrMethods += i;
 	}
 
-	public static void logInstrumentation(ClassNode cn, byte[] instrumented, long time) {
+	public static void logInstrumentation(ClassNode cn, byte[] instrumented,
+			long time) {
 		StatisticsWriter sw = new StatisticsWriter(cn, instrumented, time);
 		Thread t = new Thread(sw);
 		// t.start();

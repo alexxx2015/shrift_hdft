@@ -51,6 +51,11 @@ public class StaticAnalysis {
 	 * and output=null
 	 */
 	public static List<SinkSource> getType(String fullyQualifiedName, int offset) {
+		if(fullyQualifiedName.contains("zipIt")){
+			int u = 0;
+			u++;
+		}
+		
 		List<SinkSource> _return = new LinkedList<SinkSource>();
 		
 		Iterator <SinkSource> it = reportreader.getSinks().iterator();

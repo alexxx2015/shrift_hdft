@@ -435,9 +435,23 @@ public class MyMethodVisitor extends MethodVisitor {
 		if (p_opcode != Opcodes.INVOKESTATIC) {
 			String d_desc = Utility.createHelperMethod(p_opcode, p_owner,
 					p_name, p_desc, cv, this.className, sors);
+			Boolean b = new Boolean(
+					ConfigProperties
+							.getProperty(ConfigProperties.PROPERTIES.TIMER_T2
+									.toString()));
+			if (b) {
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+						UcTransformer.HOOKMETHOD, "timerT2Start", "()V", false);
+			}
+			
 			mv.visitLdcInsn(invokerFQN);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 					this.className.replace(".", "/"), p_name, d_desc, false);
+
+			if (b) {
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+						UcTransformer.HOOKMETHOD, "timerT2Stop", "()V", false);
+			}
 			// mv.visitLdcInsn(invokerFQN);
 			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 			// UcTransformer.HOOKMETHOD,

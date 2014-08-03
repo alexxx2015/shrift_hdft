@@ -14,11 +14,16 @@ public final class ConfigProperties {
 		, PDP_PORT, PDP_HOST
 		, PIP_PORT, PIP_HOST
 		, MYPEP_HOST, MYPEP_PORT
-		, INSTREMENTED_CLASS_PATH
+		, INSTRUMENTED_CLASS_PATH
 		, ENFORCEMENT
 		, STATISTICS
 		, BLACKLIST
 		, INSTRUMENTATION
+		, TIMER_T1
+		, TIMER_T2
+		, TIMER_T3
+		, TIMER_T4
+		, TIMER_T5
 	}
 	
 	private static Properties CONFIGURATION = null;	
@@ -26,8 +31,11 @@ public final class ConfigProperties {
 	
 	public static String getProperty(String property){
 		if(CONFIGURATION == null){
-			URL ucConfig = ConfigProperties.class.getResource("/uc.config");			
-			File f = new File(ucConfig.getFile());		
+			URL ucConfig = ConfigProperties.class.getResource("/uc.config");
+			File f = new File("./uc.config");
+			if(ucConfig != null){
+				f = new File(ucConfig.getFile());
+			}
 //			File f = new File("./uc.config");
 			if(f.exists()){
 				try {

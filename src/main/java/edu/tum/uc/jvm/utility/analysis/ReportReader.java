@@ -43,17 +43,17 @@ public class ReportReader {
 	}
 
 	public void readReport(String filename) throws Exception {
-		try{
-		if (this.reader == null) {
-			this.reader = new SAXHandler();
-		}
+		try {
+			if (this.reader == null) {
+				this.reader = new SAXHandler();
+			}
 
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		File report = new File(filename);
-		System.out.println("READING REPORT "+report.getAbsolutePath());
-		factory.newSAXParser().parse(report, this.reader);
-		}catch(Exception e){
-			System.out.println("ERROR "+e.getMessage());
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			File report = new File(filename);
+			// System.out.println("READING REPORT "+report.getAbsolutePath());
+			factory.newSAXParser().parse(report, this.reader);
+		} catch (Exception e) {
+			System.out.println("ERROR " + e.getMessage());
 		}
 	}
 
@@ -191,11 +191,11 @@ public class ReportReader {
 				throws SAXException {
 			// SOURCES
 			if (TAG_SOURCES.equals(qname)) {
-				System.out.println("DONE "+qname);
+				// System.out.println("DONE "+qname);
 			}
 			// SINKS
 			else if (TAG_SINKS.equals(qname)) {
-				System.out.println("DONE "+qname);
+				// System.out.println("DONE "+qname);
 			}
 			// FLOWS
 			else if (TAG_FLOWS.equals(qname)) {
@@ -240,13 +240,13 @@ public class ReportReader {
 			else if (TAG_CONTEXT.equals(qname)) {
 				this.context = false;
 			}
-			//CREATION-SITE
-			else if (TAG_CREATION_SITE.equals(qname)){
+			// CREATION-SITE
+			else if (TAG_CREATION_SITE.equals(qname)) {
 				creationSites.add(this.currentCreationSite);
 			}
 			// CREATION-SITES
 			else if (TAG_CREATION_SITES.equals(qname)) {
-				System.out.println("Creation-side end");
+				// System.out.println("Creation-side end");
 			}
 		}
 	}

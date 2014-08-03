@@ -2,7 +2,6 @@ package edu.tum.uc.jvm;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,11 +9,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.UUID;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.tum.uc.jvm.container.ArithResult;
 import edu.tum.uc.jvm.container.ArrayField;
@@ -32,7 +28,8 @@ import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.CreationSite;
 
 public class MirrorStack {
-	private static Logger _logger = LoggerFactory.getLogger(MirrorStack.class);
+	// private static Logger _logger =
+	// LoggerFactory.getLogger(MirrorStack.class);
 
 	private static Stack<Container> Stack = new Stack<Container>();
 
@@ -42,10 +39,11 @@ public class MirrorStack {
 											// classes are loaded. This variable
 											// is only needed for instrumenting
 											// Java system classes
-	
-	protected static long lastNetworkAccess;
-	
-	private static long startMain;
+
+	private static long TIMER_T1;// START-END of MAIN-Method
+	private static long TIMER_T2;// Complete Source/Sink execution
+	protected static long TIMER_T4;
+	protected static long TIMER_T5;
 
 	public static enum COMP_TYPE_CAT {
 		COMP_TYPE_CAT_1, COMP_TYPE_CAT_2
@@ -58,7 +56,44 @@ public class MirrorStack {
 
 	private static Stack<CreationSite> creationSiteScopes = new Stack<CreationSite>();
 	protected static Map<String, String> contextToObject = new HashMap<String, String>();
-	
+
+	public static void timerT1Start() {
+		TIMER_T1 = System.currentTimeMillis();
+	}
+
+	public static void timerT1Stop() {
+		StatisticsWriter.logExecutionTimerT1(TIMER_T1, System.nanoTime());
+		String statistic = ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
+		if (!"".equals(statistic)) {
+			StatisticsWriter.dumpFile(statistic);
+		}
+	}
+
+	public static void timerT2Start() {
+		TIMER_T2 = System.nanoTime();
+	}
+
+	public static void timerT2Stop() {
+		StatisticsWriter.logExectionTimerT2(TIMER_T2, System.nanoTime());
+	}
+
+	public static void timerT4Start() {
+		TIMER_T4 = System.nanoTime();
+	}
+
+	public static void timerT4Stop() {
+		TIMER_T4 = System.nanoTime() - TIMER_T4;
+	}
+
+	public static void timerT5Start() {
+		TIMER_T5 = System.nanoTime();
+	}
+
+	public static void timerT5Stop() {
+		TIMER_T5 = System.nanoTime() - TIMER_T5;
+	}
+
 	public static void pushCreationSiteScope(String creationSite) {
 		// [0] = id
 		// [1] = location
@@ -91,7 +126,7 @@ public class MirrorStack {
 					&& cs_old.getOffset() <= cs.getOffset()
 					&& cs_old.getId().equals(cs.getId())) {
 				contextToObject.put(cs.getId(), String.valueOf(obj.hashCode()));
-//				ucCom.sendContextEvent2PDP(obj, cs);
+				// ucCom.sendContextEvent2PDP(obj, cs);
 			}
 		} catch (Exception e) {
 		}
@@ -105,7 +140,7 @@ public class MirrorStack {
 				// if(c.getName().equals(p_varName)){
 				// Stack.push(c);
 				// }else{
-				_logger.info("LOAD {}", p_varName);
+				// _logger.info("LOAD {}", p_varName);
 				String[] varNameComp = p_varName.split(":");
 				if (varNameComp.length >= 2) {
 					LocalVariable lv = new LocalVariable(varNameComp[0]);
@@ -129,7 +164,7 @@ public class MirrorStack {
 	public static void storeVar(String p_var) {
 		if (MirrorStack.lock()) {
 			try {
-				_logger.info("STORE {}", p_var);
+				// _logger.info("STORE {}", p_var);
 				String[] varComp = p_var.split(":");
 				if (varComp.length >= 2) {
 					Container c = Stack.pop();
@@ -173,7 +208,7 @@ public class MirrorStack {
 	public static void putStaticField(String p_field) {
 		if (MirrorStack.lock()) {
 			try {
-				_logger.info("PutStaticField {}", p_field);
+				// _logger.info("PutStaticField {}", p_field);
 				String[] fieldComp = p_field.split(":");
 				if (fieldComp.length >= 2) {
 					Container c = Stack.pop();
@@ -209,7 +244,7 @@ public class MirrorStack {
 
 	public static void getStaticField(String p_field) {
 		if (MirrorStack.lock()) {
-			_logger.info("GetStaticField {}", p_field);
+			// _logger.info("GetStaticField {}", p_field);
 			String[] fieldComp = p_field.split(":");
 			if (fieldComp.length >= 2) {
 				Field f = new Field(fieldComp[0], true);
@@ -231,7 +266,7 @@ public class MirrorStack {
 
 	public static void putField(String p_field) {
 		if (MirrorStack.lock()) {
-			_logger.info("PutField {}", p_field);
+			// _logger.info("PutField {}", p_field);
 			try {
 				String[] fieldComp = p_field.split(":");
 				if (fieldComp.length >= 2) {
@@ -270,7 +305,7 @@ public class MirrorStack {
 
 	public static void getField(String p_field) {
 		if (MirrorStack.lock()) {
-			_logger.info("GetField {}", p_field);
+			// _logger.info("GetField {}", p_field);
 			String[] fieldComp = p_field.split(":");
 			if (fieldComp.length >= 2) {
 				// Pop "this"-reference from mirror stack
@@ -295,7 +330,7 @@ public class MirrorStack {
 	// *** Const ***
 	public static void constLoad(String p_const) {
 		if (MirrorStack.lock()) {
-			_logger.info("LoadConst {}", p_const);
+			// _logger.info("LoadConst {}", p_const);
 			String[] constComp = p_const.split(":");
 			if (constComp.length >= 2) {
 				// ConstInstr c = new ConstInstr(constComp[1]);
@@ -319,7 +354,7 @@ public class MirrorStack {
 
 	public static void ldcConstLoad(String p_const) {
 		if (MirrorStack.lock()) {
-			_logger.info("LDC {}", p_const);
+			// _logger.info("LDC {}", p_const);
 			String[] constComp = p_const.split(":");
 			if (constComp.length >= 2) {
 				ConstInstr c = new ConstInstr(constComp[1]);
@@ -354,7 +389,7 @@ public class MirrorStack {
 	public static boolean methodEntered(String p_methName) {
 		boolean _return = true;
 		if (MirrorStack.lock()) {
-			_logger.info("MethodEntered {}", p_methName);
+			// _logger.info("MethodEntered {}", p_methName);
 			try {
 				// p_opcode+":"+this.getFullName()+":"+p_owner+"/"+p_name+":"+argT.length+":"+retT
 				String[] s = p_methName.split(":");
@@ -416,7 +451,7 @@ public class MirrorStack {
 
 	public static void methodExit(String p_methName) {
 		if (MirrorStack.lock()) {
-			_logger.info("MethodExit {}", p_methName);
+			// _logger.info("MethodExit {}", p_methName);
 			final String delim = UcTransformer.STRDELIM;
 			MethEvent event = new MethEvent(MethEvent.Type.END);
 			String[] methNameCmp = p_methName.split(delim);
@@ -528,7 +563,7 @@ public class MirrorStack {
 		if ((methNameCmp.length >= 7) && (methNameCmp[6] != null)) {
 			event.setSinkSource(methNameCmp[6]);
 		}
-		//Context ids
+		// Context ids
 		if ((methNameCmp.length >= 8) && (methNameCmp[7] != null)) {
 			event.addContextIds(methNameCmp[7]);
 		}
@@ -550,28 +585,53 @@ public class MirrorStack {
 	// }
 	// return _return;
 	// }
-	public static void startMain(){//Helper method, sended when the end of main is reached
-		startMain = System.currentTimeMillis();
-	}
-	
-	public static void endMain(){//Helper method, sended when the end of main is reached		
-		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
-		if(!"".equals(statistic)){
-			StatisticsWriter.logExecutionTime(startMain, System.currentTimeMillis());			
-			StatisticsWriter.dumpFile(statistic);
-		}
+
+	public static void endMain() {// Helper method, sended when the end of main
+									// is reached
 		ucCom.sendKillProcessEvent2Pdp();
 	}
-	
+
 	public static boolean methodInvoked(Object o, String p_methName) {
-		long start = System.currentTimeMillis();
-		String fileDescriptor = Utility.extractFileDescriptor(o);
-		p_methName += UcTransformer.STRDELIM + fileDescriptor;
-		// System.out.println("MIRROR STACK " + p_methName);
-		boolean _return = methodInvoked(p_methName);
-		long end = System.currentTimeMillis();
-		StatisticsWriter.logRuntimeExection(p_methName, end-start, MirrorStack.lastNetworkAccess);
-		
+		boolean _return;
+		Boolean b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3
+								.toString()));
+		if (b) {
+			long start = System.nanoTime();
+			String fileDescriptor = Utility.extractFileDescriptor(o);
+			p_methName += UcTransformer.STRDELIM + fileDescriptor;
+			// System.out.println("MIRROR STACK " + p_methName);
+			_return = methodInvoked(p_methName);
+			StatisticsWriter.logExecutionTimerT3(p_methName, System.nanoTime()
+					- start);
+		} else {
+			String fileDescriptor = Utility.extractFileDescriptor(o);
+			p_methName += UcTransformer.STRDELIM + fileDescriptor;
+			// System.out.println("MIRROR STACK " + p_methName);
+			_return = methodInvoked(p_methName);
+		}
+
+		// Timer T4
+		b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T4
+								.toString()));
+		if (b) {
+			StatisticsWriter.logExecutionTimerT4(p_methName,
+					MirrorStack.TIMER_T4);
+		}
+
+		// Timer T5
+		b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T5
+								.toString()));
+		if (b) {
+			StatisticsWriter.logExecutionTimerT5(p_methName,
+					MirrorStack.TIMER_T5);
+		}
+
 		return _return;
 	}
 
@@ -579,7 +639,7 @@ public class MirrorStack {
 		// System.out.println("METHODINVOKED: "+p_methName);
 		boolean _return = true;
 		if (MirrorStack.lock()) {
-			_logger.info("MethodInvoked {}", p_methName);
+			// _logger.info("MethodInvoked {}", p_methName);
 			MethEvent event = MirrorStack.createMethEventFromString(p_methName);
 			String e = ConfigProperties
 					.getProperty(ConfigProperties.PROPERTIES.ENFORCEMENT
@@ -615,18 +675,49 @@ public class MirrorStack {
 	// }
 
 	public static void methodExited(Object o, String p_methName) {
-		long start = System.currentTimeMillis();
-		String fileDescriptor = Utility.extractFileDescriptor(o);
-		p_methName += UcTransformer.STRDELIM + fileDescriptor;
-		// System.out.println("MIRROR STACK " + p_methName);
-		methodExited(p_methName);
-		long end = System.currentTimeMillis();
-		StatisticsWriter.logRuntimeExection(p_methName, end-start, MirrorStack.lastNetworkAccess);
+		Boolean b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3
+								.toString()));
+		if (b) {
+			long start = System.nanoTime();
+			String fileDescriptor = Utility.extractFileDescriptor(o);
+			p_methName += UcTransformer.STRDELIM + fileDescriptor;
+			// System.out.println("MIRROR STACK " + p_methName);
+			methodExited(p_methName);
+			StatisticsWriter.logExecutionTimerT3(p_methName, System.nanoTime()
+					- start);
+		} else {
+			String fileDescriptor = Utility.extractFileDescriptor(o);
+			p_methName += UcTransformer.STRDELIM + fileDescriptor;
+			// System.out.println("MIRROR STACK " + p_methName);
+			methodExited(p_methName);
+		}
+
+		// Timer T4
+		b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T4
+								.toString()));
+		if (b) {
+			StatisticsWriter.logExecutionTimerT4(p_methName,
+					MirrorStack.TIMER_T4);
+		}
+
+		// Timer T5
+		b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T5
+								.toString()));
+		if (b) {
+			StatisticsWriter.logExecutionTimerT5(p_methName,
+					MirrorStack.TIMER_T5);
+		}
 	}
 
 	public static void methodExited(String p_methName) {
 		if (MirrorStack.lock()) {
-			_logger.info("MethodExited {}", p_methName);
+			// _logger.info("MethodExited {}", p_methName);
 			final String delim = UcTransformer.STRDELIM;
 
 			MethEvent event = MirrorStack.createMethEventFromString(p_methName);
@@ -705,7 +796,7 @@ public class MirrorStack {
 	public static void arithInstr(String p_arithInstr) {
 		if (MirrorStack.lock()) {
 			try {
-				_logger.info("ArtihInstr {}", p_arithInstr);
+				// _logger.info("ArtihInstr {}", p_arithInstr);
 				String[] arithInstrComp = p_arithInstr.split(":");
 				if (arithInstrComp.length >= 2) {
 					Container c1 = Stack.pop(), c2 = Stack.pop();
@@ -744,7 +835,7 @@ public class MirrorStack {
 	public static void popInstr() {
 		if (MirrorStack.lock()) {
 			try {
-				_logger.info("POP-Instr");
+				// _logger.info("POP-Instr");
 				Stack.pop();
 			} catch (EmptyStackException e) {
 			} finally {
@@ -752,12 +843,12 @@ public class MirrorStack {
 			}
 			MirrorStack.unlock();
 		}
-	}	
+	}
 
 	// *** Branch instruction ***
 	public static void ifInstr(String p_ifInstr) {
 		if (MirrorStack.lock()) {
-			_logger.info("If-Instr {}", p_ifInstr);
+			// _logger.info("If-Instr {}", p_ifInstr);
 			try {
 				String[] ifInstrComp = p_ifInstr.split(":");
 				if (ifInstrComp.length >= 2) {
@@ -790,7 +881,7 @@ public class MirrorStack {
 	// *** Array intruction ***
 	public static void storeArrayVar(String p_var) {
 		if (MirrorStack.lock()) {
-			_logger.info("StoreArr {}", p_var);
+			// _logger.info("StoreArr {}", p_var);
 			try {
 				String[] varComp = p_var.split(":");
 				if (varComp.length >= 2) {
@@ -831,7 +922,7 @@ public class MirrorStack {
 
 	public static void loadArrayVar(String p_var) {
 		if (MirrorStack.lock()) {
-			_logger.info("LoadArr {}", p_var);
+			// _logger.info("LoadArr {}", p_var);
 			String[] varComp = p_var.split(":");
 			if (varComp.length >= 2) {
 				try {
@@ -859,7 +950,7 @@ public class MirrorStack {
 
 	public static void newArray(String p_arr) {
 		if (MirrorStack.lock()) {
-			_logger.info("NewArr {}", p_arr);
+			// _logger.info("NewArr {}", p_arr);
 			try {
 				String[] arrComp = p_arr.split(":");
 				if (arrComp.length >= 3) {
@@ -888,7 +979,7 @@ public class MirrorStack {
 
 	public static void newInstr(String p_new) {
 		if (MirrorStack.lock()) {
-			_logger.info("New {}", p_new);
+			// _logger.info("New {}", p_new);
 			String[] newComp = p_new.split(":");
 			if (newComp.length >= 3) {
 				// System.out.println("NEWINSTR "+p_new);
@@ -914,7 +1005,7 @@ public class MirrorStack {
 
 	public static void lengthArray() {
 		if (MirrorStack.lock()) {
-			_logger.info("Length-Instr");
+			// _logger.info("Length-Instr");
 			try {
 				Container c = Stack.pop();
 				ConstInstr cInstr = new ConstInstr(c.getName() + "_length");
@@ -928,7 +1019,7 @@ public class MirrorStack {
 
 	public static void swapInstr() {
 		if (MirrorStack.lock()) {
-			_logger.info("SWAP-Instr");
+			// _logger.info("SWAP-Instr");
 			try {
 				Container c1 = Stack.pop(), c2 = Stack.pop();
 				Stack.push(c1);
@@ -942,7 +1033,7 @@ public class MirrorStack {
 
 	public static void dupInstr() {
 		if (MirrorStack.lock()) {
-			_logger.info("Dup-Instr");
+			// _logger.info("Dup-Instr");
 			try {
 				Container c1 = Stack.pop();
 				Stack.push(c1);
@@ -955,7 +1046,7 @@ public class MirrorStack {
 
 	public static void dupX1Instr() {
 		if (MirrorStack.lock()) {
-			_logger.info("DupX1-Instr");
+			// _logger.info("DupX1-Instr");
 			try {
 				Container c1 = Stack.pop(), c2 = Stack.pop();
 				Stack.push(c1);
@@ -969,7 +1060,7 @@ public class MirrorStack {
 
 	public static void dupX2Instr() {
 		if (MirrorStack.lock()) {
-			_logger.info("DubX2-Instr");
+			// _logger.info("DubX2-Instr");
 			try {
 				Container c1 = Stack.pop(), c2 = Stack.pop();
 				if ((MirrorStack.getCompType(c1.getOpcode()) == COMP_TYPE_CAT.COMP_TYPE_CAT_1)
@@ -992,7 +1083,7 @@ public class MirrorStack {
 
 	public static void dup2Instr() {
 		if (MirrorStack.lock() == true) {
-			_logger.info("Dup2-Instr");
+			// _logger.info("Dup2-Instr");
 			try {
 				Container c1 = Stack.pop();
 				if (MirrorStack.getCompType(c1.getOpcode()) == COMP_TYPE_CAT.COMP_TYPE_CAT_2) {
@@ -1013,7 +1104,7 @@ public class MirrorStack {
 
 	public static void dup2X1Instr() {
 		if (MirrorStack.lock()) {
-			_logger.info("Dup2X1-Instr");
+			// _logger.info("Dup2X1-Instr");
 			try {
 				Container c1 = Stack.pop(), c2 = Stack.pop();
 				if ((MirrorStack.getCompType(c1.getOpcode()) == COMP_TYPE_CAT.COMP_TYPE_CAT_2)
@@ -1037,7 +1128,7 @@ public class MirrorStack {
 
 	public static void dup2X2Instr() {
 		if (MirrorStack.lock()) {
-			_logger.info("Dup2X2-Instr");
+			// _logger.info("Dup2X2-Instr");
 			try {
 				Container c1 = Stack.pop(), c2 = Stack.pop();
 				if ((MirrorStack.getCompType(c1.getOpcode()) == COMP_TYPE_CAT.COMP_TYPE_CAT_2)

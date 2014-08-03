@@ -5,7 +5,6 @@ import java.lang.instrument.IllegalClassFormatException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import edu.tum.uc.jvm.UcTransformer;

@@ -17,7 +17,7 @@ public abstract class AbstractTest {
 	protected static int PMP_SERVER_PORT = 40012;
 	protected static int ANY_SERVER_PORT = 40013;
 
-	protected void copyConfigFile(String filename) throws Exception{
+	protected void copyConfigFile(String filename) throws Exception {
 		URL url = this.getClass().getResource(filename);
 		if (url != null) {
 			File input = new File(url.getFile());
@@ -58,7 +58,7 @@ public abstract class AbstractTest {
 				"--" + CommandLineOptions.OPTION_LOCAL_PMP_LISTENER_PORT_LONG,
 				Integer.toString(pmpServerPort),
 				"--" + CommandLineOptions.OPTION_LOCAL_ANY_LISTENER_PORT_LONG,
-				Integer.toString(ANY_SERVER_PORT), };
+				Integer.toString(ANY_SERVER_PORT) };
 
 		box = new Controller(args);
 		box.start();

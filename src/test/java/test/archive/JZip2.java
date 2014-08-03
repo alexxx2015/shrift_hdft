@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +27,9 @@ import org.apache.commons.cli.ParseException;
 
 import test.TestIntf;
 
-public class JZip2 implements TestIntf{
+import com.google.common.base.Stopwatch;
+
+public class JZip2 implements TestIntf {
 	List<String> fileList;
 
 	private Properties CONFIGURATION = null;
@@ -36,8 +39,11 @@ public class JZip2 implements TestIntf{
 	private boolean run;
 
 	public static void main(String[] args) {
+		long start = System.currentTimeMillis();
 		JZip2 zipper = new JZip2();
 		zipper.start();
+		long end = System.currentTimeMillis();
+		System.out.println("Total runtime "+(end - start));
 	}
 
 	private void init() {
@@ -105,18 +111,29 @@ public class JZip2 implements TestIntf{
 					System.in));
 			try {
 				String instruction = br.readLine();
-				if ("help".equals(instruction.trim())) {
-					HelpFormatter formatter = new HelpFormatter();
-					formatter.printHelp("JZip", opt);
-				} else if ("exit".equals(instruction.trim())) {
-					this.run = false;
-				} else {
-					String[] myArgs = instruction.split(" ");
-					if (myArgs.length > 0) {
-						myArgs[0] = "-" + myArgs[0];
-						this.parseAndRun(myArgs);
+				do{
+					System.out.println("READ " + instruction);
+					if(instruction == null)
+						continue;
+					if (instruction == null) {
+						this.run = false;
+						continue;
 					}
-				}
+					if ("help".equals(instruction.trim())) {
+						HelpFormatter formatter = new HelpFormatter();
+						formatter.printHelp("JZip", opt);
+					} else if ("exit".equals(instruction.trim())) {
+						this.run = false;
+						break;
+					} else {
+						String[] myArgs = instruction.split(" ");
+						if (myArgs.length > 0) {
+							myArgs[0] = "-" + myArgs[0];
+							this.parseAndRun(myArgs);
+						}
+					}
+
+				}while((instruction = br.readLine())!= null);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -158,13 +175,15 @@ public class JZip2 implements TestIntf{
 						sourceFolder = zipValue[1];
 					} else if (zipValue.length == 1) {
 						zipFile = zipValue[0];
-						if ((this.CONFIGURATION != null) && (this.CONFIGURATION.contains("zip-source"))) {
+						if ((this.CONFIGURATION != null)
+								&& (this.CONFIGURATION.contains("zip-source"))) {
 							sourceFolder = this.CONFIGURATION
 									.getProperty("zip-source");
 						}
 					}
 				} else {
-					if ((this.CONFIGURATION != null) && (this.CONFIGURATION.containsKey("zip-source")) ){
+					if ((this.CONFIGURATION != null)
+							&& (this.CONFIGURATION.containsKey("zip-source"))) {
 						sourceFolder = this.CONFIGURATION
 								.getProperty("zip-source");
 					}
@@ -177,22 +196,27 @@ public class JZip2 implements TestIntf{
 				String unzipFile, unzipDestination = ".";
 				if ((unzipValue != null) && (unzipValue.length > 0)) {
 					unzipFile = unzipValue[0];
-					if ((this.CONFIGURATION != null) && (this.CONFIGURATION.containsKey("unzip-destination"))) {
+					if ((this.CONFIGURATION != null)
+							&& (this.CONFIGURATION
+									.containsKey("unzip-destination"))) {
 						unzipDestination = this.CONFIGURATION
 								.getProperty("unzip-destination");
 					}
 				} else {
 					throw new ParseException("Parameter <file> not found.");
 				}
-				if((this.CONFIGURATION != null) && (this.CONFIGURATION.containsKey("unzip-destination-autogenerate"))){
-					if("true".equals(this.CONFIGURATION.getProperty("unzip-destination-autogenerate").toLowerCase())){
+				if ((this.CONFIGURATION != null)
+						&& (this.CONFIGURATION
+								.containsKey("unzip-destination-autogenerate"))) {
+					if ("true".equals(this.CONFIGURATION.getProperty(
+							"unzip-destination-autogenerate").toLowerCase())) {
 						File f = new File(unzipDestination);
-						if(!f.exists()){
+						if (!f.exists()) {
 							f.mkdirs();
 						}
 					}
 				}
-				 this.unZipIt(unzipFile, unzipDestination);
+				this.unZipIt(unzipFile, unzipDestination);
 			}
 
 		} catch (ParseException e) {
@@ -345,7 +369,7 @@ public class JZip2 implements TestIntf{
 	}
 
 	private void storeConfig(String file) {
-		try {		
+		try {
 			File f = new File(file);
 			FileOutputStream fos = new FileOutputStream(f);
 			this.CONFIGURATION.store(fos, "JZip configuration dump");
@@ -388,9 +412,11 @@ public class JZip2 implements TestIntf{
 		}
 	}
 
+	private static JZip2 myJZip = null;
+
 	@Override
 	public void runtest() {
 		// TODO Auto-generated method stub
-		main(new String[0]);
+		 main(new String[]{});
 	}
 }

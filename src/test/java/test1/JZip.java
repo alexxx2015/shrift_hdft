@@ -1,4 +1,4 @@
-package test;
+package test1;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,9 +24,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import com.google.common.base.Stopwatch;
-
-public class JZip2 implements TestIntf {
+public class JZip {
 	List<String> fileList;
 
 	private Properties CONFIGURATION = null;
@@ -35,13 +32,23 @@ public class JZip2 implements TestIntf {
 	private CommandLineParser cmdParser;
 	private Options opt;
 	private boolean run;
+	private String[] args;
+	private String commandline = "";
+
+	public JZip(String[] args) {
+		this.args = args;
+		if (args != null && args.length > 0) {
+			StringBuilder sb = new StringBuilder();
+			for (String s : args) {
+				sb.append(s);
+			}
+			this.commandline = sb.toString();
+		}
+	}
 
 	public static void main(String[] args) {
-		long start = System.currentTimeMillis();
-		JZip2 zipper = new JZip2();
+		JZip zipper = new JZip(args);
 		zipper.start();
-		long end = System.currentTimeMillis();
-		System.out.println("Total runtime "+(end - start));
 	}
 
 	private void init() {
@@ -108,30 +115,24 @@ public class JZip2 implements TestIntf {
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					System.in));
 			try {
-				String instruction = br.readLine();
-				do{
-					System.out.println("READ " + instruction);
-					if(instruction == null)
-						continue;
-					if (instruction == null) {
-						this.run = false;
-						continue;
+				String instruction;
+				if((this.commandline != null) && "".equals(this.commandline)){
+					instruction = this.commandline;
+				}else{
+					instruction = br.readLine();
+				}
+				if ("help".equals(instruction.trim())) {
+					HelpFormatter formatter = new HelpFormatter();
+					formatter.printHelp("JZip", opt);
+				} else if ("exit".equals(instruction.trim())) {
+					this.run = false;
+				} else {
+					String[] myArgs = instruction.split(" ");
+					if (myArgs.length > 0) {
+						myArgs[0] = "-" + myArgs[0];
+						this.parseAndRun(myArgs);
 					}
-					if ("help".equals(instruction.trim())) {
-						HelpFormatter formatter = new HelpFormatter();
-						formatter.printHelp("JZip", opt);
-					} else if ("exit".equals(instruction.trim())) {
-						this.run = false;
-						break;
-					} else {
-						String[] myArgs = instruction.split(" ");
-						if (myArgs.length > 0) {
-							myArgs[0] = "-" + myArgs[0];
-							this.parseAndRun(myArgs);
-						}
-					}
-
-				}while((instruction = br.readLine())!= null);
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -408,13 +409,5 @@ public class JZip2 implements TestIntf {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	private static JZip2 myJZip = null;
-
-	@Override
-	public void runtest() {
-		// TODO Auto-generated method stub
-		 main(new String[]{});
 	}
 }

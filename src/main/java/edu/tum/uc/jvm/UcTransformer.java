@@ -82,7 +82,7 @@ public class UcTransformer implements ClassFileTransformer {
 		}
 		
 		//For statstic purposes
-		Date start = new Date();
+		long start = System.nanoTime();
 
 		MyClassReader cr = new MyClassReader(classfileBuffer);
 		ClassNode cn = new ClassNode();
@@ -94,17 +94,14 @@ public class UcTransformer implements ClassFileTransformer {
 		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
 		
-		//For statistic purposes
-		Date end = new Date();
-		
 		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
 		if(!"".equals(statistic)){
-			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(), end.getTime() - start.getTime());
+			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(), System.nanoTime()-start);
 		}
 		
 		//Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in configuration file
 		String s = ConfigProperties
-				.getProperty(ConfigProperties.PROPERTIES.INSTREMENTED_CLASS_PATH
+				.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTED_CLASS_PATH
 						.toString());
 		if ((s != null) && !s.equals("")) {
 			try {

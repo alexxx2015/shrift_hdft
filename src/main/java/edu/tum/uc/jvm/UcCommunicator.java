@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.objectweb.asm.Opcodes;
+
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.basic.PxpSpec;
 import de.tum.in.i22.uc.cm.datatypes.basic.StatusBasic.EStatus;
@@ -103,11 +105,20 @@ public class UcCommunicator {
 		// IEvent ievent = new
 		// EventBasic(event.getMethodInvokee(),map,event.isActual());
 		IEvent ievent = new EventBasic(sinkSource, map, event.isActual());
-		long start = System.currentTimeMillis();
-		IResponse response = this.pdpClient.notifyEventSync(ievent);
-		MirrorStack.lastNetworkAccess = System.currentTimeMillis() - start;
-		
-		if (response != null){
+		IResponse response;
+		Boolean b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T5
+								.toString()));
+		if (b) {
+			MirrorStack.TIMER_T5 = System.nanoTime();
+			response = this.pdpClient.notifyEventSync(ievent);
+			MirrorStack.TIMER_T5 = System.nanoTime() - MirrorStack.TIMER_T5;
+		} else {
+			response = this.pdpClient.notifyEventSync(ievent);
+		}
+
+		if (response != null) {
 			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
 		}
 		return false;
@@ -138,9 +149,9 @@ public class UcCommunicator {
 			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
 		return false;
 	}
-	
-	public boolean sendKillProcessEvent2Pdp(){
-		Map<String,String> param = new HashMap<String,String>();
+
+	public boolean sendKillProcessEvent2Pdp() {
+		Map<String, String> param = new HashMap<String, String>();
 		param.put("PEP", "Windows");
 		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
 		String[] runningVmComp = runningVm.split("@");
@@ -151,7 +162,7 @@ public class UcCommunicator {
 				.createMessageFactory();
 		IEvent event = _messageFactory.createActualEvent("KillProcess", param);
 		IResponse response = this.pdpClient.notifyEventSync(event);
-		if(response != null)
+		if (response != null)
 			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
 		return false;
 	}

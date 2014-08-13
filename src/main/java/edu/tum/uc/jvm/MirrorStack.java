@@ -58,16 +58,11 @@ public class MirrorStack {
 	protected static Map<String, String> contextToObject = new HashMap<String, String>();
 
 	public static void timerT1Start() {
-		TIMER_T1 = System.currentTimeMillis();
+		TIMER_T1 = System.nanoTime();
 	}
 
 	public static void timerT1Stop() {
 		StatisticsWriter.logExecutionTimerT1(TIMER_T1, System.nanoTime());
-		String statistic = ConfigProperties
-				.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
-		if (!"".equals(statistic)) {
-			StatisticsWriter.dumpFile(statistic);
-		}
 	}
 
 	public static void timerT2Start() {
@@ -587,7 +582,12 @@ public class MirrorStack {
 	// }
 
 	public static void endMain() {// Helper method, sended when the end of main
-									// is reached
+									// is reachedcd
+		String statistic = ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
+		if (!"".equals(statistic)) {
+			StatisticsWriter.dumpFile(statistic);
+		}
 		ucCom.sendKillProcessEvent2Pdp();
 	}
 

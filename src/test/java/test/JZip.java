@@ -34,6 +34,10 @@ public class JZip implements TestIntf {
 	private boolean run;
 	private String[] args;
 	private String commandline = "";
+	
+	public static void test(long l, Object o, double d){
+		
+	}
 
 	public JZip() {
 
@@ -42,17 +46,18 @@ public class JZip implements TestIntf {
 	public JZip(String[] args) {
 		this.args = args;
 		if (args != null && args.length > 0) {
-			StringBuilder sb = new StringBuilder();
-			for (String s : args) {
-				sb.append(s);
-			}
-			this.commandline = sb.toString();
+			this.commandline = args[0];
 		}
 	}
 
 	public static void main(String[] args) {
 		JZip zipper = new JZip(args);
-		zipper.start();
+		int iterations = 1;
+		if (args != null && args.length > 1) {
+			iterations = Integer.parseInt(args[1]);
+		}
+		for (int i = 0; i < iterations; i++)
+			zipper.start();
 	}
 
 	private void init() {

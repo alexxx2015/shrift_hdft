@@ -13,8 +13,13 @@ import de.tum.in.i22.uc.thrift.types.TEvent;
 import de.tum.in.i22.uc.thrift.types.TStatus;
 
 public class JavaPxpHandler implements TAny2Pxp.Iface {
+	
+	public void t(long l){
+		l++;
+	}
 
 	public void delmr(String s, short time) throws TException {
+		t(4);
 		// TODO Auto-generated method stub
 		String unit = s;
 		Short expire = time;

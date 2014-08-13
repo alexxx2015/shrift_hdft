@@ -14,3 +14,8 @@ contains:sun.reflect
 contains:sun.launcher
 contains:sun.nio
 contains:sun.util
+contains:com.steadystate
+contains:org.atmosphere
+contains:org.w3c
+contains:junit.framework
+contains:org.hamcrest

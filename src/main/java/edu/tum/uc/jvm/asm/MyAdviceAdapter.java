@@ -65,7 +65,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
 	}
 
 	protected void onMethodExit(int opcode) {
-		if (this.methodName.equals("main") || this.methodName.equals("getData")) {
+		if (this.methodName.equals("main") || this.methodName.equals("getData") || this.methodName.equals("refresh")) {
 			// mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out",
 			// "Ljava/io/PrintStream;");
 			// mv.visitLdcInsn("Test");

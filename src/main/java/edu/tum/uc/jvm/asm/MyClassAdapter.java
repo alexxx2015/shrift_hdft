@@ -114,6 +114,11 @@ public class MyClassAdapter extends ClassVisitor {
 		// if(methNode != null){
 		// System.out.println("LOC: "+this.className+", "+methNode.name+", "+methNode.instructions.size());
 		// }
+
+		if(p_name.equals("test")){
+			int i = 0;
+			i++;
+		}
 		if ((p_access & Opcodes.ACC_NATIVE) != Opcodes.ACC_NATIVE) {
 			Boolean instrumentation = true;
 			String s = ConfigProperties

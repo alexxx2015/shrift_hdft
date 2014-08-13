@@ -26,6 +26,7 @@ import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -33,7 +34,6 @@ import org.objectweb.asm.Type;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.cm.factories.IMessageFactory;
 import de.tum.in.i22.uc.cm.factories.MessageFactoryCreator;
-import de.tum.in.i22.uc.cm.settings.Settings;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.utility.analysis.Flow;
@@ -320,6 +320,14 @@ public class Utility {
 
 		return fileDescriptor;
 	}
+	
+	public static void main(String[] args) {
+		Type[] argT = Type.getArgumentTypes("(JLjava/lang/Object;D)V");
+		for(Type t: argT){
+			if(Type.LONG_TYPE.getDescriptor().equals(t.getDescriptor()))
+			System.out.println(t+", "+Type.LONG+", "+Type.LONG_TYPE);
+		}
+	}
 
 	/**
 	 * Creates a dummy method that extracts that invokes the method for file
@@ -355,15 +363,23 @@ public class Utility {
 
 			// Generate new method signature
 			Type[] argT = Type.getArgumentTypes(p_desc);
+			
+			//Helper variable to store the correct parameter index within the local variable table
 			desc.append("(");
 			// desc.append("Ljava/lang/Object;");
 			desc.append("L" + p_owner + ";");
+			int paramIndex = 0;
 			if (argT.length > 0) {
 				for (Type t : argT) {
 					desc.append(t.getDescriptor());
+					paramIndex++;
+					if(Type.DOUBLE == t.getSort() || Type.LONG == t.getSort()){
+						paramIndex++;
+					}
 				}
 			}
 			desc.append("Ljava/lang/String;");
+			paramIndex++;
 			desc.append(")");
 			Type retT = Type.getReturnType(p_desc);
 			if (retT != null) {
@@ -395,7 +411,6 @@ public class Utility {
 			// while (ksIt.hasNext()) {
 			// int parameter = ksIt.next();
 			// if (sors.get(parameter).equals(StaticAnalysis.nodeType.SOURCE)) {
-			//
 			// if (myArgT[parameter].getSort() == Type.OBJECT) {
 			// mv.visitVarInsn(Opcodes.ALOAD, parameter);
 			// } else if (myArgT[parameter].getSort() == Type.ARRAY) {
@@ -416,7 +431,7 @@ public class Utility {
 												// reference
 												// }
 			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
-			mv.visitVarInsn(Opcodes.ALOAD, myArgT.length - 1);
+			mv.visitVarInsn(Opcodes.ALOAD, paramIndex);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
 					"methodInvoked", "(Ljava/lang/Object;Ljava/lang/String;)Z",
 					false);
@@ -437,10 +452,12 @@ public class Utility {
 					mv.visitVarInsn(Opcodes.ALOAD, i);
 				} else if (t.getSort() == Type.DOUBLE) {
 					mv.visitVarInsn(Opcodes.DLOAD, i);
+					i++;
 				} else if (t.getSort() == Type.FLOAT) {
 					mv.visitVarInsn(Opcodes.FLOAD, i);
 				} else if (t.getSort() == Type.LONG) {
 					mv.visitVarInsn(Opcodes.LLOAD, i);
+;					i++;
 				} else if (t.getSort() == Type.INT) {
 					mv.visitVarInsn(Opcodes.ILOAD, i);
 				}
@@ -465,7 +482,7 @@ public class Utility {
 			mv.visitVarInsn(Opcodes.ALOAD, 0);// ALOAD_0 -> the first parameter
 												// is the object reference
 			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
-			mv.visitVarInsn(Opcodes.ALOAD, myArgT.length - 1);
+			mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length - 1);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
 					"methodExited", "(Ljava/lang/Object;Ljava/lang/String;)V",
 					false);
@@ -519,9 +536,7 @@ public class Utility {
 			// DataOutputStream dos = new DataOutputStream(
 			// new FileOutputStream(f));
 			// dos.write(cw.toByteArray());
-		} catch (Exception e) {
-
-		}
+		} catch (Exception e) {}
 
 		return desc.toString();
 	}

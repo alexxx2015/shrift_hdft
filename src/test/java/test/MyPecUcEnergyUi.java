@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,7 +35,16 @@ public class MyPecUcEnergyUi implements TestIntf {
 
 	static HashMap<String, String> mac2device = new HashMap<String, String>();
 
+	public static void test() {
+		long x = 3L;
+		float f = 3.0F;
+		double d = 4.3D;
+		int i = 3;	
+		LinkedList<String>s = new LinkedList<String>();
+	}
+
 	public void getData() {
+		
  		String sensorUuid = "59555bf7-64d9-3462-aec4-4fb2a2d7ed49";
 		String mac = "00:13:A2:00:40:9C:5A:04";
 		JSONObject measure = this.showLastNValueDeviceSensor(MyPecUcEnergyUi.ip,

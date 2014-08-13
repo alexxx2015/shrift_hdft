@@ -5,8 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -102,25 +104,39 @@ public class StatisticsWriter implements Runnable {
 			sb.append(ToBeDumpedData).append("\n");
 
 			sb.append("---- RUNTIME STATISTIC ----\n");
-			Iterator<String> runtimeExecIt = executionTimeT3.keySet()
-					.iterator();
-			long timer3 = 0;
-			long timer4 = 0;
-			long timer5 = 0;
-			while (runtimeExecIt.hasNext()) {
-				String key = runtimeExecIt.next();
-				long t3 = executionTimeT3.get(key);
-				long t4 = executionTimeT4.get(key);
-				long t5 = executionTimeT5.get(key);
-				sb.append("Timer 3: " + t3 + " ns, Timer 4: " + t4
-						+ " ns, Timer 5:" + t5 + " ns, " + key + "\n");
-				timer3 += t3;
-				timer4 += t4;
-				timer5 += t5;
+
+			Set<String> keySet = new HashSet<String>();
+			keySet.addAll(executionTimeT3.keySet());
+			keySet.addAll(executionTimeT4.keySet());
+			keySet.addAll(executionTimeT5.keySet());
+
+			if (keySet.size() > 0) {
+				Iterator<String> runtimeExecIt = keySet.iterator();
+				long timer3 = 0;
+				long timer4 = 0;
+				long timer5 = 0;
+				while (runtimeExecIt.hasNext()) {
+					String key = runtimeExecIt.next();
+					long t3 = 0;
+					if(executionTimeT3.containsKey(key))
+						t3 = executionTimeT3.get(key);
+					long t4 = 0;
+					if(executionTimeT4.containsKey(key))
+						t4 = executionTimeT4.get(key);
+					long t5 = 0;
+					if(executionTimeT5.containsKey(key))
+						t5 = executionTimeT5.get(key);
+					sb.append("Timer 3: " + t3 + " ns, Timer 4: " + t4
+							+ " ns, Timer 5:" + t5 + " ns, " + key + "\n");
+					timer3 += t3;
+					timer4 += t4;
+					timer5 += t5;
+				}
+				sb.append("=== Timer3 total: " + timer3 + " ns, Timer4 total: "
+						+ timer4 + " ns, Timer5 total: " + timer5 + " ns ===\n");
 			}
-			sb.append("=== Timer3 total: " + timer3 + " ns, Timer4 total: "
-					+ timer4 + " ns, Timer5 total: " + timer5 + " ns ===\n");
-			sb.append("===Timer1 total: " + executionTimeT1+" ns, Timer2 total: "+executionTimerT2+" ns===\n");
+			sb.append("===Timer1 total: " + executionTimeT1
+					+ " ns, Timer2 total: " + executionTimerT2 + " ns===\n");
 			fw.append(sb.toString());
 			fw.close();
 		} catch (IOException e) {

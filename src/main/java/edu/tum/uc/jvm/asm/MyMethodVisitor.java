@@ -293,7 +293,6 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			// mv.visitLabel(lab);
 		}
-
 		mv.visitIntInsn(p_opcode, p_operand);
 	}
 
@@ -367,7 +366,6 @@ public class MyMethodVisitor extends MethodVisitor {
 			// mv.visitLabel(lab);
 			// mv.visitLdcInsn(cst);
 		}
-
 		mv.visitLdcInsn(cst);
 	}
 
@@ -402,7 +400,9 @@ public class MyMethodVisitor extends MethodVisitor {
 		// Check if method invocation belongs to the set of sinks or sources
 		List<SinkSource> sors = StaticAnalysis.getType(invokerFQN,
 				label.getOffset());
-
+		
+		//System.out.println("METHODVISITOR: "+invokerFQN+", "+label.getOffset()+", "+sors.size()+", "+p_owner+"."+p_name);
+		
 		if (sors.size() == 0) {
 			if (this.checkChopNode(label)) {
 				// Label lab = this.insertChecks(mv,
@@ -433,8 +433,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				+ sinkSource.getId() + delim + sinkSource.getContextAsString();
 
 		if (p_opcode != Opcodes.INVOKESTATIC) {
-			String d_desc = Utility.createHelperMethod(p_opcode, p_owner,
-					p_name, p_desc, cv, this.className, sors);
+			String d_desc = Utility.createHelperMethod(p_opcode, p_owner,	p_name, p_desc, cv, this.className, sors);
 			Boolean b = new Boolean(
 					ConfigProperties
 							.getProperty(ConfigProperties.PROPERTIES.TIMER_T2
@@ -445,17 +444,17 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			
 			mv.visitLdcInsn(invokerFQN);
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-					this.className.replace(".", "/"), p_name, d_desc, false);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className.replace(".", "/"), p_name, d_desc, false);
 
+//			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
+//					"methodInvoked", "(Ljava/lang/String;)Z", false);
+//			mv.visitInsn(Opcodes.POP);
+//			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, false);
 			if (b) {
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 						UcTransformer.HOOKMETHOD, "timerT2Stop", "()V", false);
 			}
-			// mv.visitLdcInsn(invokerFQN);
-			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-			// UcTransformer.HOOKMETHOD,
-			// "methodInvoked", "(Ljava/lang/String;)Z", false);
+			
 		} else {
 			mv.visitLdcInsn(invokerFQN);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
@@ -598,7 +597,6 @@ public class MyMethodVisitor extends MethodVisitor {
 				// }
 				mv.visitLabel(endLab);
 			} else {
-
 				mv.visitInsn(Opcodes.POP);
 				mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, false);
 

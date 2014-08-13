@@ -5,6 +5,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import edu.tum.uc.jvm.UcTransformer;
@@ -26,8 +27,7 @@ public class Test_Smarthome extends AbstractTest{
 	 * @author alex
 	 * 
 	 */
-//	@Test
-	
+//	@Test	
 	public void testInstrumentation() {
 		try {
 			// Class clazz = Class.forName("UcJavaPepTest.MyTest");

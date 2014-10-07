@@ -137,6 +137,7 @@ public class StatisticsWriter implements Runnable {
 			}
 			sb.append("===Timer1 total: " + executionTimeT1
 					+ " ns, Timer2 total: " + executionTimerT2 + " ns===\n");
+			
 			fw.append(sb.toString());
 			fw.close();
 		} catch (IOException e) {
@@ -183,7 +184,7 @@ public class StatisticsWriter implements Runnable {
 					while (it2.hasNext()) {
 						MethodNode md2 = it2.next();
 						if (md2.instructions != null
-								&& md.name.equals(md2.name)) {
+								&& md.name.equals(md2.name) && md.desc.equals(md2.desc)) {
 							sb.append("#Bytecodes: ")
 									.append(md2.instructions.size())
 									.append("\n");
@@ -243,9 +244,10 @@ public class StatisticsWriter implements Runnable {
 	public static void logInstrumentation(ClassNode cn, byte[] instrumented,
 			long time) {
 		StatisticsWriter sw = new StatisticsWriter(cn, instrumented, time);
-		Thread t = new Thread(sw);
-		// t.start();
-		t.run();
+		sw.run();
+//		Thread t = new Thread(sw);
+//		 t.start();
+//		t.run();
 	}
 
 }

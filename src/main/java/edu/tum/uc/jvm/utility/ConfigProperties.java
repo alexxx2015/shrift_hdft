@@ -8,11 +8,13 @@ import java.net.URL;
 import java.util.Properties;
 
 public final class ConfigProperties {
+	private static String configFile;
 	
 	public static enum PROPERTIES{
 		ANALYSIS_REPORT
 		, PDP_PORT, PDP_HOST
 		, PIP_PORT, PIP_HOST
+		, PMP_PORT, PMP_HOST
 		, MYPEP_HOST, MYPEP_PORT
 		, INSTRUMENTED_CLASS_PATH
 		, ENFORCEMENT
@@ -28,11 +30,17 @@ public final class ConfigProperties {
 	
 	private static Properties CONFIGURATION = null;	
 	
+	public static void setConfigFile(String file){
+		configFile = file;
+		CONFIGURATION= null;
+	}
 	
 	public static String getProperty(String property){
 		if(CONFIGURATION == null){
-			URL ucConfig = ConfigProperties.class.getResource("/uc.config");
-			File f = new File("./uc.config");
+			if(configFile == null)
+				configFile = "/uc.config";
+			URL ucConfig = ConfigProperties.class.getResource(configFile);
+			File f = new File(configFile);
 			if(ucConfig != null){
 				f = new File(ucConfig.getFile());
 			}

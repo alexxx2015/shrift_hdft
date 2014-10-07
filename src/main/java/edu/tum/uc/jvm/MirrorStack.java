@@ -590,6 +590,18 @@ public class MirrorStack {
 		}
 		ucCom.sendKillProcessEvent2Pdp();
 	}
+	
+	public static void systemExit(int status){
+		Boolean b = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T1
+								.toString()));
+		if (b) {
+			timerT1Stop();
+		}
+		endMain();
+		System.exit(status);
+	}
 
 	public static boolean methodInvoked(Object o, String p_methName) {
 		boolean _return;

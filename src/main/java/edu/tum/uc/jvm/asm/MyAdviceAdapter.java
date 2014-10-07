@@ -13,6 +13,7 @@ import org.objectweb.asm.tree.MethodNode;
 import edu.tum.uc.jvm.UcException;
 import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.utility.ConfigProperties;
+import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
 
 public class MyAdviceAdapter extends AdviceAdapter {
@@ -53,6 +54,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
 
 	protected void onMethodEnter() {
 		if (this.methodName.equals("main") || this.methodName.equals("getData")) {
+//			StatisticsWriter.clear();
 			Boolean b = new Boolean(
 					ConfigProperties
 							.getProperty(ConfigProperties.PROPERTIES.TIMER_T1

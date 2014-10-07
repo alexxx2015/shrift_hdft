@@ -389,6 +389,11 @@ public class MyMethodVisitor extends MethodVisitor {
 			} 
 			return;
 		}
+		//Replace System.exit with own exit method
+		if(p_owner.toLowerCase().equals("java/lang/system") && p_name.toLowerCase().equals("exit")){
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "systemExit", "(I)V", false);
+			return;
+		}
 
 		String e = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.ENFORCEMENT.toString());
@@ -399,7 +404,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				+ this.methodName + this.description;
 		// Check if method invocation belongs to the set of sinks or sources
 		List<SinkSource> sors = StaticAnalysis.getType(invokerFQN,
-				label.getOffset());
+				label.getOffset());		
 		
 		//System.out.println("METHODVISITOR: "+invokerFQN+", "+label.getOffset()+", "+sors.size()+", "+p_owner+"."+p_name);
 		

@@ -17,6 +17,8 @@ public abstract class AbstractTest {
 	protected static int PMP_SERVER_PORT = 40012;
 	protected static int ANY_SERVER_PORT = 40013;
 
+	protected static boolean startPdpServer = true;
+
 	protected void copyConfigFile(String filename) throws Exception {
 		URL url = this.getClass().getResource(filename);
 		if (url != null) {
@@ -60,8 +62,10 @@ public abstract class AbstractTest {
 				"--" + CommandLineOptions.OPTION_LOCAL_ANY_LISTENER_PORT_LONG,
 				Integer.toString(ANY_SERVER_PORT) };
 
-		box = new Controller(args);
-		box.start();
+		if (startPdpServer) {
+			box = new Controller(args);
+			box.start();
+		}
 
 	}
 

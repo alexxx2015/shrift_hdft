@@ -97,7 +97,7 @@ public class UcTransformer implements ClassFileTransformer {
 		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
 		if(!"".equals(statistic)){
 			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(), System.nanoTime()-start);
-		}
+		} 
 		
 		//Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in configuration file
 		String s = ConfigProperties

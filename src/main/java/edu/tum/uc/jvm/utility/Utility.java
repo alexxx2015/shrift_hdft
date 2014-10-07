@@ -458,7 +458,7 @@ public class Utility {
 				} else if (t.getSort() == Type.LONG) {
 					mv.visitVarInsn(Opcodes.LLOAD, i);
 ;					i++;
-				} else if (t.getSort() == Type.INT) {
+				} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)){
 					mv.visitVarInsn(Opcodes.ILOAD, i);
 				}
 				i++;

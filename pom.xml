@@ -1,7 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>UsageControlSystem</groupId>
+		<parent>
+		<groupId>UsageControlSystem</groupId>
+		<artifactId>Core</artifactId>
+		<version>1.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 	<artifactId>uc-java-pep</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
@@ -13,6 +18,11 @@
 	</repositories>
 
 	<dependencies>
+		<dependency>
+			<groupId>it.uniroma1.dis.wsngroup.gexf4j</groupId>
+			<artifactId>gexf4j</artifactId>
+			<version>0.4.4-BETA</version>
+		</dependency>
 		<dependency>
 			<groupId>org.objectweb.asm</groupId>
 			<artifactId>java-pep-asm</artifactId>
@@ -27,7 +37,7 @@
 			<groupId>UsageControlSystem</groupId>
 			<artifactId>CommunicationBase</artifactId>
 			<version>1.0</version>
-		</dependency>		
+		</dependency>	
 		<dependency>
 			<groupId>UsageControlSystem</groupId>
 			<artifactId>Pdp</artifactId>
@@ -78,6 +88,13 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<archive>
+								<manifestFile>${basedir}/META-INF/MANIFEST.MF</manifestFile>
+							</archive>
+							<excludes>
+								<exclude>**/uc.properties</exclude>
+								<exclude>**/uc.config</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 				</executions>
@@ -92,6 +109,7 @@
 					</archive>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 </project>

@@ -27,6 +27,10 @@ public class StatisticsWriter implements Runnable {
 	private static int totalNumInstrMethods = 0;
 	private static int totalNumInstrBytecode = 0;
 	private static int totalNumInstrClasses = 0;
+	
+	public static long time4GenSinkSource = 0;
+	public static int numObj = 0;
+	private static Map<String,Integer> countSinkSource = new HashMap<String,Integer>();
 
 	private static Map<String, Long> executionTimeT3 = new HashMap<String, Long>();// Per
 																					// Source/Sink
@@ -71,9 +75,11 @@ public class StatisticsWriter implements Runnable {
 	}
 
 	public static void logExecutionTimerT3(String event, long totalTime) {
-		if (executionTimeT3.containsKey(event))
-			totalTime += executionTimeT3.get(event);
+		totalTime += executionTimeT3.containsKey(event) ? executionTimeT3.get(event) : 0;
 		executionTimeT3.put(event, totalTime);
+		
+		int countsinksource = countSinkSource.containsKey(event) ? countSinkSource.get(event) : 0;
+		countSinkSource.put(event, ++countsinksource);			
 	}
 
 	public static void logExecutionTimerT4(String event, long totalTime) {
@@ -126,8 +132,11 @@ public class StatisticsWriter implements Runnable {
 					long t5 = 0;
 					if(executionTimeT5.containsKey(key))
 						t5 = executionTimeT5.get(key);
+					int count = 0;
+					if(countSinkSource.containsKey(key))
+						count = countSinkSource.get(key); 
 					sb.append("Timer 3: " + t3 + " ns, Timer 4: " + t4
-							+ " ns, Timer 5:" + t5 + " ns, " + key + "\n");
+							+ " ns, Timer 5:" + t5 + " ns, Count: "+count+", " + key + "\n");
 					timer3 += t3;
 					timer4 += t4;
 					timer5 += t5;
@@ -136,7 +145,7 @@ public class StatisticsWriter implements Runnable {
 						+ timer4 + " ns, Timer5 total: " + timer5 + " ns ===\n");
 			}
 			sb.append("===Timer1 total: " + executionTimeT1
-					+ " ns, Timer2 total: " + executionTimerT2 + " ns===\n");
+					+ " ns, Timer2 total: " + executionTimerT2 + " ns, Time for generating Sink/Source event objects: "+time4GenSinkSource+" ns, Generated #Sink/Source event objects: "+numObj+"===\n");
 			
 			fw.append(sb.toString());
 			fw.close();

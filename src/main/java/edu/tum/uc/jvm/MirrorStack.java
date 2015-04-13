@@ -1,7 +1,26 @@
 package edu.tum.uc.jvm;
 
+import it.uniroma1.dis.wsngroup.gexf4j.core.EdgeType;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Graph;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Mode;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Node;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.Attribute;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeClass;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeList;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeType;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.data.AttributeListImpl;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.viz.ColorImpl;
+import it.uniroma1.dis.wsngroup.gexf4j.core.viz.Color;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,6 +31,7 @@ import java.util.UUID;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import edu.tum.uc.jvm.container.ArithResult;
 import edu.tum.uc.jvm.container.ArrayField;
 import edu.tum.uc.jvm.container.ArrayRef;
@@ -21,6 +41,7 @@ import edu.tum.uc.jvm.container.Field;
 import edu.tum.uc.jvm.container.LocalVariable;
 import edu.tum.uc.jvm.container.ObjectReference;
 import edu.tum.uc.jvm.utility.ConfigProperties;
+import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.MethEvent;
 import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
@@ -43,7 +64,6 @@ public class MirrorStack {
 	private static long TIMER_T1;// START-END of MAIN-Method
 	private static long TIMER_T2;// Complete Source/Sink execution
 	protected static long TIMER_T4;
-	protected static long TIMER_T5;
 
 	public static enum COMP_TYPE_CAT {
 		COMP_TYPE_CAT_1, COMP_TYPE_CAT_2
@@ -56,6 +76,76 @@ public class MirrorStack {
 
 	private static Stack<CreationSite> creationSiteScopes = new Stack<CreationSite>();
 	protected static Map<String, String> contextToObject = new HashMap<String, String>();
+
+	private static Gexf gexf;
+	private static Graph graph;
+	private static int nodeId = 0;
+	private static int attrId = 0;
+	private static Attribute fqName;
+	private static Attribute offset;
+	private static Attribute opcode;
+	private static Attribute misc;
+	private static Node lastNode;
+	private static Map<String, Node> createdNodes = new HashMap<String, Node>();
+	
+
+	public static void logChopNode(String chop) {
+		if (gexf == null) {
+			gexf = new GexfImpl();
+			Calendar date = Calendar.getInstance();
+
+			gexf.getMetadata().setLastModified(date.getTime())
+					.setCreator("Java Pep")
+					.setDescription("Visualizing program's taken runtime path");
+			gexf.setVisualization(true);
+
+			graph = gexf.getGraph();
+			graph.setDefaultEdgeType(EdgeType.UNDIRECTED).setMode(Mode.STATIC);
+
+			AttributeList attrList = new AttributeListImpl(AttributeClass.NODE);
+			graph.getAttributeLists().add(attrList);
+
+			fqName = attrList.createAttribute(String.valueOf(++attrId),
+					AttributeType.STRING, "FQName");
+			offset = attrList.createAttribute(String.valueOf(++attrId),
+					AttributeType.STRING, "Offset");
+			opcode = attrList.createAttribute(String.valueOf(++attrId),
+					AttributeType.STRING, "Opcode");
+			misc = attrList.createAttribute(String.valueOf(++attrId),
+					AttributeType.STRING, "Misc");
+
+			Node n = graph.createNode(String.valueOf(++nodeId));
+			n.setLabel("Start").setColor(new ColorImpl(0, 153, 0));
+			lastNode = n;
+		}
+		// Structure of each parameter 'chop'
+		// this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_owner
+		// + "." + p_name + ":" + p_desc+"| -- visitFieldInsn";
+		String[] s = chop.split("\\|");
+		String label = s[1] + ":" + s[0];
+
+		Node n = null;
+		if (createdNodes.containsKey(label)) {
+			n = createdNodes.get(label);
+		} else {
+			n = graph.createNode(String.valueOf(++nodeId));
+			n.setLabel(label).getAttributeValues().addValue(fqName, s[0])
+					.addValue(offset, s[1]).addValue(opcode, s[2])
+					.addValue(misc, s[3]);
+			createdNodes.put(label, n);
+		}
+
+		if (lastNode != null) {
+			if(!lastNode.hasEdgeTo(n.getId())){
+				lastNode.connectTo(n);
+			}
+			lastNode = n;
+		} else {
+			lastNode = n;
+		}
+
+		// System.out.println("LOG: " + chop);
+	}
 
 	public static void timerT1Start() {
 		TIMER_T1 = System.nanoTime();
@@ -77,16 +167,9 @@ public class MirrorStack {
 		TIMER_T4 = System.nanoTime();
 	}
 
-	public static void timerT4Stop() {
-		TIMER_T4 = System.nanoTime() - TIMER_T4;
-	}
-
-	public static void timerT5Start() {
-		TIMER_T5 = System.nanoTime();
-	}
-
-	public static void timerT5Stop() {
-		TIMER_T5 = System.nanoTime() - TIMER_T5;
+	public static void timerT4Stop(String p_methName) {
+		StatisticsWriter.logExecutionTimerT4(p_methName, System.nanoTime()
+				- MirrorStack.TIMER_T4);
 	}
 
 	public static void pushCreationSiteScope(String creationSite) {
@@ -447,7 +530,7 @@ public class MirrorStack {
 	public static void methodExit(String p_methName) {
 		if (MirrorStack.lock()) {
 			// _logger.info("MethodExit {}", p_methName);
-			final String delim = UcTransformer.STRDELIM;
+			final String delim = Utility.STRDELIM;
 			MethEvent event = new MethEvent(MethEvent.Type.END);
 			String[] methNameCmp = p_methName.split(delim);
 			// Extract invoker method
@@ -511,16 +594,6 @@ public class MirrorStack {
 		// }
 	}
 
-	public static void logMethodInvoked(String p_methName) {
-		// System.out.println("METHODINVOKED: "+p_methName);
-		boolean _return = true;
-		if (MirrorStack.lock()) {
-			MethEvent event = MirrorStack.createMethEventFromString(p_methName);
-
-			MirrorStack.unlock();
-		}
-	}
-
 	/**
 	 * Takes a bytecode method signature description and return a
 	 * MethEvent-Object
@@ -529,7 +602,7 @@ public class MirrorStack {
 	 * @return
 	 */
 	private static MethEvent createMethEventFromString(String p_methName) {
-		final String delim = UcTransformer.STRDELIM;
+		final String delim = Utility.STRDELIM;
 		MethEvent event = new MethEvent(MethEvent.Type.START);
 		String[] methNameCmp = p_methName.split(delim);
 		// Extract invoker method
@@ -581,21 +654,32 @@ public class MirrorStack {
 	// return _return;
 	// }
 
-	public static void endMain() {// Helper method, sended when the end of main
-									// is reachedcd
+	public static void endMain() {
 		String statistic = ConfigProperties
-				.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
+				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
 		if (!"".equals(statistic)) {
 			StatisticsWriter.dumpFile(statistic);
 		}
+		try {
+			Node n = graph.createNode();
+			n.setLabel("End").setColor(new ColorImpl(255,51,0));
+			lastNode.connectTo(n);			
+			StaxGraphWriter graphWriter = new StaxGraphWriter();
+			File f = new File("my_gexf.gexf");
+			Writer out = new FileWriter(f);
+			graphWriter.writeToStream(gexf, out, "UTF-8");
+			System.out.println("Graph written to : " + f.getAbsolutePath());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		ucCom.sendKillProcessEvent2Pdp();
 	}
-	
-	public static void systemExit(int status){
+
+	public static void systemExit(int status) {
 		Boolean b = new Boolean(
 				ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.TIMER_T1
-								.toString()));
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T1));
 		if (b) {
 			timerT1Stop();
 		}
@@ -604,70 +688,93 @@ public class MirrorStack {
 	}
 
 	public static boolean methodInvoked(Object o, String p_methName) {
+		IEvent event = EventRepository.getEvent(p_methName);
+		if (event == null)
+			return false;
+
 		boolean _return;
-		Boolean b = new Boolean(
+
+		String fileDescriptor = Utility.extractFileDescriptor(o);
+		event.getParameters().put("fileDescriptor", fileDescriptor);
+
+		Boolean timer3 = new Boolean(
 				ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3
-								.toString()));
-		if (b) {
-			long start = System.nanoTime();
-			String fileDescriptor = Utility.extractFileDescriptor(o);
-			p_methName += UcTransformer.STRDELIM + fileDescriptor;
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3));
+		if (timer3) {
 			// System.out.println("MIRROR STACK " + p_methName);
-			_return = methodInvoked(p_methName);
+			long start = System.nanoTime();
+			// _return = methodInvoked(event);
+			_return = ucCom.sendEvent2Pdp(event, p_methName);
 			StatisticsWriter.logExecutionTimerT3(p_methName, System.nanoTime()
 					- start);
 		} else {
-			String fileDescriptor = Utility.extractFileDescriptor(o);
-			p_methName += UcTransformer.STRDELIM + fileDescriptor;
 			// System.out.println("MIRROR STACK " + p_methName);
-			_return = methodInvoked(p_methName);
+			// _return = methodInvoked(event);
+			_return = ucCom.sendEvent2Pdp(event, p_methName);
 		}
 
 		// Timer T4
-		b = new Boolean(
-				ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.TIMER_T4
-								.toString()));
-		if (b) {
-			StatisticsWriter.logExecutionTimerT4(p_methName,
-					MirrorStack.TIMER_T4);
-		}
-
-		// Timer T5
-		b = new Boolean(
-				ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.TIMER_T5
-								.toString()));
-		if (b) {
-			StatisticsWriter.logExecutionTimerT5(p_methName,
-					MirrorStack.TIMER_T5);
-		}
+		// b = new Boolean(
+		// ConfigProperties
+		// .getProperty(ConfigProperties.PROPERTIES.TIMER_T4));
+		// if (b) {
+		// StatisticsWriter.logExecutionTimerT4(p_methName,
+		// MirrorStack.TIMER_T4);
+		// }
 
 		return _return;
 	}
 
+	private static boolean methodInvoked(IEvent event, String p_methName) {
+		boolean _return = false;
+		;
+		String e = ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.ENFORCEMENT);
+		boolean enforcement = new Boolean(e);
+		if (enforcement) {
+			_return = ucCom.sendEvent2Pdp(event, p_methName);
+
+			if (_return == true) {
+				_return = ucCom.sendEvent2Pdp(event, p_methName);
+			}
+		} else {
+			_return = ucCom.sendEvent2Pdp(event, p_methName);
+		}
+		return _return;
+	}
+
 	public static boolean methodInvoked(String p_methName) {
+		boolean _return = true;
+		if (MirrorStack.lock()) {
+			IEvent event = EventRepository.getEvent(p_methName);
+			if (event == null)
+				return false;
+			_return = methodInvoked(event, p_methName);
+			MirrorStack.unlock();
+		}
+		return _return;
+	}
+
+	public static boolean methodInvokedOld(String p_methName) {
 		// System.out.println("METHODINVOKED: "+p_methName);
 		boolean _return = true;
 		if (MirrorStack.lock()) {
 			// _logger.info("MethodInvoked {}", p_methName);
 			MethEvent event = MirrorStack.createMethEventFromString(p_methName);
 			String e = ConfigProperties
-					.getProperty(ConfigProperties.PROPERTIES.ENFORCEMENT
-							.toString());
+					.getProperty(ConfigProperties.PROPERTIES.ENFORCEMENT);
 			boolean enforcement = new Boolean(e);
 			if (enforcement) {
 				event.setActual(false);
-				_return = ucCom.sendEvent2Pdp(event);
+				_return = ucCom.sendEvent2Pdp(event, p_methName);
 
 				if (_return == true) {
 					event.setActual(true);
-					_return = ucCom.sendEvent2Pdp(event);
+					_return = ucCom.sendEvent2Pdp(event, p_methName);
 				}
 			} else {
 				event.setActual(true);
-				_return = ucCom.sendEvent2Pdp(event);
+				_return = ucCom.sendEvent2Pdp(event, p_methName);
 			}
 			MirrorStack.unlock();
 			// if (_return != true) {
@@ -687,56 +794,55 @@ public class MirrorStack {
 	// }
 
 	public static void methodExited(Object o, String p_methName) {
-		Boolean b = new Boolean(
+		// Timer T4
+		Boolean timer4 = new Boolean(
 				ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3
-								.toString()));
-		if (b) {
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T4));
+		if (timer4) {
+			StatisticsWriter.logExecutionTimerT4(p_methName,
+					MirrorStack.TIMER_T4);
+		}
+	}
+
+	public static void methodExitedOld(Object o, String p_methName) {
+		Boolean timer3 = new Boolean(
+				ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3));
+		if (timer3) {
 			long start = System.nanoTime();
 			String fileDescriptor = Utility.extractFileDescriptor(o);
-			p_methName += UcTransformer.STRDELIM + fileDescriptor;
+			p_methName += Utility.STRDELIM + fileDescriptor;
 			// System.out.println("MIRROR STACK " + p_methName);
 			methodExited(p_methName);
 			StatisticsWriter.logExecutionTimerT3(p_methName, System.nanoTime()
 					- start);
 		} else {
 			String fileDescriptor = Utility.extractFileDescriptor(o);
-			p_methName += UcTransformer.STRDELIM + fileDescriptor;
+			p_methName += Utility.STRDELIM + fileDescriptor;
 			// System.out.println("MIRROR STACK " + p_methName);
 			methodExited(p_methName);
 		}
 
 		// Timer T4
-		b = new Boolean(
-				ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.TIMER_T4
-								.toString()));
-		if (b) {
-			StatisticsWriter.logExecutionTimerT4(p_methName,
-					MirrorStack.TIMER_T4);
-		}
-
-		// Timer T5
-		b = new Boolean(
-				ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.TIMER_T5
-								.toString()));
-		if (b) {
-			StatisticsWriter.logExecutionTimerT5(p_methName,
-					MirrorStack.TIMER_T5);
-		}
+		// b = new Boolean(
+		// ConfigProperties
+		// .getProperty(ConfigProperties.PROPERTIES.TIMER_T4));
+		// if (b) {
+		// StatisticsWriter.logExecutionTimerT4(p_methName,
+		// MirrorStack.TIMER_T4);
+		// }
 	}
 
-	public static void methodExited(String p_methName) {
+	private static void methodExited(String p_methName) {
 		if (MirrorStack.lock()) {
 			// _logger.info("MethodExited {}", p_methName);
-			final String delim = UcTransformer.STRDELIM;
+			final String delim = Utility.STRDELIM;
 
 			MethEvent event = MirrorStack.createMethEventFromString(p_methName);
 			event.setType(MethEvent.Type.END);
 			event.setActual(true);
 
-			ucCom.sendEvent2Pdp(event);
+			ucCom.sendEvent2Pdp(event, p_methName);
 
 			MirrorStack.unlock();
 		}

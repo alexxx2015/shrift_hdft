@@ -125,6 +125,8 @@ public class Utility {
 
 	static Map<String, String> METHODS = new HashMap<String, String>();
 
+	public static final String STRDELIM = ":";
+
 	private void printStr2File(String p_str) {
 		try {
 			File f = new File("/Users/ladmin/LOGTRANS.txt");
@@ -335,9 +337,9 @@ public class Utility {
 	 * 
 	 * @param p_opcode
 	 *            Java Bytecode opcode to invoke instruction
-	 * @param p_owner
+	 * @param p_owner_classname
 	 *            Owner class where of invoked method p_name
-	 * @param p_name
+	 * @param p_owner_methodname
 	 *            Method name of invoked method that has to be replaced
 	 * @param p_desc
 	 *            Java bytecode method signature
@@ -349,8 +351,8 @@ public class Utility {
 	 *            Contains sink or source specification
 	 * @return
 	 */
-	public static String createHelperMethod(int p_opcode, String p_owner,
-			String p_name, String p_desc, ClassWriter cv, String classname,
+	public static String createHelperMethod(int p_opcode, String p_owner_classname,
+			String p_owner_methodname, String p_desc, ClassWriter cv, String classname,
 			List<SinkSource> sors) {
 		StringBuilder desc = new StringBuilder();
 		try {
@@ -364,10 +366,12 @@ public class Utility {
 			// Generate new method signature
 			Type[] argT = Type.getArgumentTypes(p_desc);
 			
-			//Helper variable to store the correct parameter index within the local variable table
-			desc.append("(");
+			//Create method description of the to be invoked methods
+			desc.append("(");			
 			// desc.append("Ljava/lang/Object;");
-			desc.append("L" + p_owner + ";");
+			desc.append("L" + p_owner_classname + ";");
+			
+			//Helper variable to store the correct parameter index within the local variable table
 			int paramIndex = 0;
 			if (argT.length > 0) {
 				for (Type t : argT) {
@@ -387,10 +391,10 @@ public class Utility {
 			}
 			Type[] myArgT = Type.getArgumentTypes(desc.toString());
 
-			if (p_name.equals("<init>")) {
-				p_name = p_owner.replace("/", "_") + "_init";
+			if (p_owner_methodname.equals("<init>")) {
+				p_owner_methodname = p_owner_classname.replace("/", "_") + "_init";
 			}
-			String id = classname + "." + p_name + ":" + desc.toString();
+			String id = classname + "." + p_owner_methodname + ":" + desc.toString();
 			if (Utility.METHODS.containsKey(id)) {
 				return desc.toString();
 			} else {
@@ -401,9 +405,10 @@ public class Utility {
 			// ClassReader cr = new ClassReader(b);
 			// ClassWriter cw = new ClassWriter(cv, ClassWriter.COMPUTE_MAXS |
 			// ClassWriter.COMPUTE_FRAMES);
-
+			
+			//Create a new asm-method instance
 			MethodVisitor mv = cv.visitMethod(Opcodes.ACC_PUBLIC
-					+ Opcodes.ACC_STATIC, p_name, desc.toString(), null, null);
+					+ Opcodes.ACC_STATIC, p_owner_methodname, desc.toString(), null, null);
 			mv.visitCode();
 
 			// Set<Integer> ks = sors.keySet();
@@ -425,11 +430,7 @@ public class Utility {
 			// mv.visitVarInsn(Opcodes.ILOAD, parameter);
 			// }
 			// } else {
-			mv.visitVarInsn(Opcodes.ALOAD, 0);// ALOAD_0 -> the first
-												// parameter is the
-												// object
-												// reference
-												// }
+			mv.visitVarInsn(Opcodes.ALOAD, 0);// ALOAD_0 -> the first parameter is the object reference }
 			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
 			mv.visitVarInsn(Opcodes.ALOAD, paramIndex);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
@@ -463,29 +464,26 @@ public class Utility {
 				}
 				i++;
 			}
-			Boolean b = new Boolean(
+			Boolean timer4 = new Boolean(
 					ConfigProperties
-							.getProperty(ConfigProperties.PROPERTIES.TIMER_T4
-									.toString()));
-			if (b) {
+							.getProperty(ConfigProperties.PROPERTIES.TIMER_T4));
+			if (timer4) {
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 						UcTransformer.HOOKMETHOD, "timerT4Start", "()V", false);
 			}
 			
-			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, false);
+			mv.visitMethodInsn(p_opcode, p_owner_classname, p_owner_methodname, p_desc, false);
 			
-			if (b) {
+			if (timer4) {
+				mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length - 1);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-						UcTransformer.HOOKMETHOD, "timerT4Stop", "()V", false);
+						UcTransformer.HOOKMETHOD, "timerT4Stop", "(Ljava/lang/String;)V", false);
 			}
 
-			mv.visitVarInsn(Opcodes.ALOAD, 0);// ALOAD_0 -> the first parameter
-												// is the object reference
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
-			mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length - 1);
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
-					"methodExited", "(Ljava/lang/Object;Ljava/lang/String;)V",
-					false);
+			//mv.visitVarInsn(Opcodes.ALOAD, 0);// ALOAD_0 -> the first parameter is the object reference
+			//mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
+			//mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length - 1);
+			//mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,"methodExited", "(Ljava/lang/Object;Ljava/lang/String;)V",false);
 
 			// Add return
 			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY) {
@@ -540,6 +538,212 @@ public class Utility {
 
 		return desc.toString();
 	}
+
+	/**
+	 * Populates the PIP, i.e. create all Sink and Source container and their
+	 * aliases among each other
+	 * 
+	 * @param file
+	 *            Filename that specifies the Joana analysis report
+	 */
+
+	public static void populatePip(String file) {
+		UcCommunicator ucom = UcCommunicator.getInstance();
+		StaticAnalysis.importXML(new File(file).getAbsolutePath());
+
+		IMessageFactory _messageFactory = MessageFactoryCreator
+				.createMessageFactory();
+
+		// Generate Sources
+		JSONObject jsonReq = new JSONObject();
+		JSONArray sources = new JSONArray();
+		try {
+			Iterator<SinkSource> it = StaticAnalysis.getSources().iterator();
+			while (it.hasNext()) {
+				JSONObject s = new JSONObject();
+				SinkSource source = it.next();
+
+				// Add id
+				s.put("id", source.getId());
+
+				// Add location
+				s.put("location", source.getLocation());
+
+				// Add offset
+				s.put("offset", source.getOffset());
+
+				if (source.is_return()) {
+					s.put("parampos", -1);
+				} else if (source.getParam() != -1000) {
+					s.put("parampos", source.getParam());
+				}
+
+				// Add signature
+				List<String> signatures = source.getPossibleSignatures();
+				Iterator<String> sigIt = signatures.iterator();
+				// String signature = "";
+				JSONArray possibleSignature = new JSONArray();
+				while (sigIt.hasNext()) {
+					possibleSignature.add(sigIt.next());
+				}
+
+				s.put("signature", possibleSignature);
+
+				sources.add(s);
+			}
+		} catch (Exception e) {
+			System.out.println("Error while pasrsing sources. ");
+			e.printStackTrace();
+		}
+		jsonReq.put("listOfSources", sources);
+
+		// Generate Sinks
+		JSONArray sinks = new JSONArray();
+		try {
+			Iterator<SinkSource> it = StaticAnalysis.getSinks().iterator();
+			while (it.hasNext()) {
+				JSONObject sink = new JSONObject();
+				SinkSource sinkSource = it.next();
+
+				sink.put("id", sinkSource.getId());
+
+				sink.put("location", sinkSource.getLocation());
+
+				sink.put("offset", sinkSource.getOffset());
+
+				if (sinkSource.is_return()) {
+					sink.put("parampos", -1);
+				} else if (sinkSource.getParam() != -1000) {
+					sink.put("parampos", sinkSource.getParam());
+				}
+
+				// Add signature
+				List<String> signatures = sinkSource.getPossibleSignatures();
+				Iterator<String> sigIt = signatures.iterator();
+				JSONArray possibleSignatures = new JSONArray();
+				while (sigIt.hasNext()) {
+					possibleSignatures.add(sigIt.next());
+				}
+
+				sink.put("signature", possibleSignatures);
+
+				sinks.add(sink);
+			}
+		} catch (Exception e) {
+			System.err.println("Error while pasrsing sinks. ");
+			e.printStackTrace();
+		}
+		jsonReq.put("listOfSinks", sinks);
+
+		JSONArray flows = new JSONArray();
+		// String listOfFlows = "";
+		Iterator<Flow> flowIt = StaticAnalysis.getFlows().iterator();
+
+		while (flowIt.hasNext()) {
+			JSONObject f = new JSONObject();
+
+			Flow flow = flowIt.next();
+			
+			JSONArray flowSources = new JSONArray();
+			List<String> listOfSources = flow.getSource();
+			if (listOfSources != null) {
+				SinkSource sink = StaticAnalysis.getSinkSourceById(
+						flow.getSink(), NODETYPE.SINK);
+
+				f.put("sink", sink.getId());
+				Iterator<String> sourceIt = flow.getSource().iterator();
+				while (sourceIt.hasNext()) {
+					String sourceId = sourceIt.next();
+					SinkSource source = StaticAnalysis.getSinkSourceById(
+							sourceId, NODETYPE.SOURCE);
+					flowSources.add(sourceId);
+				}
+				f.put("sources", flowSources);
+				
+				flows.add(f);
+			}
+		}
+		jsonReq.put("listOfFlows", flows);
+
+		// param.put("listOfSources", listOfSources);
+		// param.put("listOfSinks", listOfSinks);
+		// param.put("listOfFlows", listOfFlows);
+
+		Map<String, String> param = new HashMap<String, String>();
+
+		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
+		String[] runningVmComp = runningVm.split("@");
+		String pid = "";
+		if (runningVmComp.length > 0) {
+			pid = runningVmComp[0];
+		}
+		param.put("PEP", "Java");
+		param.put("PID", pid);
+		param.put("REPORT", jsonReq.toJSONString());
+
+		IEvent initEvent = _messageFactory.createActualEvent(
+				"JoanaInitInfoFlow", param);
+		ucom.sendInitPdpEvent(initEvent);
+	}
+
+	public static boolean isBlackisted(String classname) {
+		classname = classname.replace("/", ".");
+		boolean _return = false;
+		// Read blacklist file if not done yet
+		if (BLACKLIST == null) {
+			try {
+				BLACKLIST = new LinkedList<String[]>();
+				String filename = ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.BLACKLIST);
+				if (!"".equals(filename)) {
+					File f = new File(filename);
+					FileInputStream fis = new FileInputStream(f);
+					BufferedReader br = new BufferedReader(
+							new InputStreamReader(fis));
+					String line;
+					while ((line = br.readLine()) != null) {
+						String[] lineCmp = line.split(":");
+						if (lineCmp.length == 2)
+							BLACKLIST.add(lineCmp);
+					}
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		if (BLACKLIST.size() > 0) {
+			Iterator<String[]> it = BLACKLIST.iterator();
+			while (it.hasNext()) {
+				String[] cmp = it.next();
+				switch (cmp[0]) {
+				case "contains":
+					if (classname.toLowerCase().contains(cmp[1].toLowerCase()))
+						_return = true;
+					break;
+				case "startswith":
+					if (classname.toLowerCase()
+							.startsWith(cmp[1].toLowerCase()))
+						_return = true;
+					break;
+				case "endswith":
+					if (classname.toLowerCase().endsWith(cmp[1].toLowerCase()))
+						_return = true;
+					break;
+				}
+				if (_return)
+					break;
+			}
+		}
+		return _return;
+	}
+}
+
+/*	public static final String PREFIX = "my/";
 
 	private static String myrep(String p_replaceable) {
 		if (p_replaceable != null) {
@@ -650,303 +854,4 @@ public class Utility {
 		}
 		return p_replaceable;
 	}
-
-	/**
-	 * Populates the PIP, i.e. create all Sink and Source container and their
-	 * aliases among each other
-	 * 
-	 * @param file
-	 *            Filename that specifies the Joana analysis report
-	 */
-
-	public static void populatePip(String file) {
-		UcCommunicator ucom = UcCommunicator.getInstance();
-		StaticAnalysis.importXML(new File(file).getAbsolutePath());
-
-		IMessageFactory _messageFactory = MessageFactoryCreator
-				.createMessageFactory();
-
-		// String sep1 = Settings.getInstance().getJoanaDelimiter1();
-		// String sep2 = Settings.getInstance().getJoanaDelimiter2();
-
-		// Generate Sources
-		JSONObject jsonReq = new JSONObject();
-		JSONArray sources = new JSONArray();
-		try {
-			// param.put("PEP", "Java");
-			// param.put("type", "source");
-			// param.put("PID", pid);
-			Iterator<SinkSource> it = StaticAnalysis.getSources().iterator();
-			while (it.hasNext()) {
-				JSONObject s = new JSONObject();
-				SinkSource source = it.next();
-
-				// Add id
-				// param.put("id", source.getId());
-				// currSource += "id" + sep1 + source.getId()+ sep1;
-				s.put("id", source.getId());
-
-				// Add location
-				// param.put("location", source.getLocation());
-				// currSource += "location" + sep1 + source.getLocation()+ sep1;
-				s.put("location", source.getLocation());
-
-				// Add offset
-				// param.put("offset", String.valueOf(source.getOffset()));
-				// currSource += "offset" + sep1 +
-				// String.valueOf(source.getOffset()) + sep1;
-				s.put("offset", source.getOffset());
-
-				if (source.is_return()) {
-					// param.put("parampos", "-1");
-					// currSource += "parampos" + sep1 + "-1" + sep1;
-					s.put("parampos", -1);
-				} else if (source.getParam() != -1000) {
-					// param.put("parampos", String.valueOf(source.getParam()));
-					// currSource += "parampos" + sep1 +
-					// String.valueOf(source.getParam()) + sep1;
-					s.put("parampos", source.getParam());
-				}
-
-				// Add signature
-				List<String> signatures = source.getPossibleSignatures();
-				Iterator<String> sigIt = signatures.iterator();
-				// String signature = "";
-				JSONArray possibleSignature = new JSONArray();
-				while (sigIt.hasNext()) {
-					// signature += sigIt.next()+
-					// Settings.getInstance().getJoanaDelimiter1();
-					possibleSignature.add(sigIt.next());
-				}
-				// if (signature.length() > 0) {
-				// signature = signature.substring(0, signature.length() - 1);
-				// }
-				// param.put("signature", signature);
-				// currSource += "signature" + sep1 + signature+ sep1;
-				s.put("signature", possibleSignature);
-
-				// IEvent initEvent = _messageFactory.createActualEvent(
-				// "JoanaInitInfoFlow", param);
-				// ucom.sendInitPdpEvent(initEvent);
-				// listOfSources += currSource + sep2;
-				sources.add(s);
-			}
-		} catch (Exception e) {
-			System.out.println("Error while pasrsing sources. ");
-			e.printStackTrace();
-		}
-		jsonReq.put("listOfSources", sources);
-
-		// String listOfSinks = "";
-		// Generate Sinks
-		JSONArray sinks = new JSONArray();
-		try {
-			// param.clear();
-			// param.put("PEP", "Java");
-			// param.put("type", "sink");
-			// param.put("PID", pid);
-			Iterator<SinkSource> it = StaticAnalysis.getSinks().iterator();
-			while (it.hasNext()) {
-				// String currSink = "";
-				JSONObject sink = new JSONObject();
-				SinkSource sinkSource = it.next();
-
-				// Add id
-				// param.put("id", source.getId());
-				// currSink += "id" + sep1 + source.getId()+ sep1;
-				sink.put("id", sinkSource.getId());
-
-				// Add location
-				// param.put("location", source.getLocation());
-				// currSink += "location" + sep1 + source.getLocation() + sep1;
-				sink.put("location", sinkSource.getLocation());
-
-				// Add offset
-				// param.put("offset", String.valueOf(source.getOffset()));
-				// currSink += "offset" + sep1 +
-				// String.valueOf(source.getOffset()) +sep1;
-				sink.put("offset", sinkSource.getOffset());
-
-				if (sinkSource.is_return()) {
-					// param.put("parampos", "-1");
-					// currSink += "parampos" + sep1 + "-1" + sep1;
-					sink.put("parampos", -1);
-				} else if (sinkSource.getParam() != -1000) {
-					// param.put("parampos", String.valueOf(source.getParam()));
-					// currSink += "parampos" +sep1 +
-					// String.valueOf(source.getParam()) + sep1;
-					sink.put("parampos", sinkSource.getParam());
-				}
-
-				// Add signature
-				List<String> signatures = sinkSource.getPossibleSignatures();
-				Iterator<String> sigIt = signatures.iterator();
-				// String signature = "";
-				JSONArray possibleSignatures = new JSONArray();
-				while (sigIt.hasNext()) {
-					// signature += sigIt.next() +
-					// Settings.getInstance().getJoanaDelimiter1();
-					possibleSignatures.add(sigIt.next());
-				}
-				// if (signature.length() > 0) {
-				// signature = signature.substring(0, signature.length() - 1);
-				// }
-				// param.put("signature", signature);
-				// currSink += "signature" + sep1 + signature + sep1;
-				sink.put("signature", possibleSignatures);
-
-				// IEvent initEvent = _messageFactory.createActualEvent(
-				// "JoanaInitInfoFlow", param);
-				// ucom.sendInitPdpEvent(initEvent);
-				// listOfSinks += currSink + sep2;
-				sinks.add(sink);
-			}
-		} catch (Exception e) {
-			System.err.println("Error while pasrsing sinks. ");
-			e.printStackTrace();
-		}
-		jsonReq.put("listOfSinks", sinks);
-
-		// Generate Flow
-		// param.clear();
-		// param.put("type", "iflow");
-		// param.put("PEP", "Java");
-		// param.put("PID", pid);
-
-		JSONArray flows = new JSONArray();
-		// String listOfFlows = "";
-		Iterator<Flow> flowIt = StaticAnalysis.getFlows().iterator();
-		// int i = 0;
-		while (flowIt.hasNext()) {
-			JSONObject f = new JSONObject();
-			// String currFlow="";
-			Flow flow = flowIt.next();
-
-			// String parampos = String.valueOf(sink.getParam());
-			// if (sink.is_return()) {
-			// parampos = "-1";
-			// }
-			// if (sink != null) {
-			// //param.put("sink", sink.getLocation() + ":" + sink.getOffset()
-			// // + ":" + parampos);
-			// currFlow += sink.getId() + sep1;
-			// }
-
-			// String sources = "";
-			JSONArray flowSources = new JSONArray();
-			List<String> listOfSources = flow.getSource();
-			if (listOfSources != null) {
-				SinkSource sink = StaticAnalysis.getSinkSourceById(
-						flow.getSink(), NODETYPE.SINK);
-
-				f.put("sink", sink.getId());
-				Iterator<String> sourceIt = flow.getSource().iterator();
-				while (sourceIt.hasNext()) {
-					String sourceId = sourceIt.next();
-					SinkSource source = StaticAnalysis.getSinkSourceById(
-							sourceId, NODETYPE.SOURCE);
-					flowSources.add(sourceId);
-
-					// parampos = String.valueOf(source.getParam());
-					// if (source.is_return()) {
-					// parampos = "-1";
-					// }
-					// sources += source.getLocation() + ":" +
-					// source.getOffset()
-					// + ":" + parampos
-					// + Settings.getInstance().getJoanaInitDelimiter();
-					// currFlow += source.getId()+sep1;
-				}
-				f.put("sources", flowSources);
-				// if (sources.length() > 0) {
-				// sources = sources.substring(0, sources.length() - 1);
-				// }
-				// param.put("source", sources);
-
-				// IEvent initEvent = _messageFactory.createActualEvent(
-				// "JoanaInitInfoFlow", param);
-				// ucom.sendInitPdpEvent(initEvent);
-				// listOfFlows += currFlow + sep2;
-				flows.add(f);
-			}
-		}
-		jsonReq.put("listOfFlows", flows);
-
-		// param.put("listOfSources", listOfSources);
-		// param.put("listOfSinks", listOfSinks);
-		// param.put("listOfFlows", listOfFlows);
-
-		Map<String, String> param = new HashMap<String, String>();
-
-		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
-		String[] runningVmComp = runningVm.split("@");
-		String pid = "";
-		if (runningVmComp.length > 0) {
-			pid = runningVmComp[0];
-		}
-		param.put("PEP", "Java");
-		param.put("PID", pid);
-		param.put("REPORT", jsonReq.toJSONString());
-
-		IEvent initEvent = _messageFactory.createActualEvent(
-				"JoanaInitInfoFlow", param);
-		ucom.sendInitPdpEvent(initEvent);
-	}
-
-	public static boolean isBlackisted(String classname) {
-		classname = classname.replace("/", ".");
-		boolean _return = false;
-		// Read blacklist file if not done yet
-		if (BLACKLIST == null) {
-			try {
-				BLACKLIST = new LinkedList<String[]>();
-				String filename = ConfigProperties
-						.getProperty(ConfigProperties.PROPERTIES.BLACKLIST
-								.toString());
-				if (!"".equals(filename)) {
-					File f = new File(filename);
-					FileInputStream fis = new FileInputStream(f);
-					BufferedReader br = new BufferedReader(
-							new InputStreamReader(fis));
-					String line;
-					while ((line = br.readLine()) != null) {
-						String[] lineCmp = line.split(":");
-						if (lineCmp.length == 2)
-							BLACKLIST.add(lineCmp);
-					}
-				}
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		if (BLACKLIST.size() > 0) {
-			Iterator<String[]> it = BLACKLIST.iterator();
-			while (it.hasNext()) {
-				String[] cmp = it.next();
-				switch (cmp[0]) {
-				case "contains":
-					if (classname.toLowerCase().contains(cmp[1].toLowerCase()))
-						_return = true;
-					break;
-				case "startswith":
-					if (classname.toLowerCase()
-							.startsWith(cmp[1].toLowerCase()))
-						_return = true;
-					break;
-				case "endswith":
-					if (classname.toLowerCase().endsWith(cmp[1].toLowerCase()))
-						_return = true;
-					break;
-				}
-				if (_return)
-					break;
-			}
-		}
-		return _return;
-	}
-}
+*/

@@ -1,13 +1,17 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Properties;
 
 import org.junit.After;
+import org.junit.Ignore;
 
 import de.tum.in.i22.uc.Controller;
 import de.tum.in.i22.uc.cm.commandLineOptions.CommandLineOptions;
+import edu.tum.uc.jvm.UcCommunicator;
+import edu.tum.uc.jvm.utility.ConfigProperties;
 
 public abstract class AbstractTest {
 	protected static Controller box;
@@ -64,7 +68,23 @@ public abstract class AbstractTest {
 
 		if (startPdpServer) {
 			box = new Controller(args);
-			box.start();
+			box.start();			
+
+			// In case of using the pdp via LocFuncCall set internal pdpController in UcCommunicator.
+			boolean netcom = new Boolean(ConfigProperties
+					.getProperty(ConfigProperties.PROPERTIES.NETCOM));
+			if (!netcom) {
+				Class<?> ucCom = UcCommunicator.class;
+				for (Field f : ucCom.getDeclaredFields()) {
+					if (f.getName().toLowerCase().trim()
+							.equals("pdpcontroller")) {
+						f.setAccessible(true);
+						f.set(UcCommunicator.getInstance(), this.box);
+						f.setAccessible(false);
+						break;
+					}
+				}
+			}
 		}
 
 	}

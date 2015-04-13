@@ -9,7 +9,6 @@ public class MyClassReader extends ClassReader {
 
 	public MyClassReader(byte[] arg0) {
 		super(arg0);
-		// TODO Auto-generated constructor stub
 	}
 	
 	@Override

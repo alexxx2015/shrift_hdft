@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
-import java.util.Date;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -20,29 +19,39 @@ import edu.tum.uc.jvm.asm.MyClassAdapter;
 import edu.tum.uc.jvm.asm.MyClassReader;
 import edu.tum.uc.jvm.asm.MyClassWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
+import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
 
 public class UcTransformer implements ClassFileTransformer {
 
 	private static TomcatClassLoader myClassLoader;
+	
 	private static ProtectionDomain myProtDom;
-
-	public static final String PREFIX = "my/";
 
 	public static final String HOOKMETHOD = MirrorStack.class.getName()
 			.replace(".", "/");
-	public static final String STRDELIM = ":";
-
-	public static final String MY_REPO = "/Users/ladmin/Documents/workspace/edu.tum.www22.example/bin/MyRepo/my";// "/Users/ladmin/MyRepo/my";
-
-	private static boolean byTomcat = false;
-
-	public UcTransformer() {
+	
+	//true if running instrumentation in a webservice
+	private boolean instrument_webservice;
+	
+	{
+		//Initialize pdp communication
+		UcCommunicator.getInstance().initPDP();
+		
+		//Populate PIP
+		Utility.populatePip(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
+		
+		//Create for all sinks and sources a corresponding object in the event repository
+		EventRepository.createEventObjects(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));				
+	}
+	
+	public UcTransformer(){
+		this(false);
 	}
 
-	public UcTransformer(boolean p_byTomcat) {
-		UcTransformer.byTomcat = p_byTomcat;
+	public UcTransformer(boolean p_instrument_webservice) {
+		this.instrument_webservice = p_instrument_webservice;
 	}
 
 	// Run instruction: java -javaagent:uc4jvm.jar -Djava.security.manager
@@ -72,37 +81,39 @@ public class UcTransformer implements ClassFileTransformer {
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
 		
-		if (UcTransformer.byTomcat) {
+		//use a web server specific classloader if running in a web server
+		if (this.instrument_webservice) {
 			this.setClassLoader(loader);
 			this.setProtectionDomain(protectionDomain);
 		}
 		
+		//Do not instrument class if it is blacklisted
 		if(Utility.isBlackisted(className)){
 			return null;
 		}
-		
-		//For statstic purposes
-		long start = System.nanoTime();
+
+		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
+		//log time for instrumentation
+		long start_instrumentation = 0;		
+		if(!"".equals(statistic)){
+			start_instrumentation = System.nanoTime();
+		}
 
 		MyClassReader cr = new MyClassReader(classfileBuffer);
 		ClassNode cn = new ClassNode();
 		cr.accept(cn, 0);
 
-		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		// ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS |
-		// ClassWriter.COMPUTE_FRAMES);
+		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);// ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
 		
-		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS.toString());
 		if(!"".equals(statistic)){
-			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(), System.nanoTime()-start);
+			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(), System.nanoTime()-start_instrumentation);
 		} 
 		
 		//Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in configuration file
 		String s = ConfigProperties
-				.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTED_CLASS_PATH
-						.toString());
+				.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTED_CLASS_PATH);
 		if ((s != null) && !s.equals("")) {
 			try {
 				File f = new File(s + cr.getClassName().replace("/", "_")+".class");
@@ -118,6 +129,35 @@ public class UcTransformer implements ClassFileTransformer {
 				e.printStackTrace();
 			}
 		}
+		
+		//return the instrumented class
 		return cw.toByteArray();
 	}
 }
+
+//try {
+//	Method method = ClassLoader.class.getDeclaredMethod(
+//			"findLoadedClass", new Class[] { String.class });
+//	method.setAccessible(true);
+//
+//	ClassLoader cl = ClassLoader.getSystemClassLoader();
+//	Object clazz = method.invoke(cl,
+//			"edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
+//	if (clazz == null) {
+//	}
+//} catch (SecurityException e) {
+//	// TODO Auto-generated catch block
+//	e.printStackTrace();
+//} catch (IllegalArgumentException e) {
+//	// TODO Auto-generated catch block
+//	e.printStackTrace();
+//} catch (IllegalAccessException e) {
+//	// TODO Auto-generated catch block
+//	e.printStackTrace();
+//} catch (InvocationTargetException e) {
+//	// TODO Auto-generated catch block
+//	e.printStackTrace();
+//} catch (NoSuchMethodException e) {
+//	// TODO Auto-generated catch block
+//	e.printStackTrace();
+//}

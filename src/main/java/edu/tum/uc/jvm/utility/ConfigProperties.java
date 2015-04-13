@@ -26,6 +26,10 @@ public final class ConfigProperties {
 		, TIMER_T3
 		, TIMER_T4
 		, TIMER_T5
+		, NETCOM
+		, UC_PROPERTIES
+		, PDP_ASYNCOM
+		, UC4WIN_AUTOSTART
 	}
 	
 	private static Properties CONFIGURATION = null;	
@@ -35,7 +39,7 @@ public final class ConfigProperties {
 		CONFIGURATION= null;
 	}
 	
-	public static String getProperty(String property){
+	public static String getProperty(PROPERTIES property){
 		if(CONFIGURATION == null){
 			if(configFile == null)
 				configFile = "/uc.config";
@@ -59,7 +63,7 @@ public final class ConfigProperties {
 //						}
 //					}
 				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
+					// TODO Auto-generPROPERTIESated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -67,7 +71,7 @@ public final class ConfigProperties {
 				}
 			}
 		}
-		String _return = CONFIGURATION.getProperty(property);
+		String _return = CONFIGURATION.getProperty(property.toString());
  		return _return;
 	}	
 }

@@ -7,6 +7,7 @@ import java.net.URLConnection;
 
 
 public class MyClassLoader extends ClassLoader {
+	
 	public MyClassLoader(ClassLoader parent){
 		super(parent);
 	}
@@ -15,7 +16,7 @@ public class MyClassLoader extends ClassLoader {
 		return super.defineClass(className, bytecode, 0, bytecode.length);
 	}
 	
-	public Class loadClass(String name) throws ClassNotFoundException {
+	public Class<?> loadClass(String name) throws ClassNotFoundException {
         if(!"test.MyTest2".equals(name))
                 return super.loadClass(name);
 

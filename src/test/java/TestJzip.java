@@ -33,7 +33,7 @@ public class TestJzip extends AbstractTest {
 			Class<?> clazz = jzip.JZip.class;
 			String className = clazz.getName().replace(".",
 					System.getProperty("file.separator"))
-					+ ".class";
+					+ ".class";			
 			InputStream is = clazz.getClassLoader().getResourceAsStream(
 					className);
 			byte[] raw_bytecode = IOUtils.toByteArray(is);

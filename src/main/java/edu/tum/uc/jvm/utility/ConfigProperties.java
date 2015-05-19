@@ -39,7 +39,7 @@ public final class ConfigProperties {
 		CONFIGURATION= null;
 	}
 	
-	public static String getProperty(String string){
+	public static String getProperty(PROPERTIES string){
 		if(CONFIGURATION == null){
 			if(configFile == null)
 				configFile = "/uc.config";

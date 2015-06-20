@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<mapping analysistime="13393">
+  <sources>
+    <source>
+      <id>Source0</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:72</location>
+      <possible-signatures>
+        <signature>java.io.FileInputStream.read([B)I</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </source>
+    <source>
+      <id>Source1</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:79</location>
+      <possible-signatures>
+        <signature>java.io.FileInputStream.read([B)I</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </source>
+  </sources>
+  <sinks>
+    <sink>
+      <id>Sink0</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:6</location>
+      <possible-signatures>
+        <signature>java.io.FileInputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="0"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink1</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:6</location>
+      <possible-signatures>
+        <signature>java.io.FileInputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink2</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:16</location>
+      <possible-signatures>
+        <signature>java.io.FileInputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="0"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink3</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:16</location>
+      <possible-signatures>
+        <signature>java.io.FileInputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink4</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:26</location>
+      <possible-signatures>
+        <signature>java.io.FileOutputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="0"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink5</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:26</location>
+      <possible-signatures>
+        <signature>java.io.FileOutputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink6</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:36</location>
+      <possible-signatures>
+        <signature>java.io.FileOutputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="0"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink7</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:36</location>
+      <possible-signatures>
+        <signature>java.io.FileOutputStream.&lt;init&gt;(Ljava/lang/String;)V</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink8</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:110</location>
+      <possible-signatures>
+        <signature>java.io.FileOutputStream.write([B)V</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </sink>
+    <sink>
+      <id>Sink9</id>
+      <location>test.TestProgram10.main([Ljava/lang/String;)V:117</location>
+      <possible-signatures>
+        <signature>java.io.FileOutputStream.write([B)V</signature>
+      </possible-signatures>
+      <param index="1"/>
+      <context/>
+    </sink>
+  </sinks>
+  <creation-sites/>
+  <flows>
+    <sink id="Sink0"/>
+    <sink id="Sink1"/>
+    <sink id="Sink2"/>
+    <sink id="Sink3"/>
+    <sink id="Sink4"/>
+    <sink id="Sink5"/>
+    <sink id="Sink6"/>
+    <sink id="Sink7"/>
+    <sink id="Sink8">
+      <source id="Source0"/>
+      <chop>
+        <chopNode byteCodeIndex="2" label="v4 = p1 + #(3)" operation="assign" ownerMethod="test.TestProgram10.inc(I)I"/>
+        <chopNode byteCodeIndex="3" label="return v4" operation="compound" ownerMethod="test.TestProgram10.inc(I)I"/>
+        <chopNode byteCodeIndex="72" label="v21 = v3.read(v16)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="86" label="v25 = v16[#(1)]" operation="reference" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="95" label="moveData(v16, v18, v25)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="104" label="moveData(v17, v19, v25)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="110" label="v9.write(v18)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="1" label="v6 = inc(p3)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BI)V"/>
+        <chopNode byteCodeIndex="7" label="v7 = v6 * v6" operation="assign" ownerMethod="test.TestProgram10.moveData([B[BI)V"/>
+        <chopNode byteCodeIndex="12" label="moveDataHelp(p1, p2, v7)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BI)V"/>
+        <chopNode byteCodeIndex="17" label="v11 = CONVERT I to B p3" operation="assign" ownerMethod="test.TestProgram10.moveDataHelp([B[BI)V"/>
+        <chopNode byteCodeIndex="18" label="p2[#(0)] = v11" operation="modify" ownerMethod="test.TestProgram10.moveDataHelp([B[BI)V"/>
+      </chop>
+    </sink>
+    <sink id="Sink9">
+      <source id="Source0"/>
+      <chop>
+        <chopNode byteCodeIndex="2" label="v4 = p1 + #(3)" operation="assign" ownerMethod="test.TestProgram10.inc(I)I"/>
+        <chopNode byteCodeIndex="3" label="return v4" operation="compound" ownerMethod="test.TestProgram10.inc(I)I"/>
+        <chopNode byteCodeIndex="72" label="v21 = v3.read(v16)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="86" label="v25 = v16[#(1)]" operation="reference" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="95" label="moveData(v16, v18, v25)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="104" label="moveData(v17, v19, v25)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="117" label="v12.write(v19)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
+        <chopNode byteCodeIndex="1" label="v6 = inc(p3)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BI)V"/>
+        <chopNode byteCodeIndex="7" label="v7 = v6 * v6" operation="assign" ownerMethod="test.TestProgram10.moveData([B[BI)V"/>
+        <chopNode byteCodeIndex="12" label="moveDataHelp(p1, p2, v7)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BI)V"/>
+        <chopNode byteCodeIndex="17" label="v11 = CONVERT I to B p3" operation="assign" ownerMethod="test.TestProgram10.moveDataHelp([B[BI)V"/>
+        <chopNode byteCodeIndex="18" label="p2[#(0)] = v11" operation="modify" ownerMethod="test.TestProgram10.moveDataHelp([B[BI)V"/>
+      </chop>
+    </sink>
+  </flows>
+</mapping>

@@ -189,6 +189,14 @@ public class UcCommunicator {
 		}
 		return false;
 	}
+	
+	public boolean sendEvent2Pdp(IEvent event){
+		IResponse response;
+		response = this.sendEvent(event);
+		if (response != null)
+			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+		return false;
+	}
 
 	public boolean sendEvent2Pdp(MethEvent event, String p_methName) {
 		// this.initPDP();

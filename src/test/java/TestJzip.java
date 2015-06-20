@@ -41,9 +41,14 @@ public class TestJzip extends AbstractTest {
 			UcTransformer u = new UcTransformer();
 			byte[] instrumented_bytecode = u.transform(null, className, null,
 					null, raw_bytecode);
+			
+			FileOutputStream fos = new FileOutputStream("target/test-classes/jzip/JZipInstrd.class");
+			fos.write(instrumented_bytecode);
 
 			ClassLoader parent = this.getClass().getClassLoader();
 			MyClassLoader mcl = new MyClassLoader(parent);
+			
+			
 			
 			//Reload instrumented JZip class and execute test run: zip a bunch of file in the resource folder 'toBeZippedFiles'
 			Class<?> reloadClass = mcl.define("jzip.JZip",

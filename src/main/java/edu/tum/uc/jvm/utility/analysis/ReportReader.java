@@ -33,6 +33,8 @@ public class ReportReader {
 	private static String ATTR_ID = "id";
 	private static String ATTR_BYTECODEINDEX = "byteCodeIndex";
 	private static String ATTR_OWNERMETHOD = "ownerMethod";
+	private static String ATTR_LABEL = "label";
+	private static String ATTR_OPERATION = "operation";
 
 	private SAXHandler reader = null;
 
@@ -114,7 +116,9 @@ public class ReportReader {
 					} else if (TAG_CHOPNODE.equals(qname)){
 						int bci = Integer.parseInt(attributes.getValue(ATTR_BYTECODEINDEX));
 						String om = attributes.getValue(ATTR_OWNERMETHOD);
-						this.currentFlow.addChopNode(bci, om);
+						String op = attributes.getValue(ATTR_OPERATION);
+						String lbl = attributes.getValue(ATTR_LABEL);
+						this.currentFlow.addChopNode(bci, om, lbl, op);
 					}
 				}
 			}

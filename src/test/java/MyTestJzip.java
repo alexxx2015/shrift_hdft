@@ -14,16 +14,17 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 
-public class TestJzip extends AbstractTest {
+public class MyTestJzip extends AbstractTest {
 
 	@Before
 	public void init() throws Exception {
-		init("/uc-jzip.config");
+		init("/uc-myjzip.config");
 	}
 
 	@Test
@@ -38,7 +39,7 @@ public class TestJzip extends AbstractTest {
 					className);
 			byte[] raw_bytecode = IOUtils.toByteArray(is);
 
-			UcTransformer u = new UcTransformer();
+			MyUcTransformer u = new MyUcTransformer();
 			byte[] instrumented_bytecode = u.transform(null, className, null,
 					null, raw_bytecode);
 			

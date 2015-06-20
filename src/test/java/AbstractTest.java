@@ -21,7 +21,7 @@ public abstract class AbstractTest {
 	protected static int PMP_SERVER_PORT = 40012;
 	protected static int ANY_SERVER_PORT = 40013;
 
-	protected static boolean startPdpServer = true;
+	protected static boolean startPdpServer = false;
 
 	protected void copyConfigFile(String filename) throws Exception {
 		URL url = this.getClass().getResource(filename);

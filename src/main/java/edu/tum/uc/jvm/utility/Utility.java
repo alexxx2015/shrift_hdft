@@ -332,8 +332,8 @@ public class Utility {
 	}
 
 	/**
-	 * Creates a dummy method that extracts that invokes the method for file
-	 * descriptor extraction
+	 * Creates a dummy method that extracts the method for file
+	 * descriptor
 	 * 
 	 * @param p_opcode
 	 *            Java Bytecode opcode to invoke instruction
@@ -391,7 +391,9 @@ public class Utility {
 			}
 			Type[] myArgT = Type.getArgumentTypes(desc.toString());
 
+			
 			if (p_owner_methodname.equals("<init>")) {
+				// p_owner_methodname = "Lpackage_class_init"
 				p_owner_methodname = p_owner_classname.replace("/", "_") + "_init";
 			}
 			String id = classname + "." + p_owner_methodname + ":" + desc.toString();

@@ -1,8 +1,13 @@
 eclipse.preferences.version=1
 org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
+org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
 org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.7
 org.eclipse.jdt.core.compiler.compliance=1.7
 org.eclipse.jdt.core.compiler.problem.assertIdentifier=error
 org.eclipse.jdt.core.compiler.problem.enumIdentifier=error
+=======
+org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.7
+org.eclipse.jdt.core.compiler.compliance=1.7
+>>>>>>> 778256fdec96b8d88bf52a54bb45f9d676d97eaa
 org.eclipse.jdt.core.compiler.problem.forbiddenReference=warning
 org.eclipse.jdt.core.compiler.source=1.7

@@ -4,7 +4,6 @@
 !.gitignore
 .log
 logging
-target
+/target/
 pipdb/
 derby.log
-

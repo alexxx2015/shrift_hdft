@@ -19,21 +19,21 @@ import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 
-public class TestJzip extends AbstractTest {
+public class TestFileDuplicator extends AbstractTest {
 
 	@Before
 	public void init() throws Exception {
-		init("/uc-jzip.config");
+		init("/uc-fileduplicator.config");
 	}
 
 	@Test
 	public void testInstrumentation() {
 		try {			
-			//Load and instrument JZip's bytecode
-			Class<?> clazz = jzip.JZip.class;
+			//Load and instrument FileDuplicators bytecode
+			Class<?> clazz = fileduplicator.FileDuplicator.class;
 			String className = clazz.getName().replace(".",
 					System.getProperty("file.separator"))
-					+ ".class";			
+					+ ".class";
 			InputStream is = clazz.getClassLoader().getResourceAsStream(
 					className);
 			byte[] raw_bytecode = IOUtils.toByteArray(is);
@@ -42,38 +42,19 @@ public class TestJzip extends AbstractTest {
 			byte[] instrumented_bytecode = u.transform(null, className, null,
 					null, raw_bytecode);
 			
-			FileOutputStream fos = new FileOutputStream("target/test-classes/jzip/JZipInstrd.class");
+			FileOutputStream fos = new FileOutputStream("target/test-classes/fileduplicator/FileDuplicatorInstr.class");
 			fos.write(instrumented_bytecode);
 
 			ClassLoader parent = this.getClass().getClassLoader();
 			MyClassLoader mcl = new MyClassLoader(parent);
 			
-			
-			
 			//Reload instrumented JZip class and execute test run: zip a bunch of file in the resource folder 'toBeZippedFiles'
-			Class<?> reloadClass = mcl.define("jzip.JZip",
+			Class<?> reloadClass = mcl.define("fileduplicator.FileDuplicator",
 					instrumented_bytecode);
 			Object obj = reloadClass.newInstance();
 			test.TestIntf myTest2 = (test.TestIntf) obj;
+			myTest2.runtest();
 
-			for (int i = 0; i < 1; i++) {
-				String instruction = "";
-				URL url = this.getClass().getResource("/toBeZippedFiles");
-				if (url != null) {
-					File f = new File(url.getFile());
-					// File f = new File("/home/alex/xlayerpip.zip");
-					instruction = "zip " + f.getParent()
-							+ "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
-					// instruction = "zip /home/alex/toBeZipped.zip "// + f.getAbsolutePath();
-				}
-
-				instruction += "\n exit";
-				InputStream is2 = System.in;
-				System.setIn(new ByteArrayInputStream(instruction.getBytes()));
-				myTest2.runtest();
-				System.setIn(is2);
-				StatisticsWriter.clear();
-			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

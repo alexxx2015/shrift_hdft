@@ -1,8 +1,8 @@
 /*
-.settings
-.project
-.log
+!.settings
+!.project
 !.gitignore
+.log
 logging
 target
 pipdb/

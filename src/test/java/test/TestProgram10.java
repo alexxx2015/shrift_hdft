@@ -8,17 +8,8 @@ import java.io.InputStreamReader;
 import java.util.Random;
 import java.util.Scanner;
 
-public class TestProgram10 implements TestIntf {
+public class TestProgram10 {
 
-	@Override
-	public void runtest() {
-		try {
-			main(new String[] {});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}	
-	
 	private static void moveData(byte[] inbuf, byte[] outbuf, int x, String dummyParam) throws IOException {
 		x = inc(x);
 		x *= x;
@@ -27,7 +18,7 @@ public class TestProgram10 implements TestIntf {
 		dataMover.inbuf = inbuf;
 		dataMover.outbuf = outbuf;
 		dataMover.x = inbuf[1];
-		dataMover.staticx = inbuf[2];
+		dataMover.staticx = 0; // inbuf[2];
 		dataMover.moveData();
 	}
 	private static int inc(int x){
@@ -55,22 +46,6 @@ public class TestProgram10 implements TestIntf {
 		byte[] inbuffer2 = new byte[1000];
 		byte[] outbuffer1 = new byte[1000];
 		byte[] outbuffer2 = new byte[1000];
-<<<<<<< HEAD
-		fis1.read(inbuffer1);
-		fis2.read(inbuffer2);
-		
-		/*TestProgram10 tp = new TestProgram10();
-		tp.testMethod(5, 3.4, "aString");*/
-		
-		int x = (byte)inbuffer1[1];
-		
-		moveData(inbuffer1, outbuffer1, x);
-		moveData(inbuffer2, outbuffer2, x);
-		fos1.write(outbuffer1);
-		fos2.write(outbuffer2);
-	}
-
-=======
 		
 		fis1.read(inbuffer1);
 		fis2.read(inbuffer2);
@@ -80,7 +55,8 @@ public class TestProgram10 implements TestIntf {
 		inbuffer2[4] = (byte)sa[1];
 		
 		int i = inbuffer2[10] % 1000;*/
-		int x = (byte)inbuffer1[1];
+		//int x = (byte)inbuffer1[1];
+		int x = 0;
 		
 		moveData(inbuffer1, outbuffer1, x, ",");
 		moveData(inbuffer2, outbuffer2, x, "");
@@ -88,5 +64,4 @@ public class TestProgram10 implements TestIntf {
 		fos1.write(outbuffer1);
 		fos2.write(outbuffer2);
 	}
->>>>>>> 778256fdec96b8d88bf52a54bb45f9d676d97eaa
 }

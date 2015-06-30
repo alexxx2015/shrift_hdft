@@ -131,6 +131,9 @@ public class MyUcTransformer implements ClassFileTransformer {
 			}
 		}
 		
+		// Add class name to list of instrumented classes in the instrumentation delegate
+		InstrumDelegate.addInstrumentedClassName(cr.getClassName());
+		
 		//return the instrumented class
 		return cw.toByteArray();
 	}

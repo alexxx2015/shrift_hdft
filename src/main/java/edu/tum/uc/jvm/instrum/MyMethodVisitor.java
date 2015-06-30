@@ -65,7 +65,6 @@ public class MyMethodVisitor extends MethodVisitor {
 				// tneg, 116-119, unary
 				
 				// Create a copy of the opcode argument and box it
-				mv.visitInsn(Opcodes.DUP);
 				Type operandType = null;
 				switch (p_opcode) {
 				case Opcodes.I2L:
@@ -76,24 +75,28 @@ public class MyMethodVisitor extends MethodVisitor {
 				case Opcodes.I2S:
 				case Opcodes.INEG:
 					operandType = Type.INT_TYPE;
+					mv.visitInsn(Opcodes.DUP);
 					break;
 				case Opcodes.L2D:
 				case Opcodes.L2F:
 				case Opcodes.L2I:
 				case Opcodes.LNEG:
 					operandType = Type.LONG_TYPE;
+					mv.visitInsn(Opcodes.DUP2);
 					break;
 				case Opcodes.F2D:
 				case Opcodes.F2I:
 				case Opcodes.F2L:
 				case Opcodes.FNEG:
 					operandType = Type.FLOAT_TYPE;
+					mv.visitInsn(Opcodes.DUP);
 					break;
 				case Opcodes.D2F:
 				case Opcodes.D2I:
 				case Opcodes.D2L:
 				case Opcodes.DNEG:
 					operandType = Type.DOUBLE_TYPE;
+					mv.visitInsn(Opcodes.DUP2);
 					break;
 				}
 				boxTopStackValue(mv, operandType);
@@ -120,15 +123,15 @@ public class MyMethodVisitor extends MethodVisitor {
 				// logical, 126-131, binary
 				
 				// Create a copy of the two opcode arguments and box them
-				mv.visitInsn(Opcodes.DUP2);
-				Type operandTypeTop = null;
-				Type operandTypeBottom = null;
 				switch (p_opcode) {
 				case Opcodes.LSHL:
 				case Opcodes.LSHR:
 				case Opcodes.LUSHR:
-					operandTypeTop = Type.INT_TYPE;
-					operandTypeBottom = Type.LONG_TYPE;
+					visitDup3(mv);
+					boxTopStackValue(mv, Type.INT_TYPE);
+					visitSwap15(mv);
+					boxTopStackValue(mv, Type.LONG_TYPE);
+					mv.visitInsn(Opcodes.SWAP);
 					break;
 				case Opcodes.ISHL:
 				case Opcodes.ISHR:
@@ -141,8 +144,11 @@ public class MyMethodVisitor extends MethodVisitor {
 				case Opcodes.IAND:
 				case Opcodes.IOR:
 				case Opcodes.IXOR:
-					operandTypeTop = Type.INT_TYPE;
-					operandTypeBottom = Type.INT_TYPE;
+					mv.visitInsn(Opcodes.DUP2);
+					boxTopStackValue(mv, Type.INT_TYPE);
+					mv.visitInsn(Opcodes.SWAP);
+					boxTopStackValue(mv, Type.INT_TYPE);
+					mv.visitInsn(Opcodes.SWAP);
 					break;
 				case Opcodes.LADD:
 				case Opcodes.LSUB:
@@ -152,30 +158,35 @@ public class MyMethodVisitor extends MethodVisitor {
 				case Opcodes.LAND:
 				case Opcodes.LOR:
 				case Opcodes.LXOR:
-					operandTypeTop = Type.LONG_TYPE;
-					operandTypeBottom = Type.LONG_TYPE;
+					visitDup4(mv);
+					boxTopStackValue(mv, Type.LONG_TYPE);
+					visitSwap15(mv);
+					boxTopStackValue(mv, Type.LONG_TYPE);
+					mv.visitInsn(Opcodes.SWAP);
 					break;
 				case Opcodes.FADD:
 				case Opcodes.FSUB:
 				case Opcodes.FMUL:
 				case Opcodes.FDIV:
 				case Opcodes.FREM:
-					operandTypeTop = Type.FLOAT_TYPE;
-					operandTypeBottom = Type.FLOAT_TYPE;
+					visitDup4(mv);
+					boxTopStackValue(mv, Type.FLOAT_TYPE);
+					visitSwap15(mv);
+					boxTopStackValue(mv, Type.FLOAT_TYPE);
+					mv.visitInsn(Opcodes.SWAP);
 					break;
 				case Opcodes.DADD:
 				case Opcodes.DSUB:
 				case Opcodes.DMUL:
 				case Opcodes.DDIV:
 				case Opcodes.DREM:
-					operandTypeTop = Type.DOUBLE_TYPE;
-					operandTypeBottom = Type.DOUBLE_TYPE;
+					visitDup4(mv);
+					boxTopStackValue(mv, Type.DOUBLE_TYPE);
+					visitSwap15(mv);
+					boxTopStackValue(mv, Type.DOUBLE_TYPE);
+					mv.visitInsn(Opcodes.SWAP);
 					break;
 				}
-				boxTopStackValue(mv, operandTypeTop);
-				mv.visitInsn(Opcodes.SWAP);
-				boxTopStackValue(mv, operandTypeBottom);
-				mv.visitInsn(Opcodes.SWAP);
 				
 				// Load parent object (or null if parent method is static)
 				if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
@@ -191,14 +202,38 @@ public class MyMethodVisitor extends MethodVisitor {
 							MyUcTransformer.DELEGATECLASSNAME, "binaryAssign",
 							"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 			}
-		}
-		
-		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_REFERENCE)) {
+		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_REFERENCE)) {
 			if ((p_opcode >= Opcodes.IALOAD && p_opcode <= Opcodes.SALOAD)) {
 				// load from array
 				
 				// Create a copy of the array and the index
 				mv.visitInsn(Opcodes.DUP2);
+				
+				// Load object or value from array cell
+				// Copy array + index, then load cell content
+				mv.visitInsn(Opcodes.DUP2);
+				mv.visitInsn(p_opcode);
+				
+				// Box primitive value if it is one
+				Type arrayType = null;
+				if (p_opcode != Opcodes.AALOAD) {
+					if (p_opcode == Opcodes.IALOAD) {
+						arrayType = Type.INT_TYPE;
+					} else if (p_opcode == Opcodes.BALOAD) {
+						arrayType = Type.BYTE_TYPE;
+					} else if (p_opcode == Opcodes.CALOAD) {
+						arrayType = Type.CHAR_TYPE;
+					} else if (p_opcode == Opcodes.SALOAD) {
+						arrayType = Type.SHORT_TYPE;
+					} else if (p_opcode == Opcodes.LALOAD) {
+						arrayType = Type.LONG_TYPE;
+					} else if (p_opcode == Opcodes.FALOAD) {
+						arrayType = Type.FLOAT_TYPE;
+					} else if (p_opcode == Opcodes.DALOAD) {
+						arrayType = Type.DOUBLE_TYPE;
+					}
+				}
+				boxTopStackValue(mv, arrayType);
 				
 				// Load parent object (or null if parent method is static)
 				if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
@@ -212,7 +247,83 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitLdcInsn(chopNode.getLabel());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
 							MyUcTransformer.DELEGATECLASSNAME, "assignFromArray",
-							"(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
+							"(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
+			}
+		}  else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_MODIFY)) {
+			if (p_opcode >= Opcodes.IASTORE && p_opcode <= Opcodes.SASTORE) {
+				// store into array cell
+				
+				// duplicate value, index, array & box value if primitive
+				Type arrayType = null;
+				if (p_opcode == Opcodes.AASTORE) {
+					visitDup3(mv);
+				} else {
+					if (p_opcode == Opcodes.IASTORE) {
+						arrayType = Type.INT_TYPE;
+						visitDup3(mv);
+					} else if (p_opcode == Opcodes.BASTORE) {
+						arrayType = Type.BYTE_TYPE;
+						visitDup3(mv);
+					} else if (p_opcode == Opcodes.CASTORE) {
+						arrayType = Type.CHAR_TYPE;
+						visitDup3(mv);
+					} else if (p_opcode == Opcodes.SASTORE) {
+						arrayType = Type.SHORT_TYPE;
+						visitDup3(mv);
+					} else if (p_opcode == Opcodes.LASTORE) {
+						arrayType = Type.LONG_TYPE;
+						visitDup4(mv);
+					} else if (p_opcode == Opcodes.FASTORE) {
+						arrayType = Type.FLOAT_TYPE;
+						visitDup4(mv);
+					} else if (p_opcode == Opcodes.DASTORE) {
+						arrayType = Type.DOUBLE_TYPE;
+						visitDup4(mv);
+					}
+				}
+				boxTopStackValue(mv, arrayType);
+				
+				// Load parent object (or null if parent method is static)
+				if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+					mv.visitInsn(Opcodes.ACONST_NULL);
+				} else {
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+				}
+				
+				// Load parent method name, chopnode label and invoke delegate method
+				mv.visitLdcInsn(fqName);
+				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
+							MyUcTransformer.DELEGATECLASSNAME, "assignToArray",
+							"(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
+			}
+		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_COMPOUND)) {
+			if (p_opcode >= Opcodes.IRETURN && p_opcode <= Opcodes.ARETURN) {
+				// handling void return not needed here (no chopnodes for this)
+				
+				// duplicate top stack value (return value)
+				Type retType = Type.getReturnType(descriptor);
+				if (retType.getSize() == 2) {
+					mv.visitInsn(Opcodes.DUP2);
+				} else {
+					mv.visitInsn(Opcodes.DUP);
+				}
+				
+				boxTopStackValue(mv, retType);
+				
+				// Load parent object (or null if parent method is static)
+				if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+					mv.visitInsn(Opcodes.ACONST_NULL);
+				} else {
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+				}
+				
+				// Load parent method name, chopnode label and invoke delegate method
+				mv.visitLdcInsn(fqName);
+				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
+							MyUcTransformer.DELEGATECLASSNAME, "prepareMethodReturn",
+							"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 			}
 		}
 		mv.visitInsn(p_opcode);
@@ -226,12 +337,12 @@ public class MyMethodVisitor extends MethodVisitor {
 		Chop chopNode = checkChopNode(this.getCurrentLabel());	
 		
 		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_ASSIGN)) {
-			// Create a copy of the two opcode arguments and box them
-			mv.visitInsn(Opcodes.DUP2);
+			
+			// Load opcode operands explicitly on stack and box em
+			mv.visitVarInsn(Opcodes.ILOAD, p_var);
 			boxTopStackValue(mv, Type.INT_TYPE);
-			mv.visitInsn(Opcodes.SWAP);
+			mv.visitLdcInsn(p_inc);
 			boxTopStackValue(mv, Type.INT_TYPE);
-			mv.visitInsn(Opcodes.SWAP);
 			
 			// Load parent object (or null if parent method is static)
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
@@ -288,14 +399,24 @@ public class MyMethodVisitor extends MethodVisitor {
 		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_REFERENCE)
 				&& (p_opcode == Opcodes.GETSTATIC || p_opcode == Opcodes.GETFIELD)) {
 			
-			// Create a copy of the opcode argument (or load null to fill fieldOwner parameter in delegate method)
+			// Create a copy of the opcode argument (field owner object) 
+			// (or load null to fill fieldOwner parameter in delegate method)
 			if (p_opcode == Opcodes.GETSTATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			} else {
 				mv.visitInsn(Opcodes.DUP);
+				mv.visitInsn(Opcodes.DUP); // preparation for next step
 			}
 			
+			// Perform original opcode to get field contents
+			mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
+
+			// Wrap field content
+			boxTopStackValue(mv, Type.getType(p_desc));
+			
+			// field owner class
 			mv.visitLdcInsn(p_owner.replace("/", "."));
+			// field name
 			mv.visitLdcInsn(p_name + p_desc);
 			
 			// Load parent object (or null if parent method is static)
@@ -310,7 +431,57 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(chopNode.getLabel());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
 						MyUcTransformer.DELEGATECLASSNAME, "assignFromField",
-						"(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
+						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
+						+ "Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
+		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_MODIFY)
+				&& (p_opcode == Opcodes.PUTSTATIC || p_opcode == Opcodes.PUTFIELD)) {
+			
+			// true if value has type long, double or float
+			Type valueType = Type.getType(p_desc);
+			boolean valueIsBig = valueType.getSize() == 2;
+			
+			// Create a copy of value and the field owner object 
+			// (or load null to fill fieldOwner parameter in delegate method)
+			// then box the value
+			
+			if (p_opcode == Opcodes.PUTSTATIC) {
+				// duplicate value, then push "null" underneath it
+				if (valueIsBig) {
+					mv.visitInsn(Opcodes.DUP2);
+					mv.visitInsn(Opcodes.ACONST_NULL);
+					visitSwap15(mv);
+				} else {
+					mv.visitInsn(Opcodes.DUP);
+					mv.visitInsn(Opcodes.ACONST_NULL);
+					mv.visitInsn(Opcodes.SWAP);
+				}
+			} else {
+				if (valueIsBig) {
+					visitDup3(mv);
+				} else {
+					mv.visitInsn(Opcodes.DUP2);
+				}
+			}
+			boxTopStackValue(mv, valueType);
+			
+			// field owner class
+			mv.visitLdcInsn(p_owner.replace("/", "."));
+			// field name
+			mv.visitLdcInsn(p_name + p_desc);
+			
+			// Load parent object (or null if parent method is static)
+			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+				mv.visitInsn(Opcodes.ACONST_NULL);
+			} else {
+				mv.visitVarInsn(Opcodes.ALOAD, 0);
+			}
+			
+			// Load parent method name, chopnode label and invoke delegate method
+			mv.visitLdcInsn(fqName);
+			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
+						MyUcTransformer.DELEGATECLASSNAME, "assignToField",
+						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
 						+ "Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 		}
 		mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
@@ -479,6 +650,43 @@ public class MyMethodVisitor extends MethodVisitor {
 				// Invoke original method
 				mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
 				
+				// Duplicate return value to call return event delegate method with it (and wrap it)
+				// If original method returns void, push a null value
+				
+				// true if value has type long, double or float
+				if (retT.getSort() != Type.VOID) {
+					boolean retValueIsBig = retT.getSize() == 2;
+					if (retValueIsBig) {
+						mv.visitInsn(Opcodes.DUP2);
+					} else {
+						mv.visitInsn(Opcodes.DUP);
+					}
+					boxTopStackValue(mv, retT);
+				} else {
+					mv.visitInsn(Opcodes.ACONST_NULL);
+				}
+				
+				// Load number of (original) method arguments
+				mv.visitLdcInsn(argT.length);
+				
+				// Load delegate method arguments
+				mv.visitLdcInsn(fqName);
+				mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
+				mv.visitLdcInsn(p_owner.replace("/", ".") + "|" + p_name + p_desc);
+				mv.visitVarInsn(Opcodes.ALOAD, parentObjectIndex);
+				// Invoke delegate method
+				if (isInstanceOrInterfaceMethod) {
+					// load caller object (if its there, it came after chop label)
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
+							MyUcTransformer.DELEGATECLASSNAME, "instanceMethodReturned",
+							"(Ljava/lang/Object;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", false);
+				} else {
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
+							MyUcTransformer.DELEGATECLASSNAME, "staticMethodReturned",
+							"(Ljava/lang/Object;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
+				}
+				
 				// Return what original method returns
 				if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY) {
 					mv.visitInsn(Opcodes.ARETURN);
@@ -579,6 +787,36 @@ public class MyMethodVisitor extends MethodVisitor {
 			p_mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Short", 
 					"valueOf", "(S)Ljava/lang/Short;", false);
 		}
+	}
+	
+	// duplicate int,int,int or int,long or long,int
+	private void visitDup3(MethodVisitor mv) {
+		mv.visitInsn(Opcodes.DUP2_X1);
+		mv.visitInsn(Opcodes.POP2);
+		mv.visitInsn(Opcodes.DUP);
+		mv.visitInsn(Opcodes.DUP2_X2);
+		mv.visitInsn(Opcodes.POP2);
+		mv.visitInsn(Opcodes.DUP2_X1);
+	}
+	
+	// duplicate int,int,int,int or long,long (any combination of four words)
+	private void visitDup4(MethodVisitor mv) {
+		visitSwap2(mv);
+		mv.visitInsn(Opcodes.DUP2_X2);
+		visitSwap2(mv);
+		mv.visitInsn(Opcodes.DUP2_X2);
+	}
+	
+	// swap two longs
+	private void visitSwap2(MethodVisitor mv) {
+		mv.visitInsn(Opcodes.DUP2_X2);
+		mv.visitInsn(Opcodes.POP2);
+	}
+	
+	// swap int,long
+	private void visitSwap15(MethodVisitor mv) {
+		mv.visitInsn(Opcodes.DUP_X2);
+		mv.visitInsn(Opcodes.POP);
 	}
 
 	

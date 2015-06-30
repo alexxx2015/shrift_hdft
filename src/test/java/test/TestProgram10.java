@@ -26,7 +26,7 @@ public class TestProgram10 implements TestIntf {
 		DataMover dataMover = new DataMover();
 		dataMover.inbuf = inbuf;
 		dataMover.outbuf = outbuf;
-		dataMover.x = inbuf[1];
+		dataMover.x = x;
 		dataMover.staticx = inbuf[2];
 		dataMover.moveData();
 	}
@@ -51,12 +51,12 @@ public class TestProgram10 implements TestIntf {
 		FileInputStream fis2 = new FileInputStream("target/test-classes/foo2.txt");
 		FileOutputStream fos1 = new FileOutputStream("out1.txt");
 		FileOutputStream fos2 = new FileOutputStream("out2.txt");
-		byte[] inbuffer1 = new byte[1000];
-		byte[] inbuffer2 = new byte[1000];
-		byte[] outbuffer1 = new byte[1000];
-		byte[] outbuffer2 = new byte[1000];
+		byte[] inbuffer1 = new byte[10];
+		byte[] inbuffer2 = new byte[10];
+		byte[] outbuffer1 = new byte[10];
+		byte[] outbuffer2 = new byte[10];
 		
-		fis1.read(inbuffer1);
+		int x1 = fis1.read(inbuffer1);
 		fis2.read(inbuffer2);
 		
 		/*short[] sa = new short[10];
@@ -64,10 +64,10 @@ public class TestProgram10 implements TestIntf {
 		inbuffer2[4] = (byte)sa[1];
 		
 		int i = inbuffer2[10] % 1000;*/
-		int x = (byte)inbuffer1[1];
+		//int x = (byte)inbuffer1[1];
 		
-		moveData(inbuffer1, outbuffer1, x, ",");
-		moveData(inbuffer2, outbuffer2, x, "");
+		moveData(inbuffer1, outbuffer1, (byte)inbuffer1[0], ",");
+		moveData(inbuffer2, outbuffer2, x1, "");
 		//outbuffer1[1] = inbuffer2[4];
 		fos1.write(outbuffer1);
 		fos2.write(outbuffer2);

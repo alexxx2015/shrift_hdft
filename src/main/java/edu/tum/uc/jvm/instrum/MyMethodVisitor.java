@@ -246,7 +246,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitLdcInsn(fqName);
 				mv.visitLdcInsn(chopNode.getLabel());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
-							MyUcTransformer.DELEGATECLASSNAME, "assignFromArray",
+							MyUcTransformer.DELEGATECLASSNAME, "readArray",
 							"(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 			}
 		}  else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_MODIFY)) {
@@ -294,7 +294,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitLdcInsn(fqName);
 				mv.visitLdcInsn(chopNode.getLabel());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
-							MyUcTransformer.DELEGATECLASSNAME, "assignToArray",
+							MyUcTransformer.DELEGATECLASSNAME, "writeArray",
 							"(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 			}
 		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_COMPOUND)) {
@@ -430,7 +430,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(fqName);
 			mv.visitLdcInsn(chopNode.getLabel());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
-						MyUcTransformer.DELEGATECLASSNAME, "assignFromField",
+						MyUcTransformer.DELEGATECLASSNAME, "readField",
 						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
 						+ "Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_MODIFY)
@@ -480,7 +480,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(fqName);
 			mv.visitLdcInsn(chopNode.getLabel());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
-						MyUcTransformer.DELEGATECLASSNAME, "assignToField",
+						MyUcTransformer.DELEGATECLASSNAME, "writeField",
 						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
 						+ "Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 		}

@@ -33,9 +33,9 @@ public class InstrumDelegate {
 		InstrumentedClasses.add(className.replace("/", "."));
 	}
 	
-	public static void assignFromArray(Object array, int index, Object arrayAtIndex, 
+	public static void readArray(Object array, int index, Object arrayAtIndex, 
 			Object parentObject, String parentMethod, String label) {
-		System.out.println("Assign from array!!");
+		System.out.println("Read array!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
 		System.out.println("Parent Method = " + parentMethod);
@@ -50,14 +50,14 @@ public class InstrumDelegate {
 		eventParams.put("index", String.valueOf(index));
 		eventParams.put("arrayAtIndex", objectToString(arrayAtIndex));
 		eventParams.put("chopLabel", label);
-		sendEvent("AssignFromArray", eventParams);
+		sendEvent("ReadArray", eventParams);
 		
 		System.out.println();
 	}
 	
-	public static void assignToArray(Object array, int index, Object value,
+	public static void writeArray(Object array, int index, Object value,
 			Object parentObject, String parentMethod, String label) {
-		System.out.println("Assign to array!!");
+		System.out.println("Write array!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
 		System.out.println("Parent Method = " + parentMethod);
@@ -72,14 +72,14 @@ public class InstrumDelegate {
 		eventParams.put("index", String.valueOf(index));
 		eventParams.put("value", objectToString(value));
 		eventParams.put("chopLabel", label);
-		sendEvent("AssignToArray", eventParams);
+		sendEvent("WriteArray", eventParams);
 		
 		System.out.println();
 	}
 	
-	public static void assignFromField(Object fieldOwnerObject, Object fieldValue, String fieldOwnerClass, 
+	public static void readField(Object fieldOwnerObject, Object fieldValue, String fieldOwnerClass, 
 			String fieldName, Object parentObject, String parentMethod, String label) {
-		System.out.println("Assign from field!!");
+		System.out.println("Read field!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
 		System.out.println("Parent Method = " + parentMethod);
@@ -96,14 +96,14 @@ public class InstrumDelegate {
 		eventParams.put("fieldName", fieldName);
 		eventParams.put("fieldValue", objectToString(fieldValue));
 		eventParams.put("chopLabel", label);
-		sendEvent("AssignFromField", eventParams);
+		sendEvent("ReadField", eventParams);
 		
 		System.out.println();
 	}
 	
-	public static void assignToField(Object fieldOwnerObject, Object assignee, String fieldOwnerClass,
+	public static void writeField(Object fieldOwnerObject, Object assignee, String fieldOwnerClass,
 			String fieldName, Object parentObject, String parentMethod, String label) {
-		System.out.println("Assign to field!!");
+		System.out.println("Write field!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
 		System.out.println("Parent Method = " + parentMethod);
@@ -120,7 +120,7 @@ public class InstrumDelegate {
 		eventParams.put("fieldName", fieldName);
 		eventParams.put("assignee", objectToString(assignee));
 		eventParams.put("chopLabel", label);
-		sendEvent("AssignToField", eventParams);
+		sendEvent("WriteField", eventParams);
 		
 		System.out.println();
 	}
@@ -178,7 +178,7 @@ public class InstrumDelegate {
 		eventParams.put("methodArgs", JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(classNameFromMethod(calledMethod))));
 		eventParams.put("chopLabel", label);
-		sendEvent("InvokeVirtual", eventParams);
+		sendEvent("CallInstanceMethod", eventParams);
 		
 		System.out.println();
 	}
@@ -197,7 +197,7 @@ public class InstrumDelegate {
 		eventParams.put("parentObject", objectToString(parentObject));
 		eventParams.put("methodArgs", JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 		eventParams.put("chopLabel", label);
-		sendEvent("InvokeStatic", eventParams);
+		sendEvent("CallStaticMethod", eventParams);
 		
 		System.out.println();
 	}
@@ -221,7 +221,7 @@ public class InstrumDelegate {
 		eventParams.put("argsCount", String.valueOf(argsCount));
 		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(classNameFromMethod(calledMethod))));
 		eventParams.put("chopLabel", label);
-		sendEvent("ReturnVirtual", eventParams);
+		sendEvent("ReturnInstanceMethod", eventParams);
 		
 		System.out.println();
 	}
@@ -243,7 +243,7 @@ public class InstrumDelegate {
 		eventParams.put("argsCount", String.valueOf(argsCount));
 		eventParams.put("callerClassIsInstrumented", String.valueOf(classIsInstrumented(classNameFromMethod(calledMethod))));
 		eventParams.put("chopLabel", label);
-		sendEvent("ReturnStatic", eventParams);
+		sendEvent("ReturnStaticMethod", eventParams);
 
 		System.out.println();
 	}
@@ -260,7 +260,7 @@ public class InstrumDelegate {
 		eventParams.put("parentObject", objectToString(parentObject));
 		eventParams.put("returnValue", objectToString(returnValue));
 		eventParams.put("chopLabel", label);
-		sendEvent("PrepareReturn", eventParams);
+		sendEvent("PrepareMethodReturn", eventParams);
 
 		System.out.println();
 	}

@@ -117,6 +117,7 @@ public class InstrumDelegate {
 		eventParams.put("parentObject", objectToString(parentObject));
 		eventParams.put("fieldOwnerObject", objectToString(fieldOwnerObject));
 		eventParams.put("fieldOwnerClass", fieldOwnerClass);
+		eventParams.put("fieldOwnerClassIsInstrumented", String.valueOf(classIsInstrumented(fieldOwnerClass)));
 		eventParams.put("fieldName", fieldName);
 		eventParams.put("assignee", objectToString(assignee));
 		eventParams.put("chopLabel", label);

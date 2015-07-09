@@ -1,1 +1,9 @@
+/*
+!.settings
+!.project
+!.gitignore
+.log
+logging
 /target/
+pipdb/
+derby.log

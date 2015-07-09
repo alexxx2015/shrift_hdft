@@ -44,11 +44,14 @@ public class InstrumDelegate {
 		System.out.println("Array@Index = " + objectToString(arrayAtIndex));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("array", objectToString(array));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("arrayClass", getClass(array));
+		eventParams.put("arrayAddress", getAddress(array));
 		eventParams.put("index", String.valueOf(index));
-		eventParams.put("arrayAtIndex", objectToString(arrayAtIndex));
+		eventParams.put("elementClass", getClass(arrayAtIndex));
+		eventParams.put("elementAddress", getAddress(arrayAtIndex));
 		eventParams.put("chopLabel", label);
 		sendEvent("ReadArray", eventParams);
 		
@@ -66,11 +69,14 @@ public class InstrumDelegate {
 		System.out.println("Value to insert = " + objectToString(value));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("array", objectToString(array));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("arrayClass", getClass(array));
+		eventParams.put("arrayAddress", getAddress(array));
 		eventParams.put("index", String.valueOf(index));
-		eventParams.put("value", objectToString(value));
+		eventParams.put("valueClass", getClass(value));
+		eventParams.put("valueAddress", getAddress(value));
 		eventParams.put("chopLabel", label);
 		sendEvent("WriteArray", eventParams);
 		
@@ -89,12 +95,15 @@ public class InstrumDelegate {
 		System.out.println("Field value = " + objectToString(fieldValue));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("fieldOwnerObject", objectToString(fieldOwnerObject));
-		eventParams.put("fieldOwnerClass", fieldOwnerClass);
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("fieldOwnerClass", fieldOwnerObject != null ? 
+				getClass(fieldOwnerObject) : fieldOwnerClass);
+		eventParams.put("fieldOwnerAddress", getAddress(fieldOwnerObject));
 		eventParams.put("fieldName", fieldName);
-		eventParams.put("fieldValue", objectToString(fieldValue));
+		eventParams.put("fieldValueClass", getClass(fieldValue));
+		eventParams.put("fieldValueAddress", getAddress(fieldValue));
 		eventParams.put("chopLabel", label);
 		sendEvent("ReadField", eventParams);
 		
@@ -113,13 +122,16 @@ public class InstrumDelegate {
 		System.out.println("Assignee = " + objectToString(assignee));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("fieldOwnerObject", objectToString(fieldOwnerObject));
-		eventParams.put("fieldOwnerClass", fieldOwnerClass);
-		eventParams.put("fieldOwnerClassIsInstrumented", String.valueOf(classIsInstrumented(fieldOwnerClass)));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("fieldOwnerClass", fieldOwnerObject != null ? 
+				getClass(fieldOwnerObject) : fieldOwnerClass);
+		eventParams.put("fieldOwnerClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(fieldOwnerObject, fieldOwnerClass))));
+		eventParams.put("fieldOwnerAddress", getAddress(fieldOwnerObject));
 		eventParams.put("fieldName", fieldName);
-		eventParams.put("assignee", objectToString(assignee));
+		eventParams.put("assigneeClass", getClass(assignee));
+		eventParams.put("assigneeAddress", getAddress(assignee));
 		eventParams.put("chopLabel", label);
 		sendEvent("WriteField", eventParams);
 		
@@ -134,9 +146,11 @@ public class InstrumDelegate {
 		System.out.println("Arguments = " + objectToString(arg));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("argument", objectToString(arg));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("argumentClass", getClass(arg));
+		eventParams.put("argumentAddress", getAddress(arg));
 		eventParams.put("chopLabel", label);
 		sendEvent("UnaryAssign", eventParams);
 		
@@ -152,8 +166,9 @@ public class InstrumDelegate {
 		System.out.println("Argument 2 = " + objectToString(arg2));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
 		eventParams.put("argument1", objectToString(arg1));
 		eventParams.put("argument2", objectToString(arg2));
 		eventParams.put("chopLabel", label);
@@ -172,12 +187,14 @@ public class InstrumDelegate {
 		System.out.println("Arguments = " + JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("calledMethod", calledMethod);
-		eventParams.put("callerObject", objectToString(caller));
-		eventParams.put("parentObject", objectToString(parentObject));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("callerObjectAddress", getAddress(caller));
+		eventParams.put("callerObjectClass", getClass(caller, calledMethod));
+		eventParams.put("calledMethod", getMethod(calledMethod));
 		eventParams.put("methodArgs", JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
-		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(classNameFromMethod(calledMethod))));
+		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
 		sendEvent("CallInstanceMethod", eventParams);
 		
@@ -193,9 +210,11 @@ public class InstrumDelegate {
 		System.out.println("Arguments = " + JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("calledMethod", calledMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("callerClass", getClass(calledMethod));
+		eventParams.put("calledMethod", getMethod(calledMethod));
 		eventParams.put("methodArgs", JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 		eventParams.put("chopLabel", label);
 		sendEvent("CallStaticMethod", eventParams);
@@ -214,13 +233,16 @@ public class InstrumDelegate {
 		System.out.println("Arguments count = " + argsCount);
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("calledMethod", calledMethod);
-		eventParams.put("callerObject", objectToString(caller));
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("returnValue", objectToString(returnValue));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("callerObjectAddress", getAddress(caller));
+		eventParams.put("callerObjectClass", getClass(caller, calledMethod));
+		eventParams.put("calledMethod", getMethod(calledMethod));
+		eventParams.put("returnValueClass", getClass(returnValue));
+		eventParams.put("returnValueAddress", getAddress(returnValue));
 		eventParams.put("argsCount", String.valueOf(argsCount));
-		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(classNameFromMethod(calledMethod))));
+		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
 		sendEvent("ReturnInstanceMethod", eventParams);
 		
@@ -237,12 +259,15 @@ public class InstrumDelegate {
 		System.out.println("Arguments count = " + argsCount);
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("calledMethod", calledMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("returnValue", objectToString(returnValue));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("callerClass", getClass(calledMethod));
+		eventParams.put("calledMethod", getMethod(calledMethod));
+		eventParams.put("returnValueClass", getClass(returnValue));
+		eventParams.put("returnValueAddress", getAddress(returnValue));
 		eventParams.put("argsCount", String.valueOf(argsCount));
-		eventParams.put("callerClassIsInstrumented", String.valueOf(classIsInstrumented(classNameFromMethod(calledMethod))));
+		eventParams.put("callerClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod))));
 		eventParams.put("chopLabel", label);
 		sendEvent("ReturnStaticMethod", eventParams);
 
@@ -257,9 +282,11 @@ public class InstrumDelegate {
 		System.out.println("Return value = " + objectToString(returnValue));
 		
 		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentMethod", parentMethod);
-		eventParams.put("parentObject", objectToString(parentObject));
-		eventParams.put("returnValue", objectToString(returnValue));
+		eventParams.put("parentObjectAddress", getAddress(parentObject));
+		eventParams.put("parentClass", getClass(parentObject, parentMethod));
+		eventParams.put("parentMethod", getMethod(parentMethod));
+		eventParams.put("returnValueClass", getClass(returnValue));
+		eventParams.put("returnValueAddress", getAddress(returnValue));
 		eventParams.put("chopLabel", label);
 		sendEvent("PrepareMethodReturn", eventParams);
 
@@ -290,6 +317,11 @@ public class InstrumDelegate {
 	
 	private static String objectToString(Object object) {
 		if (object == null) return "null";
+		return getClass(object) + "|" + getAddress(object);
+	}
+	
+	private static String getAddress(Object object) {
+		if (object == null) return "null";
 		if (object instanceof Double
 				|| object instanceof Float
 				|| object instanceof Long
@@ -298,13 +330,32 @@ public class InstrumDelegate {
 				|| object instanceof Byte
 				|| object instanceof Boolean
 				|| object instanceof Short) {
-			return object.toString();
-		} else {
-			return object.getClass().getName() + "@" + UnsafeUtil.getObjectAddress(object);
+			return "null";
 		}
+		return String.valueOf(UnsafeUtil.getObjectAddress(object));
 	}
 	
-	private static String classNameFromMethod(String methodName) {
-		return methodName.split("\\|")[0];
+	private static String getClass(Object object) {
+		if (object == null) return "null";
+		return object.getClass().getName();
+	}
+	
+	/**
+	 * Returns class of object if it is not null, class of methodFQN otherwise
+	 * @param object
+	 * @param methodFQN
+	 * @return
+	 */
+	private static String getClass(Object object, String methodFQN) {
+		if (object == null) return getClass(methodFQN);
+		return getClass(object);
+	}
+	
+	private static String getClass(String methodFQN) {
+		return methodFQN.split("\\|")[0];
+	}
+	
+	private static String getMethod(String methodFQN) {
+		return methodFQN.split("\\|")[1];
 	}
 }

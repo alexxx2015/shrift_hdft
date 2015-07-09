@@ -28,7 +28,8 @@ public class TestProgram10 implements TestIntf {
 		dataMover.outbuf = outbuf;
 		dataMover.x = x;
 		dataMover.staticx = inbuf[2];
-		dataMover.moveData();
+		IDataMover dataMoverInterface = dataMover;
+		dataMoverInterface.moveData();
 	}
 	private static int inc(int x){
 		x = x ^ x;

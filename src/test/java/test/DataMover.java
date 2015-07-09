@@ -1,6 +1,6 @@
 package test;
 
-public class DataMover {
+public class DataMover implements IDataMover {
 	public byte[] inbuf;
 	public byte[] outbuf;
 	public int x;

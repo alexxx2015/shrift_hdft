@@ -1,6 +1,8 @@
 package edu.tum.uc.jvm.instrum;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -540,6 +542,12 @@ public class MyMethodVisitor extends MethodVisitor {
 			desc.append("Ljava/lang/Object;");
 			int parentObjectIndex = paramIndex;
 			paramIndex++;
+			
+			// Parameter for bytecode offset
+			desc.append("I");
+			int offsetIndex = paramIndex;
+			paramIndex++;
+			
 			desc.append(")");
 			// Return type
 			Type retT = Type.getReturnType(p_desc);
@@ -669,6 +677,9 @@ public class MyMethodVisitor extends MethodVisitor {
 				// Load number of (original) method arguments
 				mv.visitLdcInsn(argT.length);
 				
+				// Load bytecode offset of the method call
+				mv.visitVarInsn(Opcodes.ILOAD, offsetIndex);
+				
 				// Load delegate method arguments
 				mv.visitLdcInsn(fqName);
 				mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
@@ -680,11 +691,11 @@ public class MyMethodVisitor extends MethodVisitor {
 					mv.visitVarInsn(Opcodes.ALOAD, 0);
 					mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
 							MyUcTransformer.DELEGATECLASSNAME, "instanceMethodReturned",
-							"(Ljava/lang/Object;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", false);
+							"(Ljava/lang/Object;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", false);
 				} else {
 					mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
 							MyUcTransformer.DELEGATECLASSNAME, "staticMethodReturned",
-							"(Ljava/lang/Object;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
+							"(Ljava/lang/Object;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
 				}
 				
 				// Return what original method returns
@@ -719,6 +730,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 			}
+			mv.visitLdcInsn(this.getCurrentLabel().getOffset());
 			// Invoke wrapper method
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, className, p_name, desc.toString(), false);
 			

@@ -5,18 +5,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.validator.Var;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.thrift.types.TAny2Any.AsyncProcessor.newInitialRepresentation;
 import edu.tum.uc.jvm.UcCommunicator;
-import edu.tum.uc.jvm.archive.StaticAnalysis;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
+import edu.tum.uc.jvm.utility.analysis.SinkSource;
+import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 
 public class InstrumDelegate {
 	
@@ -222,7 +226,8 @@ public class InstrumDelegate {
 		System.out.println();
 	}
 	
-	public static void instanceMethodReturned(Object returnValue, int argsCount, String parentMethod, String label, String calledMethod, Object parentObject, Object caller) {
+	public static void instanceMethodReturned(Object returnValue, int argsCount, int bytecodeOffset, String parentMethod,
+			String label, String calledMethod, Object parentObject, Object caller) {
 		System.out.println("Instance method returned!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -242,6 +247,7 @@ public class InstrumDelegate {
 		eventParams.put("returnValueClass", getClass(returnValue));
 		eventParams.put("returnValueAddress", getAddress(returnValue));
 		eventParams.put("argsCount", String.valueOf(argsCount));
+		eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
 		sendEvent("ReturnInstanceMethod", eventParams);
@@ -249,7 +255,8 @@ public class InstrumDelegate {
 		System.out.println();
 	}
 	
-	public static void staticMethodReturned(Object returnValue, int argsCount, String parentMethod, String label, String calledMethod, Object parentObject) {
+	public static void staticMethodReturned(Object returnValue, int argsCount, int bytecodeOffset, String parentMethod,
+			String label, String calledMethod, Object parentObject) {
 		System.out.println("Static method returned!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -267,6 +274,7 @@ public class InstrumDelegate {
 		eventParams.put("returnValueClass", getClass(returnValue));
 		eventParams.put("returnValueAddress", getAddress(returnValue));
 		eventParams.put("argsCount", String.valueOf(argsCount));
+		eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 		eventParams.put("callerClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod))));
 		eventParams.put("chopLabel", label);
 		sendEvent("ReturnStaticMethod", eventParams);
@@ -357,5 +365,24 @@ public class InstrumDelegate {
 	
 	private static String getMethod(String methodFQN) {
 		return methodFQN.split("\\|")[1];
+	}
+	
+	private static Map<String, String> getSourcesMap(String parentMethodFQN, int bytecodeOffset) {
+		Map<String, String> sources = new HashMap<>();
+		for (SinkSource source : StaticAnalysis.getSources()) {
+			if (source.getLocation().equals(parentMethodFQN.replace("|", "."))
+					&& source.getOffset() == bytecodeOffset) {
+				if (source.is_return()) {
+					sources.put("ret", source.getId());
+				} else {
+					if (source.getParam() == 0) {
+						sources.put("obj", source.getId());
+					} else {
+						sources.put("p" + source.getParam(), source.getId());
+					}
+				}
+			}
+		}
+		return sources;
 	}
 }

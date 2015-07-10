@@ -742,19 +742,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	public void visitMaxs(int maxStack, int maxLocals) {
         mv.visitMaxs(maxStack, maxLocals);
     }
-	
-	// Return the local variable node of a method by index
-	private LocalVariableNode getLocVarByIdx(int p_indx) {
-		LocalVariableNode lvn = null;
-		Iterator<?> locVarIt = this.methNode.localVariables.iterator();
-		while (locVarIt.hasNext()) {
-			lvn = (LocalVariableNode) locVarIt.next();
-			if (lvn.index == p_indx) {
-				break;
-			}
-		}
-		return lvn;
-	}
 
 	// Returns true if label is within a chop
 	private Chop checkChopNode(Label label) {

@@ -12,7 +12,6 @@ import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 
@@ -62,7 +61,10 @@ public class MyClassAdapter extends ClassVisitor {
 			JSRInlinerAdapter ja = new JSRInlinerAdapter(mv, p_access,
 					p_name, p_desc, p_signature, p_exceptions);
 			// this one removes JSR instructions and inlines the referenced subroutines
-			mv = new MyMethodVisitor(Opcodes.ASM4, ja, p_access, p_name,
+			AdviceAdapter aa = new MyAdviceAdapter(Opcodes.ASM4, ja,
+					p_access, p_name, p_desc, p_signature, this.className,
+					methodNode);
+			mv = new MyMethodVisitor(Opcodes.ASM4, aa, p_access, p_name,
 					p_desc, p_signature, this.className, methodNode,
 					chopNodes, this.classWriter);
 		}

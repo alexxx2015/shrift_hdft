@@ -282,6 +282,18 @@ public class InstrumDelegate {
 		System.out.println();
 	}
 	
+	public static void mainMethodReturned(String calledMethod) {
+		System.out.println("Main method returned!!");
+		System.out.println("Called Method = " + calledMethod);
+		
+		Map<String, String> eventParams = new HashMap<String, String>();
+		eventParams.put("callerClass", getClass(calledMethod));
+		eventParams.put("calledMethod", getMethod(calledMethod));
+		sendEvent("ReturnMainMethod", eventParams);
+
+		System.out.println();
+	}
+	
 	public static void prepareMethodReturn(Object returnValue, Object parentObject, String parentMethod, String label) {
 		System.out.println("Prepare method return!!");
 		System.out.println("Chopnode Label = " + label);

@@ -69,7 +69,7 @@ public class TestProgram10 implements TestIntf {
 		
 		moveData(inbuffer1, outbuffer1, (byte)inbuffer1[0], ",");
 		moveData(inbuffer2, outbuffer2, x1, "");
-		//outbuffer1[1] = inbuffer2[4];
+		outbuffer1[1] = inbuffer2[4];
 		fos1.write(outbuffer1);
 		fos2.write(outbuffer2);
 	}

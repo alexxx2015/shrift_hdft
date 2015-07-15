@@ -502,7 +502,11 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod || isPrivateInstanceMethod || isInterfaceMethod;
 		
-		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL) && !isConstructor) {
+		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL)) {
+			if (isConstructor) {
+				@SuppressWarnings("unused")
+				int a = 0;
+			}
 			StringBuilder desc = new StringBuilder();
 			// Generate new method signature
 			Type[] argT = Type.getArgumentTypes(p_desc);
@@ -516,6 +520,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			int startArgIndex = 0;
 			
 			// If instance method, add original method caller as first argument
+			// Constructor -> leave uninitialized objects on stack
 			if (isInstanceOrInterfaceMethod) {
 				desc.append("L" + p_owner + ";");
 				paramIndex++;
@@ -549,14 +554,26 @@ public class MyMethodVisitor extends MethodVisitor {
 			paramIndex++;
 			
 			desc.append(")");
+			
 			// Return type
 			Type retT = Type.getReturnType(p_desc);
-			if (retT != null) {
+			// Wrapped constructor returns object of constructor's class
+			if (isConstructor) {
+				desc.append("L" + p_owner + ";");
+			} else if (retT != null) {
 				desc.append(retT.getDescriptor());
 			}
+			
 			Type[] myArgT = Type.getArgumentTypes(desc.toString());
 
-			String id = className + "." + p_name + ":" + desc.toString();
+			String wrapperMethodName;
+			if (isConstructor) {
+				wrapperMethodName = "newInit" + p_owner.replace("/", "");  // make it more unique :D
+			} else {
+				wrapperMethodName = p_name;
+			}
+			
+			String id = className + "." + wrapperMethodName + ":" + desc.toString();
 			if (InstrumDelegate.HelperMethods.containsKey(id)) {
 				// skip adding method
 			} else {
@@ -565,7 +582,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				
 				//Create a new asm-method instance
 				MethodVisitor mv = cv.visitMethod(Opcodes.ACC_PUBLIC
-						+ Opcodes.ACC_STATIC, p_name, desc.toString(), null, null);
+						+ Opcodes.ACC_STATIC, wrapperMethodName, desc.toString(), null, null);
 				mv.visitCode();
 				
 				int arrayIndex = paramIndex;
@@ -622,9 +639,13 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitVarInsn(Opcodes.ALOAD, arrayIndex);
 				mv.visitVarInsn(Opcodes.ALOAD, parentObjectIndex);
 				// Invoke delegate method
-				if (isInstanceOrInterfaceMethod) {
+				if (isInstanceOrInterfaceMethod || isConstructor) {
 					// load caller object (if its there, it came after chop label)
-					mv.visitVarInsn(Opcodes.ALOAD, 0);
+					if (isInstanceOrInterfaceMethod) {
+						mv.visitVarInsn(Opcodes.ALOAD, 0);
+					} else {
+						mv.visitInsn(Opcodes.ACONST_NULL);
+					}
 					mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
 							MyUcTransformer.DELEGATECLASSNAME, "instanceMethodInvoked",
 							"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V", false);
@@ -635,7 +656,12 @@ public class MyMethodVisitor extends MethodVisitor {
 				}
 				
 				// Load original method arguments
-				if (isInstanceOrInterfaceMethod) { mv.visitVarInsn(Opcodes.ALOAD, 0); }
+				if (isInstanceOrInterfaceMethod) {
+					mv.visitVarInsn(Opcodes.ALOAD, 0); 
+				} else if (isConstructor) {
+					mv.visitTypeInsn(Opcodes.NEW, p_owner);
+					mv.visitInsn(Opcodes.DUP);
+				}
 				i = startArgIndex;
 				for (Type argType : argT) {
 					if (argType.getSort() == Type.OBJECT) {
@@ -658,11 +684,16 @@ public class MyMethodVisitor extends MethodVisitor {
 				// Invoke original method
 				mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
 				
-				// Duplicate return value to call return event delegate method with it (and wrap it)
+				// Duplicate return value (or if constructor, the unintialized pointer duped before)
+				// 		to call return event delegate method with it (and wrap it)
 				// If original method returns void, push a null value
 				
 				// true if value has type long, double or float
-				if (retT.getSort() != Type.VOID) {
+				if (isConstructor) {
+					mv.visitInsn(Opcodes.DUP);
+					mv.visitVarInsn(Opcodes.ASTORE, paramIndex);
+					mv.visitInsn(Opcodes.ACONST_NULL);
+				} else if (retT.getSort() != Type.VOID) {
 					boolean retValueIsBig = retT.getSize() == 2;
 					if (retValueIsBig) {
 						mv.visitInsn(Opcodes.DUP2);
@@ -686,9 +717,13 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitLdcInsn(p_owner.replace("/", ".") + "|" + p_name + p_desc);
 				mv.visitVarInsn(Opcodes.ALOAD, parentObjectIndex);
 				// Invoke delegate method
-				if (isInstanceOrInterfaceMethod) {
-					// load caller object (if its there, it came after chop label)
-					mv.visitVarInsn(Opcodes.ALOAD, 0);
+				if (isInstanceOrInterfaceMethod || isConstructor) {
+					if (isInstanceOrInterfaceMethod) {
+						// load caller object (if its there, it came after chop label)
+						mv.visitVarInsn(Opcodes.ALOAD, 0);
+					} else {
+						mv.visitVarInsn(Opcodes.ALOAD, paramIndex);
+					}
 					mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
 							MyUcTransformer.DELEGATECLASSNAME, "instanceMethodReturned",
 							"(Ljava/lang/Object;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", false);
@@ -699,7 +734,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				}
 				
 				// Return what original method returns
-				if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY) {
+				if (isConstructor || retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY) {
 					mv.visitInsn(Opcodes.ARETURN);
 				} else if (retT.getSort() == Type.DOUBLE) {
 					mv.visitInsn(Opcodes.DRETURN);
@@ -732,8 +767,15 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			mv.visitLdcInsn(this.getCurrentLabel().getOffset());
 			// Invoke wrapper method
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, className, p_name, desc.toString(), false);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC, className, wrapperMethodName, desc.toString(), false);
 			
+			// constructor -> throw away the two uninitiaziled instances created before wrapper was called
+			if (isConstructor) {
+				mv.visitInsn(Opcodes.SWAP);
+				mv.visitInsn(Opcodes.POP);
+				mv.visitInsn(Opcodes.SWAP);
+				mv.visitInsn(Opcodes.POP);
+			}
 		} else {
 			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
 		}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<mapping analysistime="7281">
+<mapping analysistime="7548">
   <sources>
     <source>
       <id>Source0</id>
@@ -125,6 +125,7 @@
     <sink id="Sink8">
       <source id="Source0"/>
       <chop>
+        <chopNode byteCodeIndex="6" label="this.x = p1" operation="modify" ownerMethod="test.DataMover.&lt;init&gt;(I)V"/>
         <chopNode byteCodeIndex="9" label="v7 = p1[v11]" operation="reference" ownerMethod="test.DataMover.byteArrayToLongArray([B[J)V"/>
         <chopNode byteCodeIndex="10" label="v8 = CONVERT I to J v7" operation="assign" ownerMethod="test.DataMover.byteArrayToLongArray([B[J)V"/>
         <chopNode byteCodeIndex="11" label="p2[v11] = v8" operation="modify" ownerMethod="test.DataMover.byteArrayToLongArray([B[J)V"/>
@@ -160,10 +161,10 @@
         <chopNode byteCodeIndex="115" label="v9.write(v18)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="1" label="v7 = inc(p3)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
         <chopNode byteCodeIndex="7" label="v8 = v7 * v7" operation="assign" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="33" label="v9.x = v8" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="38" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="39" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="48" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="14" label="v9.&lt;init&gt;(v8)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="33" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="34" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="43" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
       </chop>
       <source id="Source1"/>
       <chop>
@@ -189,14 +190,15 @@
         <chopNode byteCodeIndex="110" label="v32 = v17[#(4)]" operation="reference" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="111" label="v18[#(1)] = v32" operation="modify" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="115" label="v9.write(v18)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
-        <chopNode byteCodeIndex="38" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="39" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="48" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="33" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="34" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="43" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
       </chop>
     </sink>
     <sink id="Sink9">
       <source id="Source0"/>
       <chop>
+        <chopNode byteCodeIndex="6" label="this.x = p1" operation="modify" ownerMethod="test.DataMover.&lt;init&gt;(I)V"/>
         <chopNode byteCodeIndex="9" label="v7 = p1[v11]" operation="reference" ownerMethod="test.DataMover.byteArrayToLongArray([B[J)V"/>
         <chopNode byteCodeIndex="10" label="v8 = CONVERT I to J v7" operation="assign" ownerMethod="test.DataMover.byteArrayToLongArray([B[J)V"/>
         <chopNode byteCodeIndex="11" label="p2[v11] = v8" operation="modify" ownerMethod="test.DataMover.byteArrayToLongArray([B[J)V"/>
@@ -230,10 +232,10 @@
         <chopNode byteCodeIndex="122" label="v12.write(v19)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="1" label="v7 = inc(p3)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
         <chopNode byteCodeIndex="7" label="v8 = v7 * v7" operation="assign" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="33" label="v9.x = v8" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="38" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="39" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="48" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="14" label="v9.&lt;init&gt;(v8)" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="33" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="34" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="43" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
       </chop>
       <source id="Source1"/>
       <chop>
@@ -257,9 +259,9 @@
         <chopNode byteCodeIndex="90" label="moveData(v16, v18, v25, #(,))" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="101" label="moveData(v17, v19, v21, #())" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="122" label="v12.write(v19)" operation="call" ownerMethod="test.TestProgram10.main([Ljava/lang/String;)V"/>
-        <chopNode byteCodeIndex="38" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="39" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
-        <chopNode byteCodeIndex="48" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="33" label="v12 = p1[#(2)]" operation="reference" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="34" label="test.DataMover.staticx = v12" operation="modify" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
+        <chopNode byteCodeIndex="43" label="v9.moveData()" operation="call" ownerMethod="test.TestProgram10.moveData([B[BILjava/lang/String;)V"/>
       </chop>
     </sink>
   </flows>

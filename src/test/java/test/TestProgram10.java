@@ -1,12 +1,8 @@
 package test;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Random;
-import java.util.Scanner;
 
 public class TestProgram10 implements TestIntf {
 
@@ -23,10 +19,9 @@ public class TestProgram10 implements TestIntf {
 		x = inc(x);
 		x *= x;
 		
-		DataMover dataMover = new DataMover();
+		DataMover dataMover = new DataMover(x);
 		dataMover.inbuf = inbuf;
 		dataMover.outbuf = outbuf;
-		dataMover.x = x;
 		dataMover.staticx = inbuf[2];
 		IDataMover dataMoverInterface = dataMover;
 		dataMoverInterface.moveData();

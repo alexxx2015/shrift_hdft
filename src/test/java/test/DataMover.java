@@ -6,6 +6,12 @@ public class DataMover implements IDataMover {
 	public int x;
 	public static int staticx;
 	
+	public DataMover() {}
+	
+	public DataMover(int x) {
+		this.x = x;
+	}
+	
 	public void moveData() {
 		long[] inbufLong = new long[inbuf.length];
 		long[] outbufLong = new long[outbuf.length];

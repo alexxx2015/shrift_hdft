@@ -67,5 +67,7 @@ public class TestProgram10 implements TestIntf {
 		outbuffer1[1] = inbuffer2[4];
 		fos1.write(outbuffer1);
 		fos2.write(outbuffer2);
+		
+		while (true) {}
 	}
 }

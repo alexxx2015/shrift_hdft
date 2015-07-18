@@ -21,6 +21,7 @@ import de.tum.in.i22.uc.thrift.client.ThriftClientFactory;
 import de.tum.in.i22.uc.thrift.server.IThriftServer;
 import de.tum.in.i22.uc.thrift.server.ThriftServerFactory;
 import edu.tum.uc.jvm.pxp.JavaPxpHandler;
+import edu.tum.uc.jvm.pxp.MyJavaPxpHandler;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties.PROPERTIES;
@@ -75,7 +76,7 @@ public class UcCommunicator {
 	public static UcCommunicator getInstance() {
 		if (UcCommunicator.UC_COM == null) {
 			UcCommunicator.UC_COM = new UcCommunicator();
-//			UcCommunicator.UC_COM.initPDP();
+			//UcCommunicator.UC_COM.initPDP();
 		}
 		return UcCommunicator.UC_COM;
 	}
@@ -92,6 +93,7 @@ public class UcCommunicator {
 							.createAny2PdpClient(new IPLocation(this.PDP_HOST,
 									Integer.parseInt(this.PDP_PORT)));
 					this.pdpClient.connect();
+					regPxp();
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -350,7 +352,7 @@ public class UcCommunicator {
 
 	private void startPxpServer(final PxpSpec pxpSpec) {
 		IThriftServer pxpHandler = ThriftServerFactory.createPxpThriftServer(
-				pxpSpec.getPort(), new JavaPxpHandler());
+				pxpSpec.getPort(), new MyJavaPxpHandler());
 
 		// final JavaPxp.Processor pxpProcessor = new
 		// JavaPxp.Processor(pxpHandler);

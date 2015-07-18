@@ -384,13 +384,14 @@ public class InstrumDelegate {
 		for (SinkSource source : StaticAnalysis.getSources()) {
 			if (source.getLocation().equals(parentMethodFQN.replace("|", "."))
 					&& source.getOffset() == bytecodeOffset) {
+				String sourceIdAndDate = source.getId() + "|" + System.currentTimeMillis();
 				if (source.is_return()) {
-					sources.put("ret", source.getId());
+					sources.put("ret", sourceIdAndDate);
 				} else {
 					if (source.getParam() == 0) {
-						sources.put("obj", source.getId());
+						sources.put("obj", sourceIdAndDate);
 					} else {
-						sources.put("p" + source.getParam(), source.getId());
+						sources.put("p" + source.getParam(), sourceIdAndDate);
 					}
 				}
 			}

@@ -19,6 +19,7 @@ import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.thrift.types.TAny2Any.AsyncProcessor.newInitialRepresentation;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
+import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 
@@ -317,11 +318,7 @@ public class InstrumDelegate {
 		Map<String, String> allParams = new HashMap<String, String>(specificParams);
 		allParams.put("PEP", "Java");
 		allParams.put("threadId", "Thread" + String.valueOf(Thread.currentThread().getId()));
-		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
-		String[] runningVmComp = runningVm.split("@");
-		if (runningVmComp.length > 0) {
-			allParams.put("processId", "Proc" + runningVmComp[0]);// Add process id
-		}
+		allParams.put("processId", Utility.getPID());
 		IEvent event = new EventBasic(eventName, allParams, true);
 		boolean success = ucCom.sendEvent2Pdp(event);
 		System.out.println(success ? "Event sent successfully" : "Error sending event");

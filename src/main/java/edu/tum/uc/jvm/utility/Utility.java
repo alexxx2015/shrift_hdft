@@ -743,6 +743,19 @@ public class Utility {
 		}
 		return _return;
 	}
+	
+	/**
+	 * 
+	 * @return "Proc" + the PID
+	 */
+	public static String getPID() {
+		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
+		String[] runningVmComp = runningVm.split("@");
+		if (runningVmComp.length > 0) {
+			return "Proc" + runningVmComp[0];
+		}
+		return "Proc-1";
+	}
 }
 
 /*	public static final String PREFIX = "my/";

@@ -376,12 +376,14 @@ public class InstrumDelegate {
 		return methodFQN.split("\\|")[1];
 	}
 	
-	private static Map<String, String> getSourcesMap(String parentMethodFQN, int bytecodeOffset) {
-		Map<String, String> sources = new HashMap<>();
+	private static Map<String, Map<String, String>> getSourcesMap(String parentMethodFQN, int bytecodeOffset) {
+		Map<String, Map<String, String>> sources = new HashMap<>();
 		for (SinkSource source : StaticAnalysis.getSources()) {
 			if (source.getLocation().equals(parentMethodFQN.replace("|", "."))
 					&& source.getOffset() == bytecodeOffset) {
-				String sourceIdAndDate = source.getId() + "|" + System.currentTimeMillis();
+			    	Map<String, String> sourceIdAndDate = new HashMap<>();
+			    	sourceIdAndDate.put("sourceId", source.getId());
+			    	sourceIdAndDate.put("timeStamp", String.valueOf(System.currentTimeMillis()));
 				if (source.is_return()) {
 					sources.put("ret", sourceIdAndDate);
 				} else {

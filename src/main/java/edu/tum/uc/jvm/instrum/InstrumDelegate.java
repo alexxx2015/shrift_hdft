@@ -198,7 +198,8 @@ public class InstrumDelegate {
 		eventParams.put("callerObjectAddress", getAddress(caller));
 		eventParams.put("callerObjectClass", getClass(caller, calledMethod));
 		eventParams.put("calledMethod", getMethod(calledMethod));
-		eventParams.put("methodArgs", JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
+		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
+		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
 		sendEvent("CallInstanceMethod", eventParams);
@@ -220,7 +221,8 @@ public class InstrumDelegate {
 		eventParams.put("parentMethod", getMethod(parentMethod));
 		eventParams.put("callerClass", getClass(calledMethod));
 		eventParams.put("calledMethod", getMethod(calledMethod));
-		eventParams.put("methodArgs", JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
+		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
+		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 		eventParams.put("chopLabel", label);
 		sendEvent("CallStaticMethod", eventParams);
 		
@@ -355,6 +357,22 @@ public class InstrumDelegate {
 	private static String getClass(Object object) {
 		if (object == null) return "null";
 		return object.getClass().getName();
+	}
+	
+	private static String[] getClasses(Object[] objects) {
+	    String[] objectClasses = new String[objects.length];
+	    for (int i = 0; i < objects.length; i++) {
+		objectClasses[i] = getClass(objects[i]);
+	    }
+	    return objectClasses;
+	}
+	
+	private static String[] getAddresses(Object[] objects) {
+	    String[] objectAddresses = new String[objects.length];
+	    for (int i = 0; i < objects.length; i++) {
+		objectAddresses[i] = getAddress(objects[i]);
+	    }
+	    return objectAddresses;
 	}
 	
 	/**

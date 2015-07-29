@@ -419,7 +419,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			// field owner class
 			mv.visitLdcInsn(p_owner.replace("/", "."));
 			// field name
-			mv.visitLdcInsn(p_name + p_desc);
+			mv.visitLdcInsn(p_name);
 			
 			// Load parent object (or null if parent method is static)
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
@@ -469,7 +469,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			// field owner class
 			mv.visitLdcInsn(p_owner.replace("/", "."));
 			// field name
-			mv.visitLdcInsn(p_name + p_desc);
+			mv.visitLdcInsn(p_name);
 			
 			// Load parent object (or null if parent method is static)
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {

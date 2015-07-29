@@ -29,7 +29,7 @@ public class MyJavaPxpHandler implements TAny2Pxp.Iface {
 	params.put("sourceId", source);
 	params.put("minTimeStamp", String.valueOf(getAgeTimeStamp(unit, time)));
 	Map<String, Set<Map<String, String>>> modelSubset = ucCom.filterPipDataModel(params);
-	System.out.println(modelSubset);
+	Enforcer.deleteData(modelSubset);
     }
 
     private long getAgeTimeStamp(String unit, short time) {

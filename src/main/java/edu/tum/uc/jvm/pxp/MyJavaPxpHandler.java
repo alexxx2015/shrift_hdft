@@ -9,6 +9,9 @@ import java.util.Set;
 
 import org.apache.thrift.TException;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IResponse;
@@ -30,6 +33,15 @@ public class MyJavaPxpHandler implements TAny2Pxp.Iface {
 	params.put("minTimeStamp", String.valueOf(getAgeTimeStamp(unit, time)));
 	Map<String, Set<Map<String, String>>> modelSubset = ucCom.filterPipDataModel(params);
 	Enforcer.deleteData(modelSubset);
+	
+	// send model update back to pip
+	
+	Map<String, String> eventParams = new HashMap<>();
+	eventParams.put("PEP", "Java");
+	eventParams.put("processId", Utility.getPID());
+	eventParams.put("modelSubset", new Gson().toJson(modelSubset));
+	IEvent event = new EventBasic("AfterEnforcement", eventParams, true);
+	ucCom.sendEvent2Pdp(event);
     }
 
     private long getAgeTimeStamp(String unit, short time) {

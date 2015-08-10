@@ -51,7 +51,7 @@ public class Enforcer {
 	    // otherwise it could have already been cleaned up by GC
 	    if (oldObject != null && oldObject.getClass().getName().equals(className)) {
 		Object newObject = createNewObject(oldObject.getClass());
-		UnsafeUtil.replaceObject(oldObject, newObject);
+		UnsafeUtil.replaceObject(oldObject, newObject);		
 	    } else {
 		throw new EnforcementException("Object not found");
 	    }
@@ -97,7 +97,7 @@ public class Enforcer {
 
     }
 
-    // puts a default value into array elements of primitive type only
+    // puts a default value into an array element of primitive type only
     private static void replaceArrayElementWithNew(Map<String, String> arrayElemProps) {
 	try {
 	    String arrayType = arrayElemProps.get(TYPE);
@@ -119,6 +119,7 @@ public class Enforcer {
 	}
     }
 
+    // puts a default value into an instance field of primitive type only
     private static void replaceInstanceFieldValueWithNew(Map<String, String> fieldProps) {
 	try {
 	    String fieldOwnerClass = fieldProps.get(CLASSNAME);
@@ -140,6 +141,7 @@ public class Enforcer {
 	}
     }
 
+    // puts a default value into a static field of primitive type only
     private static void replaceStaticFieldValueWithNew(Map<String, String> fieldProps) {
 	try {
 	    String fieldOwnerClass = fieldProps.get(CLASSNAME);

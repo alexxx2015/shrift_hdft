@@ -88,7 +88,7 @@ public class UcTransformer implements ClassFileTransformer {
 		}
 		
 		//Do not instrument class if it is blacklisted
-		if(Utility.isBlackisted(className)){
+		if(Utility.isBlacklisted(className)){
 			return null;
 		}
 

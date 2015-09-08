@@ -1,8 +1,8 @@
 ----------------------------------------------------------------
-Thu Jul 30 17:26:32 CEST 2015:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-014e-df92-6e4d-00000603c018 
-on database directory /home/alex/git_repos/uc4java/pipdb with class loader sun.misc.Launcher$AppClassLoader@279f2327 
-Loaded from file:/home/alex/.m2/repository/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar
+Tue Sep 08 08:44:47 CEST 2015:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-014f-abb3-2138-000005eccf08 
+on database directory /home/alex/git_repos/uc4java/.pipdb with class loader sun.misc.Launcher$AppClassLoader@6bc7c054 
+Loaded from file:/home/alex/.m2/repository/org/apache/derby/derby/10.11.1.1/derby-10.11.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_20-b26
 user.dir=/home/alex/git_repos/uc4java

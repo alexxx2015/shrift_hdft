@@ -52,6 +52,7 @@ public class MirrorStack {
 	// private static Logger _logger =
 	// LoggerFactory.getLogger(MirrorStack.class);
 
+
 	private static Stack<Container> Stack = new Stack<Container>();
 
 	private static boolean ucaUsed = false;

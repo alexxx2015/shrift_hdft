@@ -27,27 +27,29 @@ import edu.tum.uc.jvm.utility.Utility;
 public class MyUcTransformer implements ClassFileTransformer {
 
 	private static TomcatClassLoader myClassLoader;
-	
+
 	private static ProtectionDomain myProtDom;
 
-	public static final String DELEGATECLASSNAME = InstrumDelegate.class.getName()
-			.replace(".", "/");
-	
-	//true if running instrumentation in a webservice
+	public static final String DELEGATECLASSNAME = InstrumDelegate.class
+			.getName().replace(".", "/");
+
+	// true if running instrumentation in a webservice
 	private boolean instrument_webservice;
-	
+
 	{
-		//Initialize pdp communication
+		// Initialize pdp communication
 		UcCommunicator.getInstance().initPDP();
-		
-		//Populate PIP
-		//Utility.populatePip(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
-		
-		//Create for all sinks and sources a corresponding object in the event repository
-		EventRepository.createEventObjects(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));				
+
+		// Populate PIP
+		// Utility.populatePip(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
+
+		// Create for all sinks and sources a corresponding object in the event
+		// repository
+		EventRepository.createEventObjects(ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 	}
-	
-	public MyUcTransformer(){
+
+	public MyUcTransformer() {
 		this(false);
 	}
 
@@ -76,16 +78,12 @@ public class MyUcTransformer implements ClassFileTransformer {
 	// "/")+".class");
 	// return f.exists();
 	// }
-	
 
 	@Override
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
-		
-	    	System.out.println("[MyUcTransformer]: Calling tranform ...");
-	    
-		//use a web server specific classloader if running in a web server
+		System.out.println("[MyUcTransformer]: Calling tranform ...");
 		if (this.instrument_webservice) {
 			this.setClassLoader(loader);
 			this.setProtectionDomain(protectionDomain);
@@ -98,10 +96,11 @@ public class MyUcTransformer implements ClassFileTransformer {
 		}
 		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
-		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
-		//log time for instrumentation
-		long start_instrumentation = 0;		
-		if(!"".equals(statistic)){
+		String statistic = ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
+		// log time for instrumentation
+		long start_instrumentation = 0;
+		if (!"".equals(statistic)) {
 			start_instrumentation = System.nanoTime();
 		}
 
@@ -109,20 +108,27 @@ public class MyUcTransformer implements ClassFileTransformer {
 		ClassNode cn = new ClassNode();
 		cr.accept(cn, 0);
 
-		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);// ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS
+				| ClassWriter.COMPUTE_FRAMES);// ClassWriter cw = new
+												// ClassWriter(cr,
+												// ClassWriter.COMPUTE_MAXS |
+												// ClassWriter.COMPUTE_FRAMES);
 		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
-		
-		if(!"".equals(statistic)){
-			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(), System.nanoTime()-start_instrumentation);
-		} 
-		
-		//Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in configuration file
+
+		if (!"".equals(statistic)) {
+			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(),
+					System.nanoTime() - start_instrumentation);
+		}
+
+		// Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in
+		// configuration file
 		String s = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTED_CLASS_PATH);
 		if ((s != null) && !s.equals("")) {
 			try {
-				File f = new File(s + cr.getClassName().replace("/", "_")+".class");
+				File f = new File(s + cr.getClassName().replace("/", "_")
+						+ ".class");
 				if (!f.exists()) {
 					f.createNewFile();
 				}
@@ -135,38 +141,39 @@ public class MyUcTransformer implements ClassFileTransformer {
 				e.printStackTrace();
 			}
 		}
-		
-		// Add class name to list of instrumented classes in the instrumentation delegate
+
+		// Add class name to list of instrumented classes in the instrumentation
+		// delegate
 		InstrumDelegate.addInstrumentedClassName(cr.getClassName());
-		
-		//return the instrumented class
+
+		// return the instrumented class
 		return cw.toByteArray();
 	}
 }
 
-//try {
-//	Method method = ClassLoader.class.getDeclaredMethod(
-//			"findLoadedClass", new Class[] { String.class });
-//	method.setAccessible(true);
+// try {
+// Method method = ClassLoader.class.getDeclaredMethod(
+// "findLoadedClass", new Class[] { String.class });
+// method.setAccessible(true);
 //
-//	ClassLoader cl = ClassLoader.getSystemClassLoader();
-//	Object clazz = method.invoke(cl,
-//			"edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
-//	if (clazz == null) {
-//	}
-//} catch (SecurityException e) {
-//	// TODO Auto-generated catch block
-//	e.printStackTrace();
-//} catch (IllegalArgumentException e) {
-//	// TODO Auto-generated catch block
-//	e.printStackTrace();
-//} catch (IllegalAccessException e) {
-//	// TODO Auto-generated catch block
-//	e.printStackTrace();
-//} catch (InvocationTargetException e) {
-//	// TODO Auto-generated catch block
-//	e.printStackTrace();
-//} catch (NoSuchMethodException e) {
-//	// TODO Auto-generated catch block
-//	e.printStackTrace();
-//}
+// ClassLoader cl = ClassLoader.getSystemClassLoader();
+// Object clazz = method.invoke(cl,
+// "edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
+// if (clazz == null) {
+// }
+// } catch (SecurityException e) {
+// // TODO Auto-generated catch block
+// e.printStackTrace();
+// } catch (IllegalArgumentException e) {
+// // TODO Auto-generated catch block
+// e.printStackTrace();
+// } catch (IllegalAccessException e) {
+// // TODO Auto-generated catch block
+// e.printStackTrace();
+// } catch (InvocationTargetException e) {
+// // TODO Auto-generated catch block
+// e.printStackTrace();
+// } catch (NoSuchMethodException e) {
+// // TODO Auto-generated catch block
+// e.printStackTrace();
+// }

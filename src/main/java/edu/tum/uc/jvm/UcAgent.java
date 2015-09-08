@@ -11,7 +11,7 @@ public final class UcAgent {
 		//for(Class clazz : p_instr.getAllLoadedClasses())
 			//System.out.println(clazz.getName());
 			
-		p_instr.addTransformer(new UcTransformer());
+		p_instr.addTransformer(new MyUcTransformer());
 		MirrorStack.runnable = true;	
 	}
 

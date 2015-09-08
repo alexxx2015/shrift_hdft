@@ -20,6 +20,7 @@ public final class ConfigProperties {
 		, ENFORCEMENT
 		, STATISTICS
 		, BLACKLIST
+		, WHITELIST
 		, INSTRUMENTATION
 		, TIMER_T1
 		, TIMER_T2

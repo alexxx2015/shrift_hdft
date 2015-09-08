@@ -1,5 +1,17 @@
 package edu.tum.uc.jvm.pxp;
 
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.ADDRESS;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.ARRAYS;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.ARRAY_ELEMENTS;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.CLASSNAME;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.FIELD_NAME;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.INDEX;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.INSTANCE_FIELDS;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.OBJECTS;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.OBJECT_ADDRESS;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.STATIC_FIELDS;
+import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.TYPE;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -8,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.tum.uc.jvm.utility.UnsafeUtil;
-import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.*;
 
 public class Enforcer {
 

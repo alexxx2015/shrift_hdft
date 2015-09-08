@@ -53,6 +53,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 	public MyUcTransformer(boolean p_instrument_webservice) {
 		this.instrument_webservice = p_instrument_webservice;
+		System.out.println("[MyUcTransformer]: Instance created.");
 	}
 
 	// Run instruction: java -javaagent:uc4jvm.jar -Djava.security.manager
@@ -82,16 +83,20 @@ public class MyUcTransformer implements ClassFileTransformer {
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
 		
+	    	System.out.println("[MyUcTransformer]: Calling tranform ...");
+	    
 		//use a web server specific classloader if running in a web server
 		if (this.instrument_webservice) {
 			this.setClassLoader(loader);
 			this.setProtectionDomain(protectionDomain);
 		}
 		
+		System.out.println("[MyUcTransformer]: Trying to instrument class: " + className);
 		//Do not instrument class if it is blacklisted
-		if(Utility.isBlackisted(className)){
+		if(!Utility.isWhitelisted(className)){
 			return null;
 		}
+		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
 		String statistic = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
 		//log time for instrumentation

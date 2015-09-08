@@ -30,7 +30,9 @@ public class TomcatClassLoader extends TomcatInstrumentableClassLoader{
 	}
 	
 	private void addUCTransformer(){		
-		super.addTransformer(new UcTransformer(true));
+		//super.addTransformer(new UcTransformer(true));
+	    super.addTransformer(new MyUcTransformer(false));
+	    System.out.println("[TCCL]: Added MyUcTransformer");
 	}
 	
 //	@Override

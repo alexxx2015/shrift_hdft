@@ -46,6 +46,7 @@ public class Utility {
 	public final static String notSpecified = "-1";
 
 	private static List<String[]> BLACKLIST;
+	private static List<String[]> WHITELIST;
 
 	public static List<Field> getAllFields(Object obj) {
 		ArrayList<Field> _return = new ArrayList<Field>();
@@ -720,6 +721,62 @@ public class Utility {
 
 		if (BLACKLIST.size() > 0) {
 			Iterator<String[]> it = BLACKLIST.iterator();
+			while (it.hasNext()) {
+				String[] cmp = it.next();
+				switch (cmp[0]) {
+				case "contains":
+					if (classname.toLowerCase().contains(cmp[1].toLowerCase()))
+						_return = true;
+					break;
+				case "startswith":
+					if (classname.toLowerCase()
+							.startsWith(cmp[1].toLowerCase()))
+						_return = true;
+					break;
+				case "endswith":
+					if (classname.toLowerCase().endsWith(cmp[1].toLowerCase()))
+						_return = true;
+					break;
+				}
+				if (_return)
+					break;
+			}
+		}
+		return _return;
+	}
+	
+	public static boolean isWhitelisted(String classname) {
+		classname = classname.replace("/", ".");
+		boolean _return = false;
+		// Read WHITELIST file if not done yet
+		if (WHITELIST == null) {
+			try {
+			    WHITELIST = new LinkedList<String[]>();
+				String filename = ConfigProperties
+						.getProperty(ConfigProperties.PROPERTIES.WHITELIST);
+				if (!"".equals(filename)) {
+					File f = new File(filename);
+					FileInputStream fis = new FileInputStream(f);
+					BufferedReader br = new BufferedReader(
+							new InputStreamReader(fis));
+					String line;
+					while ((line = br.readLine()) != null) {
+						String[] lineCmp = line.split(":");
+						if (lineCmp.length == 2)
+							WHITELIST.add(lineCmp);
+					}
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		if (WHITELIST.size() > 0) {
+			Iterator<String[]> it = WHITELIST.iterator();
 			while (it.hasNext()) {
 				String[] cmp = it.next();
 				switch (cmp[0]) {

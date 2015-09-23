@@ -71,7 +71,7 @@ public class TestProgram10 implements TestIntf {
 	fos1.write(outbuffer1);
 	fos2.write(outbuffer2);
 	
-	while(true){}
+	//while(true){}
     }
     
     public static int copyUntilStop(String inFileName, String outFileName, char stopChar) throws IOException {

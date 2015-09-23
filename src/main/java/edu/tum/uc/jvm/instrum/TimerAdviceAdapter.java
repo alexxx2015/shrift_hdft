@@ -1,0 +1,40 @@
+package edu.tum.uc.jvm.instrum;
+
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.AdviceAdapter;
+
+import edu.tum.uc.jvm.MyUcTransformer;
+
+public class TimerAdviceAdapter extends AdviceAdapter {
+    private String methodName;
+    private String descriptor;
+    private String className;
+    private String fqName;
+    private String superClassName;
+
+    protected TimerAdviceAdapter(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc,
+	    String p_signature, String p_className, String p_superClassName) {
+	super(p_api, p_mv, p_access, p_name, p_desc);
+
+	this.methodName = p_name;
+	this.descriptor = p_desc;
+	this.className = p_className;
+	this.superClassName = p_superClassName;
+	this.fqName = this.className.replace("/", ".") + "|" + this.methodName + this.descriptor;
+    }
+
+    protected void onMethodEnter() {
+	if (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName.equals("doGet"))) {
+	    mv.visitLdcInsn(fqName);
+	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startMethodTimer", "(Ljava/lang/String;)V", false);
+	}
+    }
+
+    protected void onMethodExit(int opcode) {
+	if (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName.equals("doGet"))) {
+	    mv.visitLdcInsn(fqName);
+	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "stopMethodTimer", "(Ljava/lang/String;)V", false);
+	}
+    }
+}

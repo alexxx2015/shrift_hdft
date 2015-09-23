@@ -4,7 +4,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import edu.tum.uc.jvm.MyUcTransformer;
-import edu.tum.uc.jvm.UcTransformer;
 
 public class MyClassWriter extends ClassWriter {
 	

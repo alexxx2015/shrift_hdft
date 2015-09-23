@@ -869,6 +869,10 @@ public class Utility {
 		}
 		return "Proc-1";
 	}
+	
+	public static String getThreadId() {
+	    return "Thread" + String.valueOf(Thread.currentThread().getId());
+	}
 }
 
 /*	public static final String PREFIX = "my/";

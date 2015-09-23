@@ -15,13 +15,19 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.RequestFacade;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.connector.ResponseFacade;
 import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
@@ -33,21 +39,65 @@ public class ServletFinder {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws IOException {
-
-	String jarPath = "/home/vladi/pebble-2.6.4.war";
+	String wsName = "SnipSnap";
+	String jarPath = "/home/vladi/SnipSnap.jar";
 	JarFile jarFile = new JarFile(jarPath);
-
-	Collection<String> mainServletClasses = getServletClasses(jarFile);
-
-	mainServletClasses.forEach(System.out::println);
-
+	Collection<ServletInfo> mainServletClasses = getServletClasses(jarFile);
 	jarFile.close();
+	
+	for (ServletInfo servletInfo : mainServletClasses) {
+	    System.out.println(servletInfo);
+	}
+	
+	System.out.println(generateEntryPoint(wsName, mainServletClasses));
+    }
+    
+    private static String generateEntryPoint(String webServiceName, Collection<ServletInfo> servlets) {
+	StringBuilder importsSB = new StringBuilder();
+	
+	importsSB.append("package webservice;\n\n");
+	importsSB.append("import java.io.IOException;\n\n");
+	importsSB.append("import javax.servlet.ServletException;\n\n");
+	importsSB.append("import org.apache.catalina.connector.Request;\n");
+	importsSB.append("import org.apache.catalina.connector.RequestFacade;\n");
+	importsSB.append("import org.apache.catalina.connector.Response;\n");
+	importsSB.append("import org.apache.catalina.connector.ResponseFacade;\n");
+	
+	StringBuilder classSB = new StringBuilder();
+	classSB.append("public class " + webServiceName + "EntryPoint {\n");
+	classSB.append("\n");
+	classSB.append("\tpublic static void main(String[] args) throws IOException, ServletException {\n");
+	classSB.append("\t\t\n");
+	classSB.append("\t\tResponseFacade response = new ResponseFacade(new Response());\n");
+	classSB.append("\t\tRequestFacade request = new RequestFacade(new Request());\n");
+	classSB.append("\t\t\n");
+	
+	for (ServletInfo servlet : servlets) {
+	    importsSB.append("import " + servlet.classFQName + ";\n");
+	    String className = servlet.getClassName();
+	    String varName = Character.toLowerCase(className.charAt(0)) + className.substring(1);
+	    classSB.append("\t\t" + className + " " + varName + " = new " + className + "();\n");
+	    if (servlet.hasDoGet) {
+		classSB.append("\t\t" + varName + ".doGet(request, response);\n");
+	    }
+	    if (servlet.hasDoPost) {
+		classSB.append("\t\t" + varName + ".doPost(request, response);\n");
+	    }
+	}
+	
+	classSB.append("\t}\n");
+	classSB.append("\n");
+	classSB.append("}");
+	
+	importsSB.append("\n\n\n");
+	
+	return importsSB.toString() + classSB.toString();
     }
 
-    private static Collection<String> getServletClasses(JarFile jarFile) throws IOException {
+    private static Set<ServletInfo> getServletClasses(JarFile jarFile) throws IOException {
 	String jarName = jarFile.getName().substring(jarFile.getName().lastIndexOf(File.separatorChar) + 1,
 		jarFile.getName().lastIndexOf('.'));
-	Collection<String> mainServletClasses = new ArrayList<String>();
+	Set<ServletInfo> mainServletClasses = new TreeSet<ServletInfo>();
 
 	Enumeration<JarEntry> entryEnum = jarFile.entries();
 
@@ -55,9 +105,9 @@ public class ServletFinder {
 	    JarEntry jarEntry = entryEnum.nextElement();
 	    String name = jarEntry.getName();
 	    if (name.endsWith(".class")) {
-		String className = checkJarEntry(jarFile.getInputStream(jarEntry));
-		if (className != null) {
-		    mainServletClasses.add(className);
+		ServletInfo servletInfo = checkJarEntry(jarFile.getInputStream(jarEntry));
+		if (servletInfo != null) {
+		    mainServletClasses.add(servletInfo);
 		}
 
 	    } else if (name.endsWith(".jar")) {
@@ -84,7 +134,7 @@ public class ServletFinder {
 	return mainServletClasses;
     }
 
-    private static String checkJarEntry(InputStream entryInputStream) {
+    private static ServletInfo checkJarEntry(InputStream entryInputStream) {
 	try {
 	    ClassReader cr = new ClassReader(entryInputStream);
 	    ClassNode cn = new ClassNode();
@@ -107,7 +157,11 @@ public class ServletFinder {
 		}
 	    }
 	    if (hasDoGet || hasDoPost) {
-		return cn.name.replace("/", ".") + (hasDoGet ? " doGet" : "") + (hasDoPost ? " doPost" : "");
+		ServletInfo servletInfo = new ServletInfo();
+		servletInfo.classFQName = cn.name.replace("/", ".");
+		servletInfo.hasDoGet = hasDoGet;
+		servletInfo.hasDoPost = hasDoPost;
+		return servletInfo;
 	    }
 
 	} catch (IOException e) {

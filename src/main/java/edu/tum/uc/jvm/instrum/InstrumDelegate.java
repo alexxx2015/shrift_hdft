@@ -1,27 +1,24 @@
 package edu.tum.uc.jvm.instrum;
 
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.validator.Var;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
-import de.tum.in.i22.uc.thrift.types.TAny2Any.AsyncProcessor.newInitialRepresentation;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
+import edu.tum.uc.jvm.utility.eval.JavaEventName;
+import edu.tum.uc.jvm.utility.eval.MethodTimer;
+import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
 
 public class InstrumDelegate {
 	
@@ -38,8 +35,20 @@ public class InstrumDelegate {
 		InstrumentedClasses.add(className.replace("/", "."));
 	}
 	
+	public static void startMethodTimer(String methodFQName) {
+	    StatisticsUtil.startMethodTimer(methodFQName);
+	}
+	
+	public static void stopMethodTimer(String methodFQName) {
+	    StatisticsUtil.stopMethodTimer(methodFQName);
+	}
+	
+	public static void startEventTimer(String eventName) {
+	    StatisticsUtil.startEventTimer(eventName);
+	}
+	
 	public static void readArray(Object array, int index, Object arrayAtIndex, 
-			Object parentObject, String parentMethod, String label) {
+			Object parentObject, String parentMethod, String label) {		
 		System.out.println("Read array!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -58,7 +67,7 @@ public class InstrumDelegate {
 		eventParams.put("elementClass", getClass(arrayAtIndex));
 		eventParams.put("elementAddress", getAddress(arrayAtIndex));
 		eventParams.put("chopLabel", label);
-		sendEvent("ReadArray", eventParams);
+		sendEvent(JavaEventName.READ_ARRAY, eventParams);
 		
 		System.out.println();
 	}
@@ -83,14 +92,14 @@ public class InstrumDelegate {
 		eventParams.put("valueClass", getClass(value));
 		eventParams.put("valueAddress", getAddress(value));
 		eventParams.put("chopLabel", label);
-		sendEvent("WriteArray", eventParams);
+		sendEvent(JavaEventName.WRITE_ARRAY, eventParams);
 		
 		System.out.println();
 	}
 	
 	public static void readField(Object fieldOwnerObject, Object fieldValue, String fieldOwnerClass, 
 			String fieldName, Object parentObject, String parentMethod, String label) {
-		System.out.println("Read field!!");
+	    	System.out.println("Read field!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
 		System.out.println("Parent Method = " + parentMethod);
@@ -110,13 +119,14 @@ public class InstrumDelegate {
 		eventParams.put("fieldValueClass", getClass(fieldValue));
 		eventParams.put("fieldValueAddress", getAddress(fieldValue));
 		eventParams.put("chopLabel", label);
-		sendEvent("ReadField", eventParams);
+		sendEvent(JavaEventName.READ_FIELD, eventParams);
 		
 		System.out.println();
 	}
 	
 	public static void writeField(Object fieldOwnerObject, Object assignee, String fieldOwnerClass,
 			String fieldName, Object parentObject, String parentMethod, String label) {
+		
 		System.out.println("Write field!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -138,12 +148,13 @@ public class InstrumDelegate {
 		eventParams.put("assigneeClass", getClass(assignee));
 		eventParams.put("assigneeAddress", getAddress(assignee));
 		eventParams.put("chopLabel", label);
-		sendEvent("WriteField", eventParams);
+		sendEvent(JavaEventName.WRITE_FIELD, eventParams);
 		
 		System.out.println();
 	}
 	
 	public static void unaryAssign(Object arg, Object parentObject, String parentMethod, String label) {
+		
 		System.out.println("Unary assign operation!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -157,12 +168,13 @@ public class InstrumDelegate {
 		eventParams.put("argumentClass", getClass(arg));
 		eventParams.put("argumentAddress", getAddress(arg));
 		eventParams.put("chopLabel", label);
-		sendEvent("UnaryAssign", eventParams);
+		sendEvent(JavaEventName.UNARY_ASSIGN, eventParams);
 		
 		System.out.println();
 	}
 	
 	public static void binaryAssign(Object arg1, Object arg2, Object parentObject, String parentMethod, String label) {
+		
 		System.out.println("Binary assign operation!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -177,12 +189,14 @@ public class InstrumDelegate {
 		eventParams.put("argument1", objectToString(arg1));
 		eventParams.put("argument2", objectToString(arg2));
 		eventParams.put("chopLabel", label);
-		sendEvent("BinaryAssign", eventParams);
+		sendEvent(JavaEventName.BINARY_ASSIGN, eventParams);
 		
 		System.out.println();
 	}
 	
-	public static void instanceMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args, Object parentObject, Object caller) {
+	public static void instanceMethodInvoked(String parentMethod, String label, String calledMethod, 
+		Object[] args, Object parentObject, Object caller) {
+		
 		System.out.println("Instance method invoked!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -202,12 +216,13 @@ public class InstrumDelegate {
 		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
-		sendEvent("CallInstanceMethod", eventParams);
+		sendEvent(JavaEventName.CALL_INSTANCE_METHOD, eventParams);
 		
 		System.out.println();
 	}
 	
 	public static void staticMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args, Object parentObject) {
+		
 		System.out.println("Static method invoked!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -224,13 +239,14 @@ public class InstrumDelegate {
 		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
 		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 		eventParams.put("chopLabel", label);
-		sendEvent("CallStaticMethod", eventParams);
+		sendEvent(JavaEventName.CALL_STATIC_METHOD, eventParams);
 		
 		System.out.println();
 	}
 	
 	public static void instanceMethodReturned(Object returnValue, int argsCount, int bytecodeOffset, String parentMethod,
 			String label, String calledMethod, Object parentObject, Object caller) {
+		
 		System.out.println("Instance method returned!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -253,13 +269,14 @@ public class InstrumDelegate {
 		eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 		eventParams.put("callerObjectIsInstrumented", String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
-		sendEvent("ReturnInstanceMethod", eventParams);
+		sendEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
 		
 		System.out.println();
 	}
 	
 	public static void staticMethodReturned(Object returnValue, int argsCount, int bytecodeOffset, String parentMethod,
 			String label, String calledMethod, Object parentObject) {
+		
 		System.out.println("Static method returned!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -280,7 +297,7 @@ public class InstrumDelegate {
 		eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 		eventParams.put("callerClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod))));
 		eventParams.put("chopLabel", label);
-		sendEvent("ReturnStaticMethod", eventParams);
+		sendEvent(JavaEventName.RETURN_STATIC_METHOD, eventParams);
 
 		System.out.println();
 	}
@@ -292,12 +309,13 @@ public class InstrumDelegate {
 		Map<String, String> eventParams = new HashMap<String, String>();
 		eventParams.put("callerClass", getClass(calledMethod));
 		eventParams.put("calledMethod", getMethod(calledMethod));
-		sendEvent("ReturnMainMethod", eventParams);
+		sendEvent(JavaEventName.RETURN_MAIN_METHOD, eventParams);
 
 		System.out.println();
 	}
 	
 	public static void prepareMethodReturn(Object returnValue, Object parentObject, String parentMethod, String label) {
+	    
 		System.out.println("Prepare method return!!");
 		System.out.println("Chopnode Label = " + label);
 		System.out.println("Parent obj = " + objectToString(parentObject));
@@ -311,7 +329,7 @@ public class InstrumDelegate {
 		eventParams.put("returnValueClass", getClass(returnValue));
 		eventParams.put("returnValueAddress", getAddress(returnValue));
 		eventParams.put("chopLabel", label);
-		sendEvent("PrepareMethodReturn", eventParams);
+		sendEvent(JavaEventName.PREPARE_METHOD_RETURN, eventParams);
 
 		System.out.println();
 	}
@@ -319,10 +337,13 @@ public class InstrumDelegate {
 	private static void sendEvent(String eventName, Map<String, String> specificParams) {
 		Map<String, String> allParams = new HashMap<String, String>(specificParams);
 		allParams.put("PEP", "Java");
-		allParams.put("threadId", "Thread" + String.valueOf(Thread.currentThread().getId()));
+		allParams.put("threadId", Utility.getThreadId());
 		allParams.put("processId", Utility.getPID());
 		IEvent event = new EventBasic(eventName, allParams, true);
+		StatisticsUtil.logChopNode();
+		StatisticsUtil.endEventCreation(eventName);
 		boolean success = ucCom.sendEvent2Pdp(event);
+		StatisticsUtil.stopEventTimer(eventName);
 		System.out.println(success ? "Event sent successfully" : "Error sending event");
 	}
 	

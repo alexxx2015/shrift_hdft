@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.tum.uc.jvm.MyUcTransformer;
+import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
 
 public class TestTestprogram10 extends AbstractTest {
 
@@ -54,6 +55,7 @@ public class TestTestprogram10 extends AbstractTest {
 			Object obj = reloadMainClass.newInstance();
 			test.TestIntf myTest2 = (test.TestIntf) obj;
 			myTest2.runtest();
+			StatisticsUtil.writeToFile();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

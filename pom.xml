@@ -130,6 +130,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
+					<outputDirectory>/media/sf_vm_exchange</outputDirectory>
 					<archive>
 						<manifestFile>${basedir}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>

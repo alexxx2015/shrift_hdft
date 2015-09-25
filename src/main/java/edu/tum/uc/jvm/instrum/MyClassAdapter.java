@@ -43,7 +43,8 @@ public class MyClassAdapter extends ClassVisitor {
 	// If the method is not native, switch in the instrumenting MyMethodVisitor
 	// We cannot instrument native machine code
 	if ((p_access & Opcodes.ACC_NATIVE) != Opcodes.ACC_NATIVE) {
-	    if (ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION) != null) {
+	    if (ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION) != null
+		    && ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION).equals("true")) {
 		// this one removes JSR instructions and inlines the referenced subroutines
 		JSRInlinerAdapter ja = new JSRInlinerAdapter(mv, p_access, p_name, p_desc, p_signature, p_exceptions);
 		// timers for tracking time spent in a method
@@ -58,8 +59,7 @@ public class MyClassAdapter extends ClassVisitor {
 	    } else {
 		TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,
 			p_signature, this.className, this.classNode.superName);
-		mv = new MyMethodVisitor(Opcodes.ASM4, timeAa, p_access, p_name, p_desc, p_signature, this.className,
-			chopNodes, this.classWriter);
+		mv = timeAa;
 	    }
 	}
 	return mv;

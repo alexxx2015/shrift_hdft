@@ -232,9 +232,9 @@ public class MyMethodVisitor extends MethodVisitor {
 		    } else if (p_opcode == Opcodes.DALOAD) {
 			arrayType = Type.DOUBLE_TYPE;
 		    }
+		    boxTopStackValue(mv, arrayType);
 		}
-		boxTopStackValue(mv, arrayType);
-
+		
 		// Load parent object (or null if parent method is static)
 		if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 		    mv.visitInsn(Opcodes.ACONST_NULL);
@@ -684,15 +684,6 @@ public class MyMethodVisitor extends MethodVisitor {
 			    false);
 		}
 
-		if (isInstanceOrInterfaceMethod || isConstructor) {
-		    mv.visitLdcInsn(JavaEventName.RETURN_INSTANCE_METHOD);
-		} else {
-		    mv.visitLdcInsn(JavaEventName.RETURN_STATIC_METHOD);
-		}
-
-		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
-
 		// Load original method arguments
 		if (isInstanceOrInterfaceMethod) {
 		    mv.visitVarInsn(Opcodes.ALOAD, 0);
@@ -714,7 +705,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		    } else if (argType.getSort() == Type.LONG) {
 			mv.visitVarInsn(Opcodes.LLOAD, i);
 			i++;
-		    } else if ((argType.getSort() == Type.INT) || (argType.getSort() == Type.CHAR)) {
+		    } else if ((argType.getSort() == Type.INT) || (argType.getSort() == Type.CHAR) || (argType.getSort() == Type.BOOLEAN)) {
 			mv.visitVarInsn(Opcodes.ILOAD, i);
 		    }
 		    i++;
@@ -722,6 +713,16 @@ public class MyMethodVisitor extends MethodVisitor {
 		// Invoke original method
 		mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
 
+		if (isInstanceOrInterfaceMethod || isConstructor) {
+		    mv.visitLdcInsn(JavaEventName.RETURN_INSTANCE_METHOD);
+		} else {
+		    mv.visitLdcInsn(JavaEventName.RETURN_STATIC_METHOD);
+		}
+
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
+			"(Ljava/lang/String;)V", false);
+
+		
 		// Duplicate return value (or if constructor, the unintialized pointer duped before)
 		// to call return event delegate method with it (and wrap it)
 		// If original method returns void, push a null value
@@ -852,6 +853,7 @@ public class MyMethodVisitor extends MethodVisitor {
     }
 
     private void boxTopStackValue(MethodVisitor p_mv, Type p_valuetype) {
+	if (p_valuetype == null) return;
 	int typeType = p_valuetype.getSort();
 	if (typeType == Type.DOUBLE) {
 	    p_mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);

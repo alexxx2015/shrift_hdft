@@ -4,20 +4,22 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 import org.hibernate.validator.internal.metadata.raw.ConfigurationSource;
 
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
 
+@WebListener
 public class StatisticsUtil implements ServletContextListener {
 
     // thread -> method -> timers
@@ -31,8 +33,8 @@ public class StatisticsUtil implements ServletContextListener {
 	Map<String, List<MethodTimer>> methodTimers = getMethodTimersForThread(threadId);
 	List<MethodTimer> timers = getTimersForMethod(methodTimers, methodFQName);
 	MethodTimer timer = new MethodTimer(threadId, methodFQName);
-	timer.start();
 	timers.add(timer);
+	timer.start();
     }
 
     public static void stopMethodTimer(String methodFQName) {
@@ -42,10 +44,14 @@ public class StatisticsUtil implements ServletContextListener {
 	if ((timers = methodTimers.get(methodFQName)) != null) {
 	    MethodTimer lastTimer;
 	    if ((lastTimer = timers.get(timers.size() - 1)) != null) {
-		lastTimer.stop();
+		if (!lastTimer.isRunning()) {
+		    System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + methodFQName);
+		} else {
+		    lastTimer.stop();
+		}
 	    }
 	} else {
-	    System.out.println("Timer not found for " + threadId + "." + methodFQName);
+	    System.out.println("TERROR : Timer not found for " + threadId + "." + methodFQName);
 	}
     }
 
@@ -95,8 +101,9 @@ public class StatisticsUtil implements ServletContextListener {
 	Map<String, List<EventTimer>> eventTimers = getEventTimersForThread(threadId);
 	List<EventTimer> timers = getTimersForEvent(eventTimers, eventName);
 	EventTimer timer = new EventTimer(threadId, eventName);
-	timer.start();
 	timers.add(timer);
+	timer.start();
+	System.out.println("Timer started for " + threadId + "." + eventName);
     }
 
     public static void endEventCreation(String eventName) {
@@ -106,10 +113,15 @@ public class StatisticsUtil implements ServletContextListener {
 	if ((timers = eventTimers.get(eventName)) != null) {
 	    EventTimer lastTimer;
 	    if ((lastTimer = timers.get(timers.size() - 1)) != null) {
-		lastTimer.setCreated();
+		if (lastTimer.isSetCreated()) {
+		    System.out.println("TERROR : Last timer is already set created for " + threadId + "." + eventName);
+		} else {
+		    lastTimer.setCreated();
+		    System.out.println("Timer set created for " + threadId + "." + eventName);
+		}
 	    }
 	} else {
-	    System.out.println("Timer not found for " + threadId + "." + eventName);
+	    System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
 	}
     }
 
@@ -120,10 +132,15 @@ public class StatisticsUtil implements ServletContextListener {
 	if ((timers = eventTimers.get(eventName)) != null) {
 	    EventTimer lastTimer;
 	    if ((lastTimer = timers.get(timers.size() - 1)) != null) {
-		lastTimer.stop();
+		if (!lastTimer.isRunning()) {
+		    System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + eventName);
+		} else {
+		    lastTimer.stop();
+		    System.out.println("Timer stopped for " + threadId + "." + eventName);
+		}
 	    }
 	} else {
-	    System.out.println("Timer not found for " + threadId + "." + eventName);
+	    System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
 	}
     }
 
@@ -156,20 +173,24 @@ public class StatisticsUtil implements ServletContextListener {
 	    if (!f.getParentFile().exists()) {
 		f.getParentFile().mkdirs();
 	    }
-	    FileWriter fw = new FileWriter(f);
+	    FileWriter fw = new FileWriter(f, true);
 	    StringBuilder sb = new StringBuilder();
-	    sb.append("-----RUNTIME STATISTICS-----\n");
+	    sb.append("-----RUNTIME STATISTICS-----" + (new Date()) + "\n");
 	    sb.append("tracking on: " + ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION)
 		    + "\n");
 	    sb.append("1. Time per method\n");
-	    sb.append("<time> <chopnodes> <time per chopnode>");
+	    sb.append("<stopped> <time> <chopnodes> <time per chopnode>\n");
 
 	    // merge all timers over all threads into a method -> timers map
 	    Map<String, List<MethodTimer>> methodTimers = new HashMap<String, List<MethodTimer>>();
-	    MethodTimers.keySet().forEach(methodName -> {
-		methodTimers.put(methodName, new ArrayList<MethodTimer>());
+	    MethodTimers.values().forEach(currentMap -> {
+		currentMap.forEach((methodName, timers) -> {
+		    if (!methodTimers.containsKey(methodName)) {
+			methodTimers.put(methodName, new ArrayList<MethodTimer>());
+		    }
+		});
 	    });
-	    MethodTimers.values().stream().forEach(currentMap -> {
+	    MethodTimers.values().forEach(currentMap -> {
 		currentMap.forEach((methodName, timers) -> {
 		    methodTimers.get(methodName).addAll(timers);
 		});
@@ -178,29 +199,35 @@ public class StatisticsUtil implements ServletContextListener {
 	    methodTimers.forEach((methodName, timers) -> {
 		sb.append(methodName + " (" + timers.size() + " values):" + "\n");
 		timers.forEach(timer -> {
-		    sb.append("\t" + timer.getTimeInterval() + 
-			    "\t" + timer.getChopNodeCount());
+		    sb.append("\t" + !timer.isRunning() + 
+			    "\t" + timer.getTimeInterval() + 
+			    "\t" + timer.getChopNodeCount() + "\n");
 		});
-		double average = timers.stream().mapToLong(MethodTimer::getTimeInterval).average().getAsDouble();
+		
+		double average = timers.stream().mapToLong(MethodTimer::getTimeInterval).average().orElse(0);
 		double stdDev = stdDev(timers.stream().mapToLong(MethodTimer::getTimeInterval).toArray(), average);
-		sb.append("\tAverage time: " + average);
-		sb.append("\tStandard deviation: " + stdDev);
-		average = timers.stream().mapToInt(MethodTimer::getChopNodeCount).average().getAsDouble();
+		sb.append("\tAverage time: " + average + "\n");
+		sb.append("\tStandard deviation: " + stdDev + "\n");
+		average = timers.stream().mapToInt(MethodTimer::getChopNodeCount).average().orElse(0);
 		stdDev = stdDev(timers.stream().mapToLong(MethodTimer::getChopNodeCount).toArray(), average);
-		sb.append("\tAverage chopnode count: " + average);
-		sb.append("\tStandard deviation: " + stdDev);
+		sb.append("\tAverage chopnode count: " + average + "\n");
+		sb.append("\tStandard deviation: " + stdDev + "\n");
 		
 	    });
-	    
+	    sb.append("\n");
 	    sb.append("2. Time per event\n");
-	    sb.append("<creation> <communication> <sum>");
+	    sb.append("<creation> <communication> <sum>\n");
 
 	    // merge all timers over all threads into an event -> timers map
 	    Map<String, List<EventTimer>> eventTimers = new HashMap<String, List<EventTimer>>();
-	    EventTimers.keySet().forEach(eventName -> {
-		eventTimers.put(eventName, new ArrayList<EventTimer>());
+	    EventTimers.values().forEach(currentMap -> {
+		currentMap.forEach((eventName, timers) -> {
+		    if (!eventTimers.containsKey(eventName)) {
+			eventTimers.put(eventName, new ArrayList<EventTimer>());
+		    }
+		});
 	    });
-	    EventTimers.values().stream().forEach(currentMap -> {
+	    EventTimers.values().forEach(currentMap -> {
 		currentMap.forEach((eventName, timers) -> {
 		    eventTimers.get(eventName).addAll(timers);
 		});
@@ -211,21 +238,23 @@ public class StatisticsUtil implements ServletContextListener {
 		timers.forEach(timer -> {
 		    sb.append("\t" + timer.getCreationTimeInterval() + 
 			    "\t" + timer.getCommTimeInterval() + 
-			    "\t" + timer.getTimeInterval());
+			    "\t" + timer.getTimeInterval() + "\n");
 		});
-		double average = timers.stream().mapToLong(EventTimer::getCreationTimeInterval).average().getAsDouble();
+		double average = timers.stream().mapToLong(EventTimer::getCreationTimeInterval).average().orElse(0);
 		double stdDev = stdDev(timers.stream().mapToLong(EventTimer::getCreationTimeInterval).toArray(), average);
-		sb.append("\tAverage creation time: " + average);
-		sb.append("\tStandard deviation: " + stdDev);
-		average = timers.stream().mapToLong(EventTimer::getCommTimeInterval).average().getAsDouble();
+		sb.append("\tAverage creation time: " + average + "\n");
+		sb.append("\tStandard deviation: " + stdDev + "\n");
+		average = timers.stream().mapToLong(EventTimer::getCommTimeInterval).average().orElse(0);
 		stdDev = stdDev(timers.stream().mapToLong(EventTimer::getCommTimeInterval).toArray(), average);
-		sb.append("\tAverage communication time: " + average);
-		sb.append("\tStandard deviation: " + stdDev);
-		average = timers.stream().mapToLong(EventTimer::getTimeInterval).average().getAsDouble();
+		sb.append("\tAverage communication time: " + average + "\n");
+		sb.append("\tStandard deviation: " + stdDev + "\n");
+		average = timers.stream().mapToLong(EventTimer::getTimeInterval).average().orElse(0);
 		stdDev = stdDev(timers.stream().mapToLong(EventTimer::getTimeInterval).toArray(), average);
-		sb.append("\tAverage summary time: " + average);
-		sb.append("\tStandard deviation: " + stdDev);
+		sb.append("\tAverage summary time: " + average + "\n");
+		sb.append("\tStandard deviation: " + stdDev + "\n");
 	    });
+	    
+	    sb.append("\n\n\n\n");
 	    
 	    fw.append(sb.toString());
 	    fw.close();
@@ -250,7 +279,9 @@ public class StatisticsUtil implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent arg0) {
 	// TODO Auto-generated method stub
+	System.out.println("Writing statistics ...");
 	writeToFile();
+	System.out.println("Statistics can be found in " + ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS));
     }
 
     @Override

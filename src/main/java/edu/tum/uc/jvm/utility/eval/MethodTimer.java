@@ -18,6 +18,10 @@ public class MethodTimer extends Timer {
 	return chopNodeCount;
     }
     
+    public long getTimePerChopNode() {
+	return getTimeInterval() / getChopNodeCount();
+    }
+    
     public String getUniqueKey() {
 	return threadId+methodFQName+startTime;
     }

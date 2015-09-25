@@ -1,10 +1,14 @@
 package edu.tum.uc.jvm.instrum;
 
+import java.io.PrintStream;
+
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 
 import edu.tum.uc.jvm.MyUcTransformer;
+import edu.tum.uc.jvm.utility.Utility;
 
 public class TimerAdviceAdapter extends AdviceAdapter {
     private String methodName;
@@ -28,6 +32,9 @@ public class TimerAdviceAdapter extends AdviceAdapter {
 	if (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName.equals("doGet"))) {
 	    mv.visitLdcInsn(fqName);
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startMethodTimer", "(Ljava/lang/String;)V", false);
+	    mv.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(System.class), "out", "Ljava/io/PrintStream;");
+	    mv.visitLdcInsn("STARTED " + Utility.getThreadId() + "|" + fqName);
+	    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(PrintStream.class), "println", "(Ljava/lang/String;)V", false);
 	}
     }
 
@@ -35,6 +42,9 @@ public class TimerAdviceAdapter extends AdviceAdapter {
 	if (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName.equals("doGet"))) {
 	    mv.visitLdcInsn(fqName);
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "stopMethodTimer", "(Ljava/lang/String;)V", false);
+	    mv.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(System.class), "out", "Ljava/io/PrintStream;");
+	    mv.visitLdcInsn("STOPPED " + Utility.getThreadId() + "|" + fqName);
+	    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(PrintStream.class), "println", "(Ljava/lang/String;)V", false);
 	}
     }
 }

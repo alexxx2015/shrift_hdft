@@ -83,18 +83,18 @@ public class MyUcTransformer implements ClassFileTransformer {
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
-		System.out.println("[MyUcTransformer]: Calling tranform ...");
+		//System.out.println("[MyUcTransformer]: Calling tranform ...");
 		if (this.instrument_webservice) {
 			this.setClassLoader(loader);
 			this.setProtectionDomain(protectionDomain);
 		}
 		
-		System.out.println("[MyUcTransformer]: Trying to instrument class: " + className);
-		//Do not instrument class if it is blacklisted
+		//System.out.println("[MyUcTransformer]: Trying to instrument class: " + className);
+		//Only instrument whitelisted classes
 		if(!Utility.isWhitelisted(className)){
 			return null;
 		}
-		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
+		//System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
 		String statistic = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
@@ -129,6 +129,9 @@ public class MyUcTransformer implements ClassFileTransformer {
 			try {
 				File f = new File(s + cr.getClassName().replace("/", "_")
 						+ ".class");
+				if (!f.getParentFile().exists()) {
+				    f.getParentFile().mkdirs();
+				}
 				if (!f.exists()) {
 					f.createNewFile();
 				}

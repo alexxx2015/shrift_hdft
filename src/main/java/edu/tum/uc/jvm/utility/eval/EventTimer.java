@@ -18,6 +18,10 @@ public class EventTimer extends Timer {
 	createdTime = System.nanoTime();
     }
     
+    public boolean isSetCreated() {
+	return createdTime > 0;
+    }
+    
     public long getCreationTimeInterval() {
 	return createdTime - startTime;
     }

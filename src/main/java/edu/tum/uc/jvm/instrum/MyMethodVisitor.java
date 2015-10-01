@@ -51,8 +51,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		// tneg, 116-119, unary
 
 		mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
+			"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 		// Create a copy of the opcode argument and box it
 		Type operandType = null;
@@ -112,8 +115,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		// logical, 126-131, binary
 
 		mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
+			"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 		// Create a copy of the two opcode arguments and box them
 		switch (p_opcode) {
@@ -203,8 +209,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		// load from array
 
 		mv.visitLdcInsn(JavaEventName.READ_ARRAY);
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
+			"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 		// Create a copy of the array and the index
 		mv.visitInsn(Opcodes.DUP2);
@@ -234,7 +243,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		    }
 		    boxTopStackValue(mv, arrayType);
 		}
-		
+
 		// Load parent object (or null if parent method is static)
 		if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 		    mv.visitInsn(Opcodes.ACONST_NULL);
@@ -257,8 +266,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		// store into array cell
 
 		mv.visitLdcInsn(JavaEventName.WRITE_ARRAY);
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
+			"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 		// duplicate value, index, array & box value if primitive
 		Type arrayType = null;
@@ -312,8 +324,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		// handling void return not needed here (no chopnodes for this)
 
 		mv.visitLdcInsn(JavaEventName.PREPARE_METHOD_RETURN);
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
+			"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 		// duplicate top stack value (return value)
 		Type retType = Type.getReturnType(descriptor);
@@ -388,8 +403,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		// unary
 
 		mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
+			"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 		// Create a copy of the opcode argument (already reference type)
 		mv.visitInsn(Opcodes.DUP);
@@ -705,7 +723,8 @@ public class MyMethodVisitor extends MethodVisitor {
 		    } else if (argType.getSort() == Type.LONG) {
 			mv.visitVarInsn(Opcodes.LLOAD, i);
 			i++;
-		    } else if ((argType.getSort() == Type.INT) || (argType.getSort() == Type.CHAR) || (argType.getSort() == Type.BOOLEAN)) {
+		    } else if ((argType.getSort() == Type.INT) || (argType.getSort() == Type.CHAR)
+			    || (argType.getSort() == Type.BOOLEAN)) {
 			mv.visitVarInsn(Opcodes.ILOAD, i);
 		    }
 		    i++;
@@ -719,10 +738,12 @@ public class MyMethodVisitor extends MethodVisitor {
 		    mv.visitLdcInsn(JavaEventName.RETURN_STATIC_METHOD);
 		}
 
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-			"(Ljava/lang/String;)V", false);
+			"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
-		
 		// Duplicate return value (or if constructor, the unintialized pointer duped before)
 		// to call return event delegate method with it (and wrap it)
 		// If original method returns void, push a null value
@@ -805,8 +826,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		mv.visitLdcInsn(JavaEventName.CALL_STATIC_METHOD);
 	    }
 
+	    mv.visitLdcInsn(chopNode.getByteCodeIndex());
+	    mv.visitLdcInsn(chopNode.getOwnerMethod());
+	    mv.visitLdcInsn(chopNode.getLabel());
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-		    "(Ljava/lang/String;)V", false);
+		    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 	    // Load chopnode label
 	    mv.visitLdcInsn(chopNode.getLabel());
@@ -853,7 +877,8 @@ public class MyMethodVisitor extends MethodVisitor {
     }
 
     private void boxTopStackValue(MethodVisitor p_mv, Type p_valuetype) {
-	if (p_valuetype == null) return;
+	if (p_valuetype == null)
+	    return;
 	int typeType = p_valuetype.getSort();
 	if (typeType == Type.DOUBLE) {
 	    p_mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);

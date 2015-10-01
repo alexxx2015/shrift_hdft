@@ -1,0 +1,11 @@
+-----RUNTIME STATISTICS-----Wed Sep 30 15:06:30 CEST 2015
+tracking on: true
+1. Method timers
+"Request#";"MethodName";"Stopped?";"CN#proposed";"CN#actual";"Time";
+
+2. Event timers
+"Request#";"Event#";"Sources/Sinks";"CNLabel";"CNbci";"CNLocation";"EventType";"CreationTime";"CommunicationTime";"SummaryTime";
+
+
+
+

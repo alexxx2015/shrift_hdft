@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.utility.eval;
+package edu.tum.uc.jvm.archive;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -23,6 +22,7 @@ import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis.NODETYPE;
+import edu.tum.uc.jvm.utility.eval.CSVStringBuilder;
 
 @WebListener
 public class StatisticsUtil implements ServletContextListener {
@@ -77,14 +77,33 @@ public class StatisticsUtil implements ServletContextListener {
     }
 
     public static void startEventTimer(String eventName, int bci, String cnOwnerMethod, String cnLabel,
-	    Set<String> sinksAndSources) {
+	    SinkSource sinkSource) {
 	String threadId = Utility.getThreadId();
 	List<EventTimer> eventTimers = getEventTimersForThread(threadId);
-	EventTimer eventTimer = new EventTimer(threadId, eventName, bci, cnOwnerMethod, cnLabel, sinksAndSources);
+	EventTimer eventTimer = new EventTimer(threadId, eventName, bci, cnOwnerMethod, cnLabel);
 	eventTimers.add(eventTimer);
 
 	MethodTimer currentMethodTimer = getLastMethodTimer(null, threadId, true);
 	if (currentMethodTimer != null) {
+	    if (sinkSource != null) {
+		if (sinkSource.getType() == NODETYPE.SOURCE) {
+		    if (currentMethodTimer.isFlowRunning()) {
+			System.out.println("TWARN : " + threadId + "." + currentMethodTimer.getMethodFQName()
+				+ " already has flow from source " + currentMethodTimer.getFlows().lastKey().getSourceID());
+		    }
+		    currentMethodTimer.startFlow(sinkSource.getId());
+		    System.out.println("TLOG : Started flow from " + sinkSource.getId() + " in " + threadId + "."
+			    + currentMethodTimer.getMethodFQName());
+		} else if (sinkSource.getType() == NODETYPE.SINK) {
+		    if (!currentMethodTimer.isFlowRunning()) {
+			System.out.println("TWARN : " + threadId + "." + currentMethodTimer.getMethodFQName()
+				+ " already ended flow to sink " + currentMethodTimer.getFlows().lastKey().getSinkID());
+		    }
+		    currentMethodTimer.endFlow(sinkSource.getId());
+		    System.out.println("TLOG : Ended flow to " + sinkSource.getId() + " in " + threadId + "."
+			    + currentMethodTimer.getMethodFQName());
+		}
+	    }
 	    currentMethodTimer.addEvent(eventTimer);
 	}
 
@@ -159,29 +178,30 @@ public class StatisticsUtil implements ServletContextListener {
 	    csvSb.append("Request#");
 	    csvSb.append("MethodName");
 	    csvSb.append("Stopped?");
+	    csvSb.append("#Flows");
 	    csvSb.append("CN#proposed");
 	    csvSb.append("CN#actual");
 	    csvSb.append("Time");
 	    csvSb.newLine();
-
+	    
 	    for (int i = 0; i < MethodTimers.size(); i++) {
 		MethodTimer methodTimer = MethodTimers.get(i);
-		csvSb.append("" + (i + 1));
+		csvSb.append(""+(i+1));
 		csvSb.append(methodTimer.getMethodFQName());
-		csvSb.append("" + !methodTimer.isRunning());
+		csvSb.append(""+!methodTimer.isRunning());
+		csvSb.append(""+methodTimer.getFlows().size());
 		csvSb.append("??");
-		csvSb.append("" + methodTimer.getEvents().size());
+		csvSb.append(""+methodTimer.getAllEvents().size());
 		csvSb.append(Timer.formatInMilliSecs(methodTimer.getTimeInterval()));
 		csvSb.newLine();
 	    }
-
+	    
 	    sb.append(csvSb.toString());
 	    sb.append("\n");
 	    sb.append("2. Event timers\n");
 	    csvSb.reset();
-	    csvSb.append("Request#");
-	    csvSb.append("Event#");
-	    csvSb.append("Sources/Sinks");
+	    csvSb.append("Request#:Event#");
+	    csvSb.append("Flow");
 	    csvSb.append("CNLabel");
 	    csvSb.append("CNbci");
 	    csvSb.append("CNLocation");
@@ -193,20 +213,17 @@ public class StatisticsUtil implements ServletContextListener {
 
 	    for (int i = 0; i < MethodTimers.size(); i++) {
 		MethodTimer methodTimer = MethodTimers.get(i);
-		for (int j = 0; j < methodTimer.getEvents().size(); j++) {
-		    EventTimer eventTimer = methodTimer.getEvents().get(j);
-		    csvSb.append(""+(i + 1));
-		    csvSb.append(""+(j + 1));
-		    csvSb.append(eventTimer.getSourcesAndSinks().toString().substring(1,
-			    eventTimer.getSourcesAndSinks().toString().length() - 1)); // no NRE if flow==null
+		for (int j = 0; j < methodTimer.getAllEvents().size(); j++) {
+		    EventTimer eventTimer = methodTimer.getAllEvents().get(j);
+		    csvSb.append((i+1) + ":" + (j+1) + "\t");
+		    csvSb.append("" + eventTimer.getFlow()); // no NRE if flow==null
 		    csvSb.append(eventTimer.getCnLabel());
-		    csvSb.append("" + eventTimer.getBci());
+		    csvSb.append(""+eventTimer.getBci());
 		    csvSb.append(eventTimer.getCnLocation());
 		    csvSb.append(eventTimer.getEventName());
 		    csvSb.append(Timer.formatInMilliSecs(eventTimer.getCreationTimeInterval()));
 		    csvSb.append(Timer.formatInMilliSecs(eventTimer.getCommTimeInterval()));
-		    csvSb.append(Timer.formatInMilliSecs(eventTimer.getCreationTimeInterval()
-			    + eventTimer.getCommTimeInterval()));
+		    csvSb.append(Timer.formatInMilliSecs(eventTimer.getCreationTimeInterval() + eventTimer.getCommTimeInterval()));
 		    csvSb.newLine();
 		}
 	    }

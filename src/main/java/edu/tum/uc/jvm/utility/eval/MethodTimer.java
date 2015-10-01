@@ -1,9 +1,16 @@
 package edu.tum.uc.jvm.utility.eval;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.Vector;
+
 public class MethodTimer extends Timer {
 
     private String methodFQName;
-    private int chopNodeCount = 0;
+    private List<EventTimer> events = new Vector<>();
 
     public MethodTimer(String threadId, String methodFQName) {
 	this.threadId = threadId;
@@ -14,20 +21,16 @@ public class MethodTimer extends Timer {
 	return methodFQName;
     }
     
-    public int getChopNodeCount() {
-	return chopNodeCount;
-    }
-    
-    public long getTimePerChopNode() {
-	return getTimeInterval() / getChopNodeCount();
-    }
-    
     public String getUniqueKey() {
 	return threadId+methodFQName+startTime;
     }
     
-    public void chopNodePassed() {
-	chopNodeCount++;
+    public void addEvent(EventTimer event) {
+	events.add(event);
+    }
+    
+    public List<EventTimer> getEvents() {
+	return events;
     }
     
     public String toString() {

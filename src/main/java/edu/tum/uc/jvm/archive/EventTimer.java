@@ -1,10 +1,6 @@
-package edu.tum.uc.jvm.utility.eval;
+package edu.tum.uc.jvm.archive;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import edu.tum.uc.jvm.utility.analysis.SinkSource;
+import java.lang.ref.WeakReference;
 
 public class EventTimer extends Timer {
 
@@ -13,19 +9,22 @@ public class EventTimer extends Timer {
     private int bci;
     private String cnLocation;
     private String cnLabel;
-    private Set<String> sourcesAndSinks = new HashSet<>();
-    
-    public EventTimer(String threadId, String eventName, int bci, String cnLocation, String cnLabel, Set<String> sourcesAndSinks) {
+    private WeakReference<FlowID> flowID = new WeakReference<FlowID>(null); // avoid reference cycles
+
+    public EventTimer(String threadId, String eventName, int bci, String cnLocation, String cnLabel) {
 	this.threadId = threadId;
 	this.eventName = eventName;
 	this.bci = bci;
 	this.cnLabel = cnLabel;
 	this.cnLocation = cnLocation;
-	this.sourcesAndSinks = sourcesAndSinks;
     }
     
-    public Set<String> getSourcesAndSinks() {
-        return sourcesAndSinks;
+    public void setFlowID(FlowID flow) {
+	flowID = new WeakReference<FlowID>(flow);
+    }
+    
+    public FlowID getFlow() {
+	return flowID.get();
     }
     
     public String getEventName() {

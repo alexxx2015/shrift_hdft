@@ -13,6 +13,8 @@ import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.STATIC_FIELDS;
 import static de.tum.in.i22.uc.cm.datatypes.java.NameKeys.TYPE;
 
 import java.io.ByteArrayInputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
@@ -64,11 +66,22 @@ public class Enforcer {
 	    // check that the object has still correct type and not null,
 	    // otherwise it could have already been cleaned up by GC
 	    if (oldObject != null && oldObject.getClass().getName().equals(className)) {
-		System.out.println("will replace " + oldObject);
-		Object newObject = createNewObject(oldObject.getClass());
-		System.out.println("created " + newObject);
-		//UnsafeUtil.replaceObject(oldObject, newObject);
-		System.out.println("replaced " + newObject);
+		if (oldObject instanceof FilterInputStream) {
+		    Field in = FilterInputStream.class.getDeclaredField("in");
+		    in.setAccessible(true);
+		    InputStream oldIS = (InputStream) in.get(oldObject);
+		    if (oldIS != null) oldIS.close();
+		    in.set(oldObject, new ByteArrayInputStream("I am Batman".getBytes()));
+		} else if (oldObject instanceof FilterOutputStream) {
+		    Field out = FilterOutputStream.class.getDeclaredField("out");
+		    out.setAccessible(true);
+		    OutputStream oldOs = (OutputStream) out.get(oldObject);
+		    if (oldOs != null) oldOs.close();
+		    out.set(oldObject, new DummyOutputStream());
+		} else {
+		    Object newObject = createNewObject(oldObject.getClass());
+		    UnsafeUtil.replaceObject(oldObject, newObject);	
+		}	
 	    } else {
 		throw new EnforcementException("Object not found");
 	    }
@@ -102,7 +115,7 @@ public class Enforcer {
 			}
 		    }
 		}
-		//UnsafeUtil.replaceObject(oldArray, newArray);
+		UnsafeUtil.replaceObject(oldArray, newArray);
 	    } else {
 		throw new EnforcementException("Array not found");
 	    }
@@ -179,8 +192,8 @@ public class Enforcer {
 	    InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 	// check if inputstream or outputstream
 	Class<?> clazz2 = clazz;
-	while ((clazz2 = clazz.getSuperclass()) != null) {
-	    if (clazz2.getName().equals(InputStream.class.getName())) {
+	while ((clazz2 = clazz2.getSuperclass()) != null) {
+	    if (clazz2.getName().equals(FilterOutputStream.class.getName())) {
 		InputStream dummy = new ByteArrayInputStream("Lorem impsum".getBytes());
 		// try generic constructor with one inputstream
 		try {

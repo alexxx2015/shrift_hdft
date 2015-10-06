@@ -29,7 +29,7 @@ public class TimerAdviceAdapter extends AdviceAdapter {
     }
 
     protected void onMethodEnter() {
-	if (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName.equals("doGet"))) {
+	if (shouldAddTimer()) {
 	    mv.visitLdcInsn(fqName);
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startMethodTimer", "(Ljava/lang/String;)V", false);
 	    /*mv.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(System.class), "out", "Ljava/io/PrintStream;");
@@ -39,12 +39,21 @@ public class TimerAdviceAdapter extends AdviceAdapter {
     }
 
     protected void onMethodExit(int opcode) {
-	if (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName.equals("doGet"))) {
+	if (shouldAddTimer()) {
 	    mv.visitLdcInsn(fqName);
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "stopMethodTimer", "(Ljava/lang/String;)V", false);
 	    /*mv.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(System.class), "out", "Ljava/io/PrintStream;");
 	    mv.visitLdcInsn("STOPPED " + Utility.getThreadId() + "|" + fqName);
 	    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(PrintStream.class), "println", "(Ljava/lang/String;)V", false);*/
 	}
+	
+	if (this.methodName.equals("main")) {
+	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "dumpStatistics", "()V", false);
+	}
+    }
+    
+    private boolean shouldAddTimer() {
+	return (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName.equals("doGet")))
+		|| (this.className.contains("JZip") && this.methodName.equals("start"));
     }
 }

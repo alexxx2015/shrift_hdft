@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.utility.ConfigProperties;
@@ -38,7 +39,7 @@ public class TestJzip extends AbstractTest {
 					className);
 			byte[] raw_bytecode = IOUtils.toByteArray(is);
 
-			UcTransformer u = new UcTransformer();
+			MyUcTransformer u = new MyUcTransformer();
 			byte[] instrumented_bytecode = u.transform(null, className, null,
 					null, raw_bytecode);
 			
@@ -58,7 +59,7 @@ public class TestJzip extends AbstractTest {
 
 			for (int i = 0; i < 1; i++) {
 				String instruction = "";
-				URL url = this.getClass().getResource("/toBeZippedFiles");
+				URL url = this.getClass().getResource("/toBeZippedFilesSmall");
 				if (url != null) {
 					File f = new File(url.getFile());
 					// File f = new File("/home/alex/xlayerpip.zip");
@@ -67,7 +68,7 @@ public class TestJzip extends AbstractTest {
 					// instruction = "zip /home/alex/toBeZipped.zip "// + f.getAbsolutePath();
 				}
 
-				instruction += "\n exit";
+				//instruction += "\n exit";
 				InputStream is2 = System.in;
 				System.setIn(new ByteArrayInputStream(instruction.getBytes()));
 				myTest2.runtest();

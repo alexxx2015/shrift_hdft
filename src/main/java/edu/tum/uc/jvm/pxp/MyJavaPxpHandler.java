@@ -25,7 +25,7 @@ public class MyJavaPxpHandler implements TAny2Pxp.Iface {
 
     private static UcCommunicator ucCom = UcCommunicator.getInstance();
 
-    private void deleteSource(String source, String unit, short time) {
+    private void deleteSource(String source, String unit, double time) {
 	Map<String, String> params = new HashMap<>();
 	params.put("PEP", "Java");
 	params.put("processId", Utility.getPID());
@@ -44,9 +44,9 @@ public class MyJavaPxpHandler implements TAny2Pxp.Iface {
 	ucCom.sendEvent2Pdp(event);
     }
 
-    private long getAgeTimeStamp(String unit, short time) {
+    private long getAgeTimeStamp(String unit, double time) {
 	if (unit.equals("sec")) {
-	    return System.currentTimeMillis() - 1000 * time;
+	    return (long)(System.currentTimeMillis() - 1000 * time);
 	} else {
 	    throw new IllegalArgumentException("Invalid time unit identifier: " + unit);
 	}
@@ -59,7 +59,7 @@ public class MyJavaPxpHandler implements TAny2Pxp.Iface {
 	    TEvent tevent = teventIt.next();
 	    if (tevent.getName().toLowerCase().equals("deletesource")) {
 		Map<String, String> param = tevent.getParameters();
-		this.deleteSource(param.get("SOURCE"), param.get("UNIT"), Short.parseShort(param.get("OLDERTHAN")));
+		this.deleteSource(param.get("SOURCE"), param.get("UNIT"), Double.parseDouble(param.get("OLDERTHAN")));
 	    }
 	}
     }

@@ -71,22 +71,6 @@ public class TestProgram10 implements TestIntf {
 	fos1.write(outbuffer1);
 	fos2.write(outbuffer2);
 	
-	//while(true){}
-    }
-    
-    public static int copyUntilStop(String inFileName, String outFileName, char stopChar) throws IOException {
-	FileInputStream fis = new FileInputStream(inFileName);
-	FileOutputStream fos = new FileOutputStream(outFileName);
-	int pos = -1;
-	char readChar = (char) fis.read();
-	while (readChar != -1) {
-	    if (readChar == stopChar) {
-		return pos;
-	    }
-	    fos.write(readChar);
-	    readChar = (char) fis.read();
-	    pos++;
-	}
-	return pos;
+	while(true){}
     }
 }

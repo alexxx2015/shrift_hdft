@@ -94,6 +94,10 @@ public class MyUcTransformer implements ClassFileTransformer {
 		if(!Utility.isWhitelisted(className)){
 			return null;
 		}
+		if (Utility.isBlacklisted(className)) {
+		    return null;
+		}
+		
 		//System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
 		String statistic = ConfigProperties

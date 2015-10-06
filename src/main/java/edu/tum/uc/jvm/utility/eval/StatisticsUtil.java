@@ -46,11 +46,11 @@ public class StatisticsUtil implements ServletContextListener {
 	    if (timer.isRunning()) {
 		timer.stop();
 	    } else {
-		System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + methodFQName);
+		//System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + methodFQName);
 	    }
 	} else {
 	    // no valid timer found
-	    System.out.println("TERROR : Timer not found for " + threadId + "." + methodFQName);
+	    //System.out.println("TERROR : Timer not found for " + threadId + "." + methodFQName);
 	}
     }
 
@@ -89,7 +89,7 @@ public class StatisticsUtil implements ServletContextListener {
 	}
 
 	eventTimer.start();
-	System.out.println("TLOG : Timer started for " + threadId + "." + eventName);
+	//System.out.println("TLOG : Timer started for " + threadId + "." + eventName);
     }
 
     public static void endEventCreation(String eventName) {
@@ -97,13 +97,13 @@ public class StatisticsUtil implements ServletContextListener {
 	EventTimer eventTimer = getLastEventTimer(threadId);
 	if (eventTimer != null && eventTimer.getEventName().equals(eventName)) {
 	    if (eventTimer.isSetCreated()) {
-		System.out.println("TERROR : Last timer is already set created for " + threadId + "." + eventName);
+		//System.out.println("TERROR : Last timer is already set created for " + threadId + "." + eventName);
 	    } else {
 		eventTimer.setCreated();
-		System.out.println("TLOG : Timer set created for " + threadId + "." + eventName);
+		//System.out.println("TLOG : Timer set created for " + threadId + "." + eventName);
 	    }
 	} else {
-	    System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
+	    //System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
 	}
     }
 
@@ -112,13 +112,13 @@ public class StatisticsUtil implements ServletContextListener {
 	EventTimer eventTimer = getLastEventTimer(threadId);
 	if (eventTimer != null && eventTimer.getEventName().equals(eventName)) {
 	    if (!eventTimer.isRunning()) {
-		System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + eventName);
+		//System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + eventName);
 	    } else {
 		eventTimer.stop();
-		System.out.println("TLOG : Timer stopped for " + threadId + "." + eventName);
+		//System.out.println("TLOG : Timer stopped for " + threadId + "." + eventName);
 	    }
 	} else {
-	    System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
+	    //System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
 	}
     }
 
@@ -224,10 +224,9 @@ public class StatisticsUtil implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent arg0) {
-	System.out.println("Writing statistics ...");
+	//System.out.println("Writing statistics ...");
 	writeToFile();
-	System.out.println("Statistics can be found in "
-		+ ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS));
+	//System.out.println("Statistics can be found in " + ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS));
     }
 
     @Override

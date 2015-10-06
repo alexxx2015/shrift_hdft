@@ -367,8 +367,11 @@ public class MyMethodVisitor extends MethodVisitor {
 	if (chopNode != null && chopNode.getOperation().equals(Flow.OP_ASSIGN)) {
 
 	    mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
+		mv.visitLdcInsn(chopNode.getByteCodeIndex());
+		mv.visitLdcInsn(chopNode.getOwnerMethod());
+		mv.visitLdcInsn(chopNode.getLabel());
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-		    "(Ljava/lang/String;)V", false);
+		    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 	    // Load opcode operands explicitly on stack and box em
 	    mv.visitVarInsn(Opcodes.ILOAD, p_var);
@@ -438,8 +441,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		&& (p_opcode == Opcodes.GETSTATIC || p_opcode == Opcodes.GETFIELD)) {
 
 	    mv.visitLdcInsn(JavaEventName.READ_FIELD);
+	    mv.visitLdcInsn(chopNode.getByteCodeIndex());
+	    mv.visitLdcInsn(chopNode.getOwnerMethod());
+	    mv.visitLdcInsn(chopNode.getLabel());
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-		    "(Ljava/lang/String;)V", false);
+		    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 	    // Create a copy of the opcode argument (field owner object)
 	    // (or load null to fill fieldOwner parameter in delegate method)
@@ -447,12 +453,19 @@ public class MyMethodVisitor extends MethodVisitor {
 		mv.visitInsn(Opcodes.ACONST_NULL);
 	    } else {
 		mv.visitInsn(Opcodes.DUP);
-		mv.visitInsn(Opcodes.DUP); // preparation for next step
 	    }
+	    
 
 	    // Perform original opcode to get field contents
 	    mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
-
+	    
+	    // put a copy of the field contents underneath owner/null
+	    if (Type.getType(p_desc).getSize() == 2) {
+		mv.visitInsn(Opcodes.DUP2_X1);
+	    } else {
+		mv.visitInsn(Opcodes.DUP_X1);
+	    }
+	    
 	    // Wrap field content
 	    boxTopStackValue(mv, Type.getType(p_desc));
 
@@ -478,8 +491,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		&& (p_opcode == Opcodes.PUTSTATIC || p_opcode == Opcodes.PUTFIELD)) {
 
 	    mv.visitLdcInsn(JavaEventName.WRITE_FIELD);
+	    mv.visitLdcInsn(chopNode.getByteCodeIndex());
+	    mv.visitLdcInsn(chopNode.getOwnerMethod());
+	    mv.visitLdcInsn(chopNode.getLabel());
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startEventTimer",
-		    "(Ljava/lang/String;)V", false);
+		    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 
 	    // true if value has type long, double or float
 	    Type valueType = Type.getType(p_desc);
@@ -527,8 +543,14 @@ public class MyMethodVisitor extends MethodVisitor {
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "writeField",
 		    "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
 			    + "Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
+	    
+	    // invoke original opcode
+	    mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
+	} else {
+	    // do nothing
+	    mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
 	}
-	mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
+	
     }
 
     public void visitMethodInsn(int p_opcode, String p_owner, String p_name, String p_desc) {

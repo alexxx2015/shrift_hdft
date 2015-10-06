@@ -51,6 +51,10 @@ public class InstrumDelegate {
     public static void stopMethodTimer(String methodFQName) {
 	StatisticsUtil.stopMethodTimer(methodFQName);
     }
+    
+    public static void dumpStatistics() {
+	StatisticsUtil.writeToFile();
+    }
 
     public static void startEventTimer(String eventName, int bci, String cnOwnerMethod, String cnLabel) {
 	Set<String> sinkSources = new HashSet<>();
@@ -65,13 +69,13 @@ public class InstrumDelegate {
 
     public static void readArray(Object array, int index, Object arrayAtIndex, Object parentObject,
 	    String parentMethod, String label) {
-	System.out.println("Read array!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Array = " + objectToString(array));
-	System.out.println("Index = " + index);
-	System.out.println("Array@Index = " + objectToString(arrayAtIndex));
+	//System.out.println("Read array!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Array = " + objectToString(array));
+	//System.out.println("Index = " + index);
+	//System.out.println("Array@Index = " + objectToString(arrayAtIndex));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -85,18 +89,18 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.READ_ARRAY, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void writeArray(Object array, int index, Object value, Object parentObject, String parentMethod,
 	    String label) {
-	System.out.println("Write array!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Array = " + objectToString(array));
-	System.out.println("Index = " + index);
-	System.out.println("Value to insert = " + objectToString(value));
+	//System.out.println("Write array!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Array = " + objectToString(array));
+	//System.out.println("Index = " + index);
+	//System.out.println("Value to insert = " + objectToString(value));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -110,19 +114,19 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.WRITE_ARRAY, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void readField(Object fieldOwnerObject, Object fieldValue, String fieldOwnerClass, String fieldName,
 	    Object parentObject, String parentMethod, String label) {
-	System.out.println("Read field!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Field owner object = " + objectToString(fieldOwnerObject));
-	System.out.println("Field owner class = " + fieldOwnerClass);
-	System.out.println("Field name = " + fieldName);
-	System.out.println("Field value = " + objectToString(fieldValue));
+	//System.out.println("Read field!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Field owner object = " + objectToString(fieldOwnerObject));
+	//System.out.println("Field owner class = " + fieldOwnerClass);
+	//System.out.println("Field name = " + fieldName);
+	//System.out.println("Field value = " + objectToString(fieldValue));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -136,20 +140,20 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.READ_FIELD, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void writeField(Object fieldOwnerObject, Object assignee, String fieldOwnerClass, String fieldName,
 	    Object parentObject, String parentMethod, String label) {
 
-	System.out.println("Write field!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Field owner object = " + objectToString(fieldOwnerObject));
-	System.out.println("Field owner class = " + fieldOwnerClass);
-	System.out.println("Field name = " + fieldName);
-	System.out.println("Assignee = " + objectToString(assignee));
+	//System.out.println("Write field!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Field owner object = " + objectToString(fieldOwnerObject));
+	//System.out.println("Field owner class = " + fieldOwnerClass);
+	//System.out.println("Field name = " + fieldName);
+	//System.out.println("Assignee = " + objectToString(assignee));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -165,16 +169,16 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.WRITE_FIELD, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void unaryAssign(Object arg, Object parentObject, String parentMethod, String label) {
 
-	System.out.println("Unary assign operation!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Arguments = " + objectToString(arg));
+	//System.out.println("Unary assign operation!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Arguments = " + objectToString(arg));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -185,17 +189,17 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.UNARY_ASSIGN, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void binaryAssign(Object arg1, Object arg2, Object parentObject, String parentMethod, String label) {
 
-	System.out.println("Binary assign operation!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Argument 1 = " + objectToString(arg1));
-	System.out.println("Argument 2 = " + objectToString(arg2));
+	//System.out.println("Binary assign operation!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Argument 1 = " + objectToString(arg1));
+	//System.out.println("Argument 2 = " + objectToString(arg2));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -206,19 +210,19 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.BINARY_ASSIGN, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void instanceMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args,
 	    Object parentObject, Object caller) {
 
-	System.out.println("Instance method invoked!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Caller obj = " + objectToString(caller));
-	System.out.println("Called Method = " + calledMethod);
-	System.out.println("Arguments = " + JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
+	//System.out.println("Instance method invoked!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Caller obj = " + objectToString(caller));
+	//System.out.println("Called Method = " + calledMethod);
+	//System.out.println("Arguments = " + JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -234,18 +238,18 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.CALL_INSTANCE_METHOD, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void staticMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args,
 	    Object parentObject) {
 
-	System.out.println("Static method invoked!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Called Method = " + calledMethod);
-	System.out.println("Arguments = " + JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
+	//System.out.println("Static method invoked!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Called Method = " + calledMethod);
+	//System.out.println("Arguments = " + JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -258,20 +262,20 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.CALL_STATIC_METHOD, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void instanceMethodReturned(Object returnValue, int argsCount, int bytecodeOffset,
 	    String parentMethod, String label, String calledMethod, Object parentObject, Object caller) {
 
-	System.out.println("Instance method returned!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Caller obj = " + objectToString(caller));
-	System.out.println("Called Method = " + calledMethod);
-	System.out.println("Return value = " + objectToString(returnValue));
-	System.out.println("Arguments count = " + argsCount);
+	//System.out.println("Instance method returned!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Caller obj = " + objectToString(caller));
+	//System.out.println("Called Method = " + calledMethod);
+	//System.out.println("Return value = " + objectToString(returnValue));
+	//System.out.println("Arguments count = " + argsCount);
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -289,19 +293,19 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void staticMethodReturned(Object returnValue, int argsCount, int bytecodeOffset, String parentMethod,
 	    String label, String calledMethod, Object parentObject) {
 
-	System.out.println("Static method returned!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Called Method = " + calledMethod);
-	System.out.println("Return value = " + objectToString(returnValue));
-	System.out.println("Arguments count = " + argsCount);
+	//System.out.println("Static method returned!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Called Method = " + calledMethod);
+	//System.out.println("Return value = " + objectToString(returnValue));
+	//System.out.println("Arguments count = " + argsCount);
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -317,28 +321,28 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.RETURN_STATIC_METHOD, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void mainMethodReturned(String calledMethod) {
-	System.out.println("Main method returned!!");
-	System.out.println("Called Method = " + calledMethod);
+	//System.out.println("Main method returned!!");
+	//System.out.println("Called Method = " + calledMethod);
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("callerClass", getClass(calledMethod));
 	eventParams.put("calledMethod", getMethod(calledMethod));
 	sendEvent(JavaEventName.RETURN_MAIN_METHOD, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     public static void prepareMethodReturn(Object returnValue, Object parentObject, String parentMethod, String label) {
 
-	System.out.println("Prepare method return!!");
-	System.out.println("Chopnode Label = " + label);
-	System.out.println("Parent obj = " + objectToString(parentObject));
-	System.out.println("Parent Method = " + parentMethod);
-	System.out.println("Return value = " + objectToString(returnValue));
+	//System.out.println("Prepare method return!!");
+	//System.out.println("Chopnode Label = " + label);
+	//System.out.println("Parent obj = " + objectToString(parentObject));
+	//System.out.println("Parent Method = " + parentMethod);
+	//System.out.println("Return value = " + objectToString(returnValue));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -349,7 +353,7 @@ public class InstrumDelegate {
 	eventParams.put("chopLabel", label);
 	sendEvent(JavaEventName.PREPARE_METHOD_RETURN, eventParams);
 
-	System.out.println();
+	//System.out.println();
     }
 
     private static void sendEvent(String eventName, Map<String, String> specificParams) {
@@ -361,7 +365,7 @@ public class InstrumDelegate {
 	StatisticsUtil.endEventCreation(eventName);
 	boolean success = ucCom.sendEvent2Pdp(event);
 	StatisticsUtil.stopEventTimer(eventName);
-	System.out.println(success ? "Event sent successfully" : "Error sending event");
+	//System.out.println(success ? "Event sent successfully" : "Error sending event");
     }
 
     private static String[] objectsToStrings(Object[] objects) {

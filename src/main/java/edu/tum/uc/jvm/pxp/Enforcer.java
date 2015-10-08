@@ -65,19 +65,24 @@ public class Enforcer {
 	    Object oldObject = UnsafeUtil.objectFromAddress(address);
 	    // check that the object has still correct type and not null,
 	    // otherwise it could have already been cleaned up by GC
+	    //System.out.println(objectProps);
+	    //System.out.println(oldObject);
 	    if (oldObject != null && oldObject.getClass().getName().equals(className)) {
 		if (oldObject instanceof FilterInputStream) {
 		    Field in = FilterInputStream.class.getDeclaredField("in");
 		    in.setAccessible(true);
 		    InputStream oldIS = (InputStream) in.get(oldObject);
-		    if (oldIS != null) oldIS.close();
+		    //if (oldIS != null) oldIS.close();
 		    in.set(oldObject, new ByteArrayInputStream("I am Batman".getBytes()));
 		} else if (oldObject instanceof FilterOutputStream) {
+		    //System.out.println("will replace out");
 		    Field out = FilterOutputStream.class.getDeclaredField("out");
 		    out.setAccessible(true);
 		    OutputStream oldOs = (OutputStream) out.get(oldObject);
-		    if (oldOs != null) oldOs.close();
+		    //if (oldOs != null) oldOs.close();
 		    out.set(oldObject, new DummyOutputStream());
+		    //System.out.println("replaced out");
+		    
 		} else {
 		    Object newObject = createNewObject(oldObject.getClass());
 		    UnsafeUtil.replaceObject(oldObject, newObject);	

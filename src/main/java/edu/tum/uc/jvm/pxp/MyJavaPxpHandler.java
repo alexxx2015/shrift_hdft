@@ -41,7 +41,7 @@ public class MyJavaPxpHandler implements TAny2Pxp.Iface {
 	eventParams.put("processId", Utility.getPID());
 	eventParams.put("modelSubset", new Gson().toJson(modelSubset));
 	IEvent event = new EventBasic("AfterEnforcement", eventParams, true);
-	ucCom.sendEvent2Pdp(event);
+	ucCom.sendEvent2Pdp(event, true);
     }
 
     private long getAgeTimeStamp(String unit, double time) {

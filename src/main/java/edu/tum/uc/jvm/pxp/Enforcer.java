@@ -44,7 +44,7 @@ public class Enforcer {
 	    replaceObjectWithNew(objectProps);
 	}
 	for (Map<String, String> arrayProps : locations.get(ARRAYS)) {
-	    replaceArrayWithNew(arrayProps);
+	    //replaceArrayWithNew(arrayProps);
 	}
 	for (Map<String, String> arrayElemProps : locations.get(ARRAY_ELEMENTS)) {
 	    replaceArrayElementWithNew(arrayElemProps);

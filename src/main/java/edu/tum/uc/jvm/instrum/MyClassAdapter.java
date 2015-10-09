@@ -45,10 +45,8 @@ public class MyClassAdapter extends ClassVisitor {
 	if ((p_access & Opcodes.ACC_NATIVE) != Opcodes.ACC_NATIVE) {
 	    if (ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION) != null
 		    && ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION).equals("true")) {
-		// this one removes JSR instructions and inlines the referenced subroutines
-		JSRInlinerAdapter ja = new JSRInlinerAdapter(mv, p_access, p_name, p_desc, p_signature, p_exceptions);
 		// timers for tracking time spent in a method
-		TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, ja, p_access, p_name, p_desc,
+		TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,
 			p_signature, this.className, this.classNode.superName);
 		// general stuff to do regarding instrumentation (e.g. generate return-main-method event)
 		MyAdviceAdapter myAa = new MyAdviceAdapter(Opcodes.ASM4, timeAa, p_access, p_name, p_desc, p_signature,

@@ -566,10 +566,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod || isPrivateInstanceMethod || isInterfaceMethod;
 
 	if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL)) {
-	    if (isConstructor) {
-		@SuppressWarnings("unused")
-		int a = 0;
-	    }
+	    
 	    StringBuilder desc = new StringBuilder();
 	    // Generate new method signature
 	    Type[] argT = Type.getArgumentTypes(p_desc);
@@ -637,11 +634,11 @@ public class MyMethodVisitor extends MethodVisitor {
 	    }
 
 	    String id = className + "." + wrapperMethodName + ":" + desc.toString();
-	    if (InstrumDelegate.HelperMethods.containsKey(id)) {
+	    if (InstrumDelegate.HelperMethods.contains(id)) {
 		// skip adding method
 	    } else {
 		// add method to class
-		InstrumDelegate.HelperMethods.put(id, id);
+		InstrumDelegate.HelperMethods.add(id);
 
 		// Create a new asm-method instance
 		MethodVisitor mv = cv.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, wrapperMethodName, desc

@@ -28,7 +28,7 @@ public class InstrumDelegate {
 
     private static UcCommunicator ucCom = UcCommunicator.getInstance();
 
-    public static Map<String, String> HelperMethods = new HashMap<String, String>();
+    public static Set<String> HelperMethods = new HashSet<String>();
     private static Set<String> InstrumentedClasses = new HashSet<String>();
     private static List<SinkSource> sinksAndSources = new Vector<SinkSource>();
     static {
@@ -87,7 +87,7 @@ public class InstrumDelegate {
 	eventParams.put("elementClass", getClass(arrayAtIndex));
 	eventParams.put("elementAddress", getAddress(arrayAtIndex));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.READ_ARRAY, eventParams);
+	createEvent(JavaEventName.READ_ARRAY, eventParams);
 
 	//System.out.println();
     }
@@ -112,7 +112,7 @@ public class InstrumDelegate {
 	eventParams.put("valueClass", getClass(value));
 	eventParams.put("valueAddress", getAddress(value));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.WRITE_ARRAY, eventParams);
+	createEvent(JavaEventName.WRITE_ARRAY, eventParams);
 
 	//System.out.println();
     }
@@ -138,7 +138,7 @@ public class InstrumDelegate {
 	eventParams.put("fieldValueClass", getClass(fieldValue));
 	eventParams.put("fieldValueAddress", getAddress(fieldValue));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.READ_FIELD, eventParams);
+	createEvent(JavaEventName.READ_FIELD, eventParams);
 
 	//System.out.println();
     }
@@ -167,7 +167,7 @@ public class InstrumDelegate {
 	eventParams.put("assigneeClass", getClass(assignee));
 	eventParams.put("assigneeAddress", getAddress(assignee));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.WRITE_FIELD, eventParams);
+	createEvent(JavaEventName.WRITE_FIELD, eventParams);
 
 	//System.out.println();
     }
@@ -187,7 +187,7 @@ public class InstrumDelegate {
 	eventParams.put("argumentClass", getClass(arg));
 	eventParams.put("argumentAddress", getAddress(arg));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.UNARY_ASSIGN, eventParams);
+	createEvent(JavaEventName.UNARY_ASSIGN, eventParams);
 
 	//System.out.println();
     }
@@ -208,7 +208,7 @@ public class InstrumDelegate {
 	eventParams.put("argument1", objectToString(arg1));
 	eventParams.put("argument2", objectToString(arg2));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.BINARY_ASSIGN, eventParams);
+	createEvent(JavaEventName.BINARY_ASSIGN, eventParams);
 
 	//System.out.println();
     }
@@ -236,7 +236,7 @@ public class InstrumDelegate {
 	eventParams.put("callerObjectIsInstrumented", String
 		.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.CALL_INSTANCE_METHOD, eventParams);
+	createEvent(JavaEventName.CALL_INSTANCE_METHOD, eventParams);
 
 	//System.out.println();
     }
@@ -260,7 +260,7 @@ public class InstrumDelegate {
 	eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
 	eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.CALL_STATIC_METHOD, eventParams);
+	createEvent(JavaEventName.CALL_STATIC_METHOD, eventParams);
 
 	//System.out.println();
     }
@@ -291,7 +291,7 @@ public class InstrumDelegate {
 	eventParams.put("callerObjectIsInstrumented", String
 		.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
+	createEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
 
 	//System.out.println();
     }
@@ -319,7 +319,7 @@ public class InstrumDelegate {
 	eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 	eventParams.put("callerClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod))));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.RETURN_STATIC_METHOD, eventParams);
+	createEvent(JavaEventName.RETURN_STATIC_METHOD, eventParams);
 
 	//System.out.println();
     }
@@ -331,7 +331,7 @@ public class InstrumDelegate {
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("callerClass", getClass(calledMethod));
 	eventParams.put("calledMethod", getMethod(calledMethod));
-	sendEvent(JavaEventName.RETURN_MAIN_METHOD, eventParams);
+	createEvent(JavaEventName.RETURN_MAIN_METHOD, eventParams);
 
 	//System.out.println();
     }
@@ -351,12 +351,12 @@ public class InstrumDelegate {
 	eventParams.put("returnValueClass", getClass(returnValue));
 	eventParams.put("returnValueAddress", getAddress(returnValue));
 	eventParams.put("chopLabel", label);
-	sendEvent(JavaEventName.PREPARE_METHOD_RETURN, eventParams);
+	createEvent(JavaEventName.PREPARE_METHOD_RETURN, eventParams);
 
 	//System.out.println();
     }
 
-    private static void sendEvent(String eventName, Map<String, String> specificParams) {
+    private static void createEvent(String eventName, Map<String, String> specificParams) {
 	Map<String, String> allParams = new HashMap<String, String>(specificParams);
 	allParams.put("PEP", "Java");
 	allParams.put("threadId", Utility.getThreadId());

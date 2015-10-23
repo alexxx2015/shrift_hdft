@@ -24,13 +24,32 @@ import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis.NODETYPE;
 
+/**
+ * This class is responsible for tracking method and event execution times. The timers are exported to disk upon
+ * shutdown of a webservice (therefore this is a subclass of <code>ServletContextListener</code>) or by calling
+ * <code>writeToFile()</code>.
+ * 
+ * @author vladi
+ *
+ */
 @WebListener
 public class StatisticsUtil implements ServletContextListener {
 
+    /**
+     * The method timers.
+     */
     private static List<MethodTimer> MethodTimers = new Vector<MethodTimer>();
-    // thread -> eventtimer
+    /**
+     * The event timers mapped to the ID of the threads that has thrown the event.
+     */
     private static Map<String, List<EventTimer>> EventTimers = new HashMap<>();
 
+    /**
+     * Creates a new method timer for a given method name and starts it.
+     * 
+     * @param methodFQName
+     *            The fully qualified method name.
+     */
     public static void startMethodTimer(String methodFQName) {
 	String threadId = Utility.getThreadId();
 	MethodTimer timer = new MethodTimer(threadId, methodFQName);
@@ -38,30 +57,34 @@ public class StatisticsUtil implements ServletContextListener {
 	timer.start();
     }
 
+    /**
+     * Stops the method timer for a given method name if it exists and is running.
+     * 
+     * @param methodFQName
+     *            The fully qualified method name.
+     */
     public static void stopMethodTimer(String methodFQName) {
 	String threadId = Utility.getThreadId();
-	// search for method timer by traversing list from end to start
 	MethodTimer timer = getLastMethodTimer(methodFQName, threadId, false);
 	if (timer != null) {
 	    if (timer.isRunning()) {
 		timer.stop();
-	    } else {
-		//System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + methodFQName);
 	    }
-	} else {
-	    // no valid timer found
-	    //System.out.println("TERROR : Timer not found for " + threadId + "." + methodFQName);
 	}
     }
 
     /**
-     * Returns the last method timer for given methodFQName and threadId. If hasToBeRunning==true, then the method
-     * searches for the last running timer for the thread (regardless of method).
+     * Returns the last method timer for a given method name and thread ID by traversing the list of timers in reverse
+     * order and performing comparisons. If <code>hasToBeRunning</code> is set to <code>true</code>, then the method
+     * searches for the last running timer for the thread ID (regardless of method name).
      * 
      * @param methodFQName
+     *            The fully qualified method name.
      * @param threadId
+     *            The ID of the thread.
      * @param hasToBeRunning
-     * @return
+     *            A boolean value indicating if the method timer has to be started.
+     * @return A method timer fitting the search criteria.
      */
     private static MethodTimer getLastMethodTimer(String methodFQName, String threadId, boolean hasToBeRunning) {
 	// search for method timer by traversing list from end to start
@@ -76,6 +99,16 @@ public class StatisticsUtil implements ServletContextListener {
 	return null;
     }
 
+    /**
+     * Creates a new event timer for a given event name and starts it. If there is a running method timer for this
+     * thread, then the newly created event timer is added to it.
+     * 
+     * @param eventName The name of the event.
+     * @param bci The bytecode index where the event was thrown.
+     * @param cnOwnerMethod The fully qualified method name where the event was thrown.
+     * @param cnLabel The chopnode label belonging to the event.
+     * @param sinksAndSources A set of source and sink IDs that have been triggered upon event creation.
+     */
     public static void startEventTimer(String eventName, int bci, String cnOwnerMethod, String cnLabel,
 	    Set<String> sinksAndSources) {
 	String threadId = Utility.getThreadId();
@@ -89,39 +122,46 @@ public class StatisticsUtil implements ServletContextListener {
 	}
 
 	eventTimer.start();
-	//System.out.println("TLOG : Timer started for " + threadId + "." + eventName);
     }
-
+    
+    /**
+     * Stops the creation timer of the last event object with the given event name if it exists and has its creation timer not stopped.
+     * 
+     * @param eventName
+     *            The name of the event to stop the timer.
+     */
     public static void endEventCreation(String eventName) {
 	String threadId = Utility.getThreadId();
 	EventTimer eventTimer = getLastEventTimer(threadId);
 	if (eventTimer != null && eventTimer.getEventName().equals(eventName)) {
 	    if (eventTimer.isSetCreated()) {
-		//System.out.println("TERROR : Last timer is already set created for " + threadId + "." + eventName);
 	    } else {
 		eventTimer.setCreated();
-		//System.out.println("TLOG : Timer set created for " + threadId + "." + eventName);
 	    }
-	} else {
-	    //System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
 	}
     }
 
+    /**
+     * Stops the event timer of the last event object with the given event name if it exists and has its overall timer not stopped.
+     * 
+     * @param eventName
+     *            The name of the event to stop the timer.
+     */
     public static void stopEventTimer(String eventName) {
 	String threadId = Utility.getThreadId();
 	EventTimer eventTimer = getLastEventTimer(threadId);
 	if (eventTimer != null && eventTimer.getEventName().equals(eventName)) {
-	    if (!eventTimer.isRunning()) {
-		//System.out.println("TERROR : Last timer is already stopped for " + threadId + "." + eventName);
-	    } else {
+	    if (eventTimer.isRunning()) {
 		eventTimer.stop();
-		//System.out.println("TLOG : Timer stopped for " + threadId + "." + eventName);
 	    }
-	} else {
-	    //System.out.println("TERROR : Timer not found for " + threadId + "." + eventName);
 	}
     }
 
+    /**
+     * Returns a list of event timers for the given thread ID. If none is found, then an empty list is created.
+     * @param threadId The ID of the thread.
+     * @return A list of event timers for the given thread ID.
+     */
     private static List<EventTimer> getEventTimersForThread(String threadId) {
 	List<EventTimer> eventTimers;
 	if (EventTimers.containsKey(threadId)) {
@@ -133,6 +173,12 @@ public class StatisticsUtil implements ServletContextListener {
 	return eventTimers;
     }
 
+    /**
+     * Returns the last event timer for a given thread ID by traversing the list of timers in reverse
+     * order and performing comparisons.
+     * @param threadId The ID of the thread.
+     * @return The last event timer for the thread ID.
+     */
     private static EventTimer getLastEventTimer(String threadId) {
 	List<EventTimer> eventTimers = getEventTimersForThread(threadId);
 	if (eventTimers.size() > 0) {
@@ -142,6 +188,9 @@ public class StatisticsUtil implements ServletContextListener {
 	return null;
     }
 
+    /**
+     * Writes a table of all method and event timers in CSV format to disk at the path specified in the configuration.
+     */
     public static void writeToFile() {
 
 	try {
@@ -195,8 +244,8 @@ public class StatisticsUtil implements ServletContextListener {
 		MethodTimer methodTimer = MethodTimers.get(i);
 		for (int j = 0; j < methodTimer.getEvents().size(); j++) {
 		    EventTimer eventTimer = methodTimer.getEvents().get(j);
-		    csvSb.append(""+(i + 1));
-		    csvSb.append(""+(j + 1));
+		    csvSb.append("" + (i + 1));
+		    csvSb.append("" + (j + 1));
 		    csvSb.append(eventTimer.getSourcesAndSinks().toString().substring(1,
 			    eventTimer.getSourcesAndSinks().toString().length() - 1)); // no NRE if flow==null
 		    csvSb.append(eventTimer.getCnLabel());
@@ -224,9 +273,10 @@ public class StatisticsUtil implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent arg0) {
-	//System.out.println("Writing statistics ...");
+	// System.out.println("Writing statistics ...");
 	writeToFile();
-	//System.out.println("Statistics can be found in " + ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS));
+	// System.out.println("Statistics can be found in " +
+	// ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS));
     }
 
     @Override

@@ -7,9 +7,20 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 
+/**
+ * Represents a timer for a method where <code>EventTimer</code>s can be added.
+ * @author vladi
+ *
+ */
 public class MethodTimer extends Timer {
 
+    /**
+     * The fully qualified name of the method.
+     */
     private String methodFQName;
+    /**
+     * The timers of all events thrown during execution of the method.
+     */
     private List<EventTimer> events = new Vector<>();
 
     public MethodTimer(String threadId, String methodFQName) {
@@ -21,10 +32,18 @@ public class MethodTimer extends Timer {
 	return methodFQName;
     }
     
+    /**
+     * Returns a concatenated string with thread, method and start time uniquely identifying this timer.
+     * @return The thread ID + method name + start time in string form.
+     */
     public String getUniqueKey() {
 	return threadId+methodFQName+startTime;
     }
     
+    /**
+     * Adds an event timer object to the list.
+     * @param event
+     */
     public void addEvent(EventTimer event) {
 	events.add(event);
     }
@@ -33,6 +52,10 @@ public class MethodTimer extends Timer {
 	return events;
     }
     
+    /**
+     * Concatenates the thread ID, the method name and the time interval and returns the resulting string.
+     * @return A string representing this object.
+     */
     public String toString() {
 	return threadId + " " + methodFQName + " " + getTimeInterval();
     }

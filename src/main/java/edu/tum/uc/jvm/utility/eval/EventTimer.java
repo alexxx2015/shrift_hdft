@@ -6,13 +6,36 @@ import java.util.Set;
 
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 
+/**
+ * Represents a timer for an event.
+ * @author vladi
+ *
+ */
 public class EventTimer extends Timer {
 
+    /**
+     * The name of the event.
+     */
     private String eventName;
+    /**
+     * The timestamp of the event creation.
+     */
     private long createdTime;
+    /**
+     * The bytecode index where the event was thrown.
+     */
     private int bci;
+    /**
+     * The fully qualified method name where the event was thrown.
+     */
     private String cnLocation;
+    /**
+     * The chopnode label belonging to the event.
+     */
     private String cnLabel;
+    /**
+     * A set of source and sink IDs that have been triggered upon event creation.
+     */
     private Set<String> sourcesAndSinks = new HashSet<>();
     
     public EventTimer(String threadId, String eventName, int bci, String cnLocation, String cnLabel, Set<String> sourcesAndSinks) {
@@ -32,18 +55,33 @@ public class EventTimer extends Timer {
 	return eventName;
     }
     
+    /**
+     * Sets the creation timestamp to the current system nanosecond time.
+     */
     public void setCreated() {
 	createdTime = System.nanoTime();
     }
     
+    /**
+     * Indicates if the event timer has logged creation, i.e. the creation timestamp has been set.
+     * @return A boolean indicating the creation status of the timer.
+     */
     public boolean isSetCreated() {
 	return createdTime > 0;
     }
     
+    /**
+     * Returns the difference between the start and the creation timestamps.
+     * @return A time interval in nanoseconds.
+     */
     public long getCreationTimeInterval() {
 	return createdTime - startTime;
     }
     
+    /**
+     * Returns the difference between the creation and the stop timestamps.
+     * @return A time interval in nanoseconds.
+     */
     public long getCommTimeInterval() {
 	return stopTime - createdTime;
     }
@@ -64,6 +102,10 @@ public class EventTimer extends Timer {
 	return threadId+eventName+startTime;
     }
     
+    /**
+     * Concatenates the thread ID, the event name and the creation/communication time intervals and returns the resulting string.
+     * @return A string representing this object.
+     */
     public String toString() {
 	return threadId + " " + eventName + " creation=" + getCreationTimeInterval() + " comm=" + getCommTimeInterval();
     }

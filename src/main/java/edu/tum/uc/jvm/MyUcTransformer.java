@@ -90,7 +90,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 		}
 		
 		//System.out.println("[MyUcTransformer]: Trying to instrument class: " + className);
-		//Only instrument whitelisted classes
+		//Only instrument whitelisted classes and they are not allowed to be in the blacklist
 		if(!Utility.isWhitelisted(className)){
 			return null;
 		}

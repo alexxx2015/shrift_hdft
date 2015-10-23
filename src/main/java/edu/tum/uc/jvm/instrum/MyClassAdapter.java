@@ -14,9 +14,23 @@ import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 
+/**
+ * This class is responsible to provide a MethodVisitor object to ASM in order to instrument a method.
+ * @author vladi
+ *
+ */
 public class MyClassAdapter extends ClassVisitor {
+    /**
+     * The name of the class.
+     */
     private String className;
+    /**
+     * A ClassNode object used to access the super class name.
+     */
     private ClassNode classNode;
+    /**
+     * The ClassWriter being the next in the ASM-ish class-event processing chain.
+     */
     private ClassWriter classWriter;
 
     public MyClassAdapter(int p_api, ClassVisitor p_cv, ClassNode p_cn) {
@@ -26,7 +40,14 @@ public class MyClassAdapter extends ClassVisitor {
 	this.classWriter = (ClassWriter) p_cv;
     }
 
-    @Override
+    /**
+     * Visits a method of the class.
+     * @param p_access The method's acccess flags.
+     * @param p_name The method name.
+     * @param p_desc The descriptor of the method.
+     * @param p_signature The signature of the method.
+     * @param p_exceptions The internal names of the method's exception classes.
+     */
     public MethodVisitor visitMethod(int p_access, String p_name, String p_desc, String p_signature,
 	    String[] p_exceptions) {
 
@@ -43,6 +64,7 @@ public class MyClassAdapter extends ClassVisitor {
 	// If the method is not native, switch in the instrumenting MyMethodVisitor
 	// We cannot instrument native machine code
 	if ((p_access & Opcodes.ACC_NATIVE) != Opcodes.ACC_NATIVE) {
+	    // only provide instrumentation if the corresponding flag was set in the configuration file
 	    if (ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION) != null
 		    && ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION).equals("true")) {
 		// timers for tracking time spent in a method
@@ -55,6 +77,7 @@ public class MyClassAdapter extends ClassVisitor {
 		mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
 			chopNodes, this.classWriter);
 	    } else {
+		// only timers for methods, no other additional bytecode
 		TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,
 			p_signature, this.className, this.classNode.superName);
 		mv = timeAa;

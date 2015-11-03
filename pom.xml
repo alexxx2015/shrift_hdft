@@ -124,7 +124,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin><!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -135,7 +135,7 @@
 						<manifestFile>${basedir}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
-			</plugin>
+			</plugin>-->
 
 		</plugins>
 	</build>

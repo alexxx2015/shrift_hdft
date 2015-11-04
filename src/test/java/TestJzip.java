@@ -24,7 +24,7 @@ public class TestJzip extends AbstractTest {
 
 	@Before
 	public void init() throws Exception {
-		init("/uc-jzip.config");
+		init("/uc-config/uc-myjzip.config");
 	}
 
 	@Test

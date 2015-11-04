@@ -27,7 +27,7 @@ public abstract class AbstractTest {
 		URL url = this.getClass().getResource(filename);
 		if (url != null) {
 			File input = new File(url.getFile());
-			File output = new File(input.getParent() + "/uc.config");
+			File output = new File(input.getParent() + "/../uc.config");
 			System.out.println("COPY " + input.getAbsolutePath() + " to "
 					+ output.getAbsolutePath());
 

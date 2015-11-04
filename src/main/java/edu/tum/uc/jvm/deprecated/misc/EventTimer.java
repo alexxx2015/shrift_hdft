@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.archive;
+package edu.tum.uc.jvm.deprecated.misc;
 
 import java.lang.ref.WeakReference;
 

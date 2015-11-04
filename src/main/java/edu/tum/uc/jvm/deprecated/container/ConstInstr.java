@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.container;
+package edu.tum.uc.jvm.deprecated.container;
 
 import edu.tum.uc.jvm.utility.Mnemonic;
 

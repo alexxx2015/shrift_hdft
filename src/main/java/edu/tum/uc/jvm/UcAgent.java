@@ -3,6 +3,8 @@ package edu.tum.uc.jvm;
 import java.lang.instrument.*;
 import java.lang.management.ManagementFactory;
 
+import edu.tum.uc.jvm.deprecated.MirrorStack;
+
 public final class UcAgent {	
 
 	public static void premain(String p_args, Instrumentation p_instr) throws Exception{

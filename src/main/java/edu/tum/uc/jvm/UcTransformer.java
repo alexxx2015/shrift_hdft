@@ -18,6 +18,7 @@ import org.objectweb.asm.tree.ClassNode;
 import edu.tum.uc.jvm.asm.MyClassAdapter;
 import edu.tum.uc.jvm.asm.MyClassReader;
 import edu.tum.uc.jvm.asm.MyClassWriter;
+import edu.tum.uc.jvm.deprecated.MirrorStack;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;

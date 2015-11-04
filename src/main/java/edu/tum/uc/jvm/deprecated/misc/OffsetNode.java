@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.archive;
+package edu.tum.uc.jvm.deprecated.misc;
 public class OffsetNode {
 	private String id;
 	private StaticAnalysis.nodeType type;

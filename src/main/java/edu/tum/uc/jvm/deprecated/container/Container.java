@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.container;
+package edu.tum.uc.jvm.deprecated.container;
 
 import java.util.Iterator;
 import java.util.LinkedList;

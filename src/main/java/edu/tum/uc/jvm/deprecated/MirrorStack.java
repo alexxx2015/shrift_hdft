@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm;
+package edu.tum.uc.jvm.deprecated;
 
 import it.uniroma1.dis.wsngroup.gexf4j.core.EdgeType;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
@@ -32,14 +32,15 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
-import edu.tum.uc.jvm.container.ArithResult;
-import edu.tum.uc.jvm.container.ArrayField;
-import edu.tum.uc.jvm.container.ArrayRef;
-import edu.tum.uc.jvm.container.ConstInstr;
-import edu.tum.uc.jvm.container.Container;
-import edu.tum.uc.jvm.container.Field;
-import edu.tum.uc.jvm.container.LocalVariable;
-import edu.tum.uc.jvm.container.ObjectReference;
+import edu.tum.uc.jvm.UcCommunicator;
+import edu.tum.uc.jvm.deprecated.container.ArithResult;
+import edu.tum.uc.jvm.deprecated.container.ArrayField;
+import edu.tum.uc.jvm.deprecated.container.ArrayRef;
+import edu.tum.uc.jvm.deprecated.container.ConstInstr;
+import edu.tum.uc.jvm.deprecated.container.Container;
+import edu.tum.uc.jvm.deprecated.container.Field;
+import edu.tum.uc.jvm.deprecated.container.LocalVariable;
+import edu.tum.uc.jvm.deprecated.container.ObjectReference;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.MethEvent;

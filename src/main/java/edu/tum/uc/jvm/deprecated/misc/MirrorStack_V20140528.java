@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.archive;
+package edu.tum.uc.jvm.deprecated.misc;
 //package edu.tum.uc.jvm;
 //import java.io.IOException;
 //import java.util.ArrayList;

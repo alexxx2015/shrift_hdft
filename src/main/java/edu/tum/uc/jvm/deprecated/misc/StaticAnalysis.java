@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.archive;
+package edu.tum.uc.jvm.deprecated.misc;
 
 import java.io.File;
 import java.util.ArrayList;

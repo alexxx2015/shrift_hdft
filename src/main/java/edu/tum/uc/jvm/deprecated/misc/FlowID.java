@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.archive;
+package edu.tum.uc.jvm.deprecated.misc;
 
 public class FlowID implements Comparable<FlowID> {
 

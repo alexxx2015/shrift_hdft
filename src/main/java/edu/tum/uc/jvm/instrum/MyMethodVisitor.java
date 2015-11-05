@@ -12,6 +12,8 @@ import org.objectweb.asm.Type;
 import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.utility.analysis.Flow;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
+import edu.tum.uc.jvm.utility.analysis.SinkSource;
+import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 import edu.tum.uc.jvm.utility.eval.JavaEventName;
 
 /**
@@ -660,20 +662,29 @@ public class MyMethodVisitor extends MethodVisitor {
      *            The method descriptor.
      */
     public void visitMethodInsn(int p_opcode, String p_owner, String p_name, String p_desc) {
-
-	// get the chop node if there is one at the current bytecode offset
-	Chop chopNode = checkChopNode(this.getCurrentLabel());
-
-	boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_name.equals("<init>");
+    
+    boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_name.equals("<init>");
 	boolean isPublicInstanceMethod = p_opcode == Opcodes.INVOKEVIRTUAL;
 	boolean isPrivateInstanceMethod = p_opcode == Opcodes.INVOKESPECIAL && !p_name.equals("<init>");
 	boolean isInterfaceMethod = p_opcode == Opcodes.INVOKEINTERFACE;
 
 	boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod || isPrivateInstanceMethod || isInterfaceMethod;
-
+	
+	int ofs = this.getCurrentLabel().getOffset();
+	List<SinkSource> issource = StaticAnalysis.isSource(fqName,ofs);
+	List<SinkSource> issink = StaticAnalysis.isSink(fqName,ofs);
+	// get the chop node if there is one at the current bytecode offset
+	Chop chopNode = checkChopNode(this.getCurrentLabel());
+	if(issource != null && issource.size() > 0){
+		System.out.println("Sink detected: "+p_owner+":"+p_name+", chop: "+chopNode.getLabel());
+	    mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
+	}	
+	else if (issink != null && issink.size() > 0){
+		System.out.println("Sink detected: "+p_owner+":"+p_name);
+	    mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
+	}
 	// check for the chopnode to be present here and that it has the correct operation
-	if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL)) {
-
+	else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL)) {
 	    StringBuilder desc = new StringBuilder();
 	    // Generate new method signature
 	    Type[] argT = Type.getArgumentTypes(p_desc);
@@ -707,18 +718,18 @@ public class MyMethodVisitor extends MethodVisitor {
 
 	    // Parameter for chop label
 	    desc.append("Ljava/lang/String;");
-	    int chopLabelIndex = paramIndex;
-	    paramIndex++;
+	    int chopLabelIndex = paramIndex++;
+//	    paramIndex++;
 
 	    // Parameter for parent object
 	    desc.append("Ljava/lang/Object;");
-	    int parentObjectIndex = paramIndex;
-	    paramIndex++;
+	    int parentObjectIndex = paramIndex++;
+//	    paramIndex++;
 
 	    // Parameter for bytecode offset
 	    desc.append("I");
-	    int offsetIndex = paramIndex;
-	    paramIndex++;
+	    int offsetIndex = paramIndex++;
+//	    paramIndex++;
 
 	    desc.append(")");
 

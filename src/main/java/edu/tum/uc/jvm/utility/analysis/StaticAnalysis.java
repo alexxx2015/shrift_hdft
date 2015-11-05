@@ -1,9 +1,11 @@
 package edu.tum.uc.jvm.utility.analysis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.objectweb.asm.Label;
@@ -154,5 +156,24 @@ public class StaticAnalysis {
 		}
 		return _return;
 	}
-
+	
+	//Checks if bytecodeOffset in method parentMethodFQN is a source
+	public static List<SinkSource> isSource(String parentMethodFQN, int bytecodeOffset){
+		return contains(parentMethodFQN, bytecodeOffset, getSources());
+	}
+	
+	//Checks if bytecodeOffset in method parentMethodFQN is a source
+	public static List<SinkSource> isSink(String parentMethodFQN, int bytecodeOffset){
+		return contains(parentMethodFQN, bytecodeOffset, getSinks());
+	}
+	
+	private static List<SinkSource> contains(String parentMethodFQN, int bytecodeOffset, List<SinkSource> list){
+		List<SinkSource> _return = new LinkedList<SinkSource>();
+		for (SinkSource sinksource : list) {
+		    if (sinksource.getLocation().equals(parentMethodFQN.replace("|", ".")) && sinksource.getOffset() == bytecodeOffset) {
+		    	_return.add(sinksource);
+		    }
+		}
+		return _return;
+	}
 }

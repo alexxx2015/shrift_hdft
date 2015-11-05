@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.deprecated;
+package edu.tum.uc.jvm.asm;
 
 import it.uniroma1.dis.wsngroup.gexf4j.core.EdgeType;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;

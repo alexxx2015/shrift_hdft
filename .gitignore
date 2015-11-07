@@ -1,0 +1,11 @@
+.setting
+.settings
+.project
+.log
+logging
+pipdb/
+.pipdb/
+derby.log
+log
+logs
+/target

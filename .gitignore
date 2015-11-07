@@ -1,6 +1,6 @@
 .setting
-.settings
-.project
+!.settings
+!.project
 .log
 logging
 pipdb/

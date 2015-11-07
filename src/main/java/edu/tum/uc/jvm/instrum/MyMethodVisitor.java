@@ -676,6 +676,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	List<SinkSource> sinks = StaticAnalysis.isSink(fqName,ofs);
 	// get the chop node if there is one at the current bytecode offset
 	Chop chopNode = checkChopNode(this.getCurrentLabel());	
+	sinks = null;
 	if(sources != null && sources.size() > 0){
 		String[] wrapperDesc = Utility.createSourceWrapper(p_opcode, p_owner, p_name, p_desc, cv, this.className, sources);
 		String ldc = "";

@@ -468,20 +468,25 @@ public class InstrumDelegate {
     public static boolean sourceInvoked(Object p_returnobj, Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel){
     	boolean _return = true;
     	String fileName = Utility.extractFileDescriptor(p_ownerobj);
-    	String[] sinksourceIds = p_source.split("\\|");
+    	String[] sourceIds = p_source.split("\\|");
     	String calleeObjMemAddr = getAddress(p_ownerobj);
     	String parentObjMemAddr =  getAddress(p_parentobj);
     	String returnObjMemAddr = getAddress(p_returnobj);
-    	for(String s : sinksourceIds){
+    	String returnObjectClass = "";
+    	if(p_returnobj != null){
+    		returnObjectClass = p_returnobj.getClass().getCanonicalName();
+    	}
+    	for(String s : sourceIds){
     		SinkSource sinksource = StaticAnalysis.getSinkById(s);
     		Map<String, String> eventParams = new HashMap<String,String>();
     		eventParams.put("parentObjectAddress", parentObjMemAddr);
     		eventParams.put("parentClass", p_parentClass);
     		eventParams.put("parentMethod", p_parentmethodname);
-    		eventParams.put("calledObjectClass", p_ownerclass);
-    		eventParams.put("calledObjectAddress", calleeObjMemAddr);
-    		eventParams.put("calledMethod", p_ownermethod);
+    		eventParams.put("calleeObjectClass", p_ownerclass);
+    		eventParams.put("calleeObjectAddress", calleeObjMemAddr);
+    		eventParams.put("calleeMethod", p_ownermethod);
     		eventParams.put("returnObjectAddress", returnObjMemAddr);
+    		eventParams.put("returnObjectClass", returnObjectClass);
     		eventParams.put("fileName", fileName);
     		eventParams.put("chopLabel", p_chopLabel);
 //    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
@@ -509,7 +514,7 @@ public class InstrumDelegate {
     		eventParams.put("chopLabel", p_chopLabel);
 //    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
 //    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
-    		createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
+    		createEvent(JavaEventName.SINK_INVOKED, eventParams);
     	}
     	return _return;
     }

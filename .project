@@ -26,14 +26,4 @@
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.hibernate.eclipse.console.hibernateNature</nature>
 	</natures>
-<<<<<<< HEAD
-	<linkedResources>
-		<link>
-			<name>java-sizeof</name>
-			<type>2</type>
-			<location>/home/vladi/java-sizeof</location>
-		</link>
-	</linkedResources>
-=======
->>>>>>> 7b9c464c07931e84059d29ef7c88d3a95c719b9c
 </projectDescription>

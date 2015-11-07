@@ -304,22 +304,26 @@ public class Utility {
 	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
 			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources) {
 	    boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_ownermethod.equals("<init>");
-		String[] _return = new String[2];
+	    boolean isStatic = p_opcode == Opcodes.INVOKESTATIC;
+	    String[] _return = new String[2];
 		StringBuilder wrapperMethodDesc = new StringBuilder();
 		try {
 			// ==> Preprocessing, create required method description, indizes,
 			// etc.
 			// Create method description of the to be invoked methods
 			wrapperMethodDesc.append("(");
-			wrapperMethodDesc.append("L" + p_ownerclass + ";");// append("Ljava/lang/Object;");
-			// count the number of parameters the wrapper method has,
-			// (0)=object,(1...n-1)=parameters,(n)=source-id
-			int argIndex = 0;
+			int argIndex = -1;
+			if(!isConstructor && !isStatic){
+				wrapperMethodDesc.append("L" + p_ownerclass + ";");// append("Ljava/lang/Object;");
+				++argIndex;
+			}			// count the number of parameters the wrapper method has, (0)=object,(1...n-1)=parameters,(n)=source-id
 
 			// Helper variable to store the correct parameter index within the
 			// local variable table
+			int paramStartIndex = 0;
 			Type[] argT = Type.getArgumentTypes(p_descownermethod);
 			if (argT.length > 0) {
+				paramStartIndex = argIndex+1;
 				for (Type t : argT) {
 					wrapperMethodDesc.append(t.getDescriptor());
 					argIndex++;
@@ -336,7 +340,7 @@ public class Utility {
 			wrapperMethodDesc.append("Ljava/lang/String;");
 			int parentMethodIndex = ++argIndex;
 
-			// sinksourceindex
+			// sourceindex
 			wrapperMethodDesc.append("Ljava/lang/String;");
 			int sinksourceIndex = ++argIndex;
 
@@ -347,12 +351,10 @@ public class Utility {
 			wrapperMethodDesc.append(")");
 
 			Type retT = Type.getReturnType(p_descownermethod);
-			if (retT != null) {
-				if (isConstructor) {
-					wrapperMethodDesc.append("L" + p_ownerclass + ";");
-				} else{
-					wrapperMethodDesc.append(retT.getDescriptor());
-				}
+			if (isConstructor) {
+				wrapperMethodDesc.append("L" + p_ownerclass + ";");
+			} else if(retT != null) {
+				wrapperMethodDesc.append(retT.getDescriptor());
 			}
 
 			// Constructors are renamed
@@ -377,8 +379,13 @@ public class Utility {
 			mv.visitCode();
 
 			// Preprocessing, to execute the original method
-			mv.visitVarInsn(Opcodes.ALOAD, 0);
-			int i = 1;
+			if(isConstructor){
+			    mv.visitTypeInsn(Opcodes.NEW, p_ownerclass);
+			    mv.visitInsn(Opcodes.DUP);
+			}else if (!isStatic){
+				mv.visitVarInsn(Opcodes.ALOAD, 0);
+			}
+			int i = paramStartIndex;
 			for (Type t : argT) {
 				if (t.getSort() == Type.OBJECT) {
 					mv.visitVarInsn(Opcodes.ALOAD, i);
@@ -407,7 +414,13 @@ public class Utility {
 
 			// Execute original method
 			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, false);
-
+			
+//			int constructorIndex = -1;
+//			if(isConstructor){
+//				constructorIndex = ++argIndex;
+//			    mv.visitVarInsn(Opcodes.ASTORE, constructorIndex);
+//			}
+			
 			// if (timer4) {
 			// mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length -
 			// // 1);
@@ -417,13 +430,15 @@ public class Utility {
 			// }
 
 			// Send an event to the pdp
-			if (retT.getSort() != Type.VOID) {
+			if (retT.getSort() != Type.VOID || isConstructor) {
 				mv.visitInsn(Opcodes.DUP);
 			} else {
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			}
-			mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject
-			mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject
+			if(isConstructor || isStatic)
+				mv.visitInsn(Opcodes.ACONST_NULL);
+			else
+				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject
 			mv.visitLdcInsn(p_ownerclass);
 			mv.visitLdcInsn(p_ownermethod);
 			mv.visitVarInsn(Opcodes.ALOAD, parentObjIndex);// Load parentObj ref
@@ -438,7 +453,7 @@ public class Utility {
 			mv.visitInsn(Opcodes.POP);
 
 			// Add return
-			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY) {
+			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY || isConstructor) {
 				mv.visitInsn(Opcodes.ARETURN);
 			} else if (retT.getSort() == Type.DOUBLE) {
 				mv.visitInsn(Opcodes.DRETURN);
@@ -453,7 +468,7 @@ public class Utility {
 			}
 
 			Type[] myArgT = Type.getArgumentTypes(wrapperMethodDesc.toString());
-			mv.visitMaxs(myArgT.length+2, myArgT.length+1);
+			mv.visitMaxs(myArgT.length+5, myArgT.length+5);
 			mv.visitEnd();
 //			cv.visitEnd();
 		} catch (Exception e) {
@@ -464,23 +479,26 @@ public class Utility {
 	public static String[] createSinkWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
 		String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sinks) {
 		String[] _return = new String[2];
-	    boolean isConstructor = p_ownermethod.equals("<init>");
+	    boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_ownermethod.equals("<init>");
+	    boolean isStatic = p_opcode == Opcodes.INVOKESTATIC;
 		StringBuilder wrapperMethodDesc = new StringBuilder();
 		try {
 			//Preprocessing, create required method description, indizes, etc
 			// Create method description of the to be invoked methods
 			wrapperMethodDesc.append("(");
-			wrapperMethodDesc.append("L" + p_ownerclass + ";");// append("Ljava/lang/Object;");
+			int argIndex = -1;
+			if(!isConstructor && !isStatic){
+				wrapperMethodDesc.append("L" + p_ownerclass + ";");// append("Ljava/lang/Object;");
+				++argIndex;
+			}
 			// count the number of parameters the wrapper method has,
-			// (0)=object,(1...n-1)=parameters,(n)=sink-id
-			int argIndex = 0;
 
 			// Helper variable to store the correct parameter index within the
 			// local variable table
-			int paramStartIndex = -1;
+			int paramStartIndex = 0;
 			Type[] argT = Type.getArgumentTypes(p_descownermethod);
 			if (argT.length > 0) {
-				paramStartIndex = 1+argIndex;
+				paramStartIndex = argIndex+1;
 				for (Type t : argT) {
 					wrapperMethodDesc.append(t.getDescriptor());
 					if (Type.DOUBLE == t.getSort() || Type.LONG == t.getSort()) {
@@ -581,10 +599,12 @@ public class Utility {
 			}
 
 			// Send an event to the pdp
-			if(isConstructor)
+			if(isConstructor){
 				mv.visitInsn(Opcodes.ACONST_NULL);
-			else
+			}
+			else if(!isStatic){
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject 
+			}
 			mv.visitLdcInsn(p_ownerclass);
 			mv.visitLdcInsn(p_ownermethod);
 			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);//Load method params
@@ -603,7 +623,7 @@ public class Utility {
 			if(isConstructor){
 			    mv.visitTypeInsn(Opcodes.NEW, p_ownerclass);
 			    mv.visitInsn(Opcodes.DUP);
-			}else{
+			}else if (!isStatic){
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 			}
 			
@@ -644,17 +664,9 @@ public class Utility {
 			// UcTransformer.HOOKMETHOD, "timerT4Stop",
 			// "(Ljava/lang/String;)V", false);
 			// }
-			if(isConstructor){
-				mv.visitInsn(Opcodes.DUP);
-				
-			}
 
 			// Add return
-			if(isConstructor){
-				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject 
-				mv.visitInsn(Opcodes.ARETURN);
-			}
-			else if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY) {
+			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY || isConstructor) {
 				mv.visitInsn(Opcodes.ARETURN);
 			} else if (retT.getSort() == Type.DOUBLE) {
 				mv.visitInsn(Opcodes.DRETURN);
@@ -669,9 +681,8 @@ public class Utility {
 			}
 
 			Type[] myArgT = Type.getArgumentTypes(wrapperMethodDesc.toString());
-			mv.visitMaxs(myArgT.length+2, myArgT.length+2);
+			mv.visitMaxs(myArgT.length+5, myArgT.length+5);
 			mv.visitEnd();
-//			cv.visitEnd();
 		} catch (Exception e) {
 		}
 

@@ -677,10 +677,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	// get the chop node if there is one at the current bytecode offset
 	Chop chopNode = checkChopNode(this.getCurrentLabel());	
 	if(sources != null && sources.size() > 0){
-		//Chopnode + SinkSource-Node
-//		System.out.println("Sink detected: "+p_owner+":"+p_name);
-//		if(chopNode != null) System.out.print(chopNode.getLabel());
-		
 		String[] wrapperDesc = Utility.createSourceWrapper(p_opcode, p_owner, p_name, p_desc, cv, this.className, sources);
 		String ldc = "";
 		for(SinkSource s : sources){
@@ -692,11 +688,16 @@ public class MyMethodVisitor extends MethodVisitor {
 		mv.visitLdcInsn(chopNode.getLabel());
 		
 		mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className, wrapperDesc[0], wrapperDesc[1], false);//this.className.replace(".", "/")
+	    if (isConstructor) {
+		mv.visitInsn(Opcodes.SWAP);
+		mv.visitInsn(Opcodes.POP);
+		mv.visitInsn(Opcodes.SWAP);
+		mv.visitInsn(Opcodes.POP);
+	    }
 //		mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
 	}	
 	else if (sinks != null && sinks.size() > 0){
 		if(chopNode == null) chopNode = new Flow().new Chop(-1, "","","");
-		System.out.println("Sink detected: "+p_owner+":"+p_name);	
 
 		String[] wrapperDesc = Utility.createSinkWrapper(p_opcode, p_owner, p_name, p_desc, cv, this.className, sinks);
 		String ldc = "";
@@ -1141,7 +1142,15 @@ public class MyMethodVisitor extends MethodVisitor {
 	mv.visitInsn(Opcodes.POP);
     }
     
-    public void t(){
-    	int[] arrr = new int[1000000000];
+    public static void main(){
+    	ClassWriter cw = new ClassWriter(0);
+    }
+    
+    public static void t(){
+    	Object o = new Object();
+    	v1(o);
+    }
+    private static void v1(Object o ){
+    	
     }
 }

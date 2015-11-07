@@ -1,6 +1,5 @@
 package edu.tum.uc.jvm.asm;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -18,44 +17,38 @@ import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.CreationSite;
+import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 
 public class MyMethodVisitor extends MethodVisitor {
 	private String methodName;
 	private String className;
+	private String fqName;
 	private MethodNode methNode;
 	private String description;
-	private ArrayList<Properties> chopNodes;
+	private List<Chop> chopNodes;
 	private ClassWriter cv;
 
 	protected MyMethodVisitor(int p_api, MethodVisitor p_mv, int p_access,
 			String p_name, String p_desc, String p_signature,
 			String p_className, MethodNode p_methNode,
-			ArrayList<Properties> p_chopNodes, ClassWriter cv) {
+			List<Chop> p_chopNodes, ClassWriter cv) {
 		super(p_api, p_mv);
 
 		this.methodName = p_name;
 		this.className = p_className;
+		
 		this.methNode = p_methNode;
 		this.description = p_desc;
 		this.cv = cv;
 
+		this.fqName = this.className.replace("/", ".") + "." + this.methodName+":"+this.description;
 		this.chopNodes = p_chopNodes;
 
 		if (((this.methNode.access & Opcodes.ACC_STATIC) != Opcodes.ACC_STATIC)
 				&& ((this.methNode.access & Opcodes.ACC_ABSTRACT) != Opcodes.ACC_ABSTRACT)) {
 		}
-
-		// System.out.println("METHODVISITOR: "+this.className+", "+this.methodName+", "+this.methNode.access+", "+this.isInstance+", "+this.methNode.name);
-		// if(this.className.contains("DefaultSystemMessagesProvider") &&
-		// this.methodName.equals("get"))
-		// this.isInstance = false;
-	}
-
-	// Return full name of a method, i.e. classname + methodname
-	private String getFullName() {
-		return this.className.replace("/", ".") + "." + this.methodName;
 	}
 
 	// Return the local variable node of a method by index
@@ -76,14 +69,14 @@ public class MyMethodVisitor extends MethodVisitor {
 	private boolean checkChopNode(Label label) {
 		boolean _return = false;
 		if ((this.chopNodes != null) && (this.chopNodes.size() > 0)) {
-			Iterator<Properties> it = this.chopNodes.iterator();
+			Iterator<Chop> it = this.chopNodes.iterator();
 			while (it.hasNext()) {
-				Properties p = it.next();
+				Chop c = it.next();
 				int offset = label.getOffset();
-				String byteCodeIndex = p.getProperty("byteCodeIndex");
-				if ((byteCodeIndex != null)
-						&& (Integer.parseInt(byteCodeIndex) == offset)) {
+				int byteCodeIndex = c.getByteCodeIndex();
+				if ((byteCodeIndex != 0) && (offset == byteCodeIndex)){
 					_return = true;
+					break;
 				}
 			}
 		}
@@ -96,12 +89,22 @@ public class MyMethodVisitor extends MethodVisitor {
 						+ this.methodName, label);
 		return _return;
 	}
-
+	/**
+	 * Visits a local variable instruction. A local variable instruction is an instruction that loads or stores the value of a local variable.
+	 * Parameters:
+	 * 		opcode - the opcode of the local variable instruction to be visited. This opcode is either ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, ISTORE, LSTORE, FSTORE, DSTORE, ASTORE or RET.
+	 *		var - the operand of the instruction to be visited. This operand is the index of a local variable. 
+	 * */	
 	public void visitVarInsn(int p_opcode, int p_var) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-
-			String varInsStr = this.getFullName();
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_var+"| -- visitVarInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
+			String varInsStr = this.fqName;
 			// System.out.println("UCAPT LOADVAR 1: "+p_var+", "+p_opcode);
 			LocalVariableNode lvn = this.getLocVarByIdx(p_var);
 			if (lvn != null) {
@@ -126,15 +129,25 @@ public class MyMethodVisitor extends MethodVisitor {
 						"(Ljava/lang/String;)V", false);
 			}
 			// mv.visitLabel(lab);
-
 		}
 		mv.visitVarInsn(p_opcode, p_var);
 	}
-
+	/**
+	 * Visits a zero operand instruction.
+	 * Parameters:
+	 * 		opcode - the opcode of the instruction to be visited. This opcode is either NOP, ACONST_NULL, ICONST_M1, ICONST_0, ICONST_1, ICONST_2, ICONST_3, ICONST_4, ICONST_5, LCONST_0, LCONST_1, FCONST_0, FCONST_1, FCONST_2, DCONST_0, DCONST_1, IALOAD, LALOAD, FALOAD, DALOAD, AALOAD, BALOAD, CALOAD, SALOAD, IASTORE, LASTORE, FASTORE, DASTORE, AASTORE, BASTORE, CASTORE, SASTORE, POP, POP2, DUP, DUP_X1, DUP_X2, DUP2, DUP2_X1, DUP2_X2, SWAP, IADD, LADD, FADD, DADD, ISUB, LSUB, FSUB, DSUB, IMUL, LMUL, FMUL, DMUL, IDIV, LDIV, FDIV, DDIV, IREM, LREM, FREM, DREM, INEG, LNEG, FNEG, DNEG, ISHL, LSHL, ISHR, LSHR, IUSHR, LUSHR, IAND, LAND, IOR, LOR, IXOR, LXOR, I2L, I2F, I2D, L2I, L2F, L2D, F2I, F2L, F2D, D2I, D2L, D2F, I2B, I2C, I2S, LCMP, FCMPL, FCMPG, DCMPL, DCMPG, IRETURN, LRETURN, FRETURN, DRETURN, ARETURN, RETURN, ARRAYLENGTH, ATHROW, MONITORENTER, or MONITOREXIT. 
+	 */
 	public void visitInsn(int p_opcode) {
+
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			String ucaHAStr = this.getFullName();
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"| -- visitInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
+			String ucaHAStr = this.fqName;
 			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
 			// null, null);
 
@@ -198,11 +211,24 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		mv.visitInsn(p_opcode);
 	}
-
+	/**
+	 * Visits a field instruction. A field instruction is an instruction that loads or stores the value of a field of an object.
+	 * Parameters:
+	 * 		opcode - the opcode of the type instruction to be visited. This opcode is either GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD.
+	 * 		owner - the internal name of the field's owner class (see getInternalName).
+	 * 		name - the field's name.
+	 * 		desc - the field's descriptor (see Type). 
+	 */
 	public void visitFieldInsn(int p_opcode, String p_owner, String p_name,
 			String p_desc) {
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_owner + "." + p_name + ":" + p_desc+"| -- visitFieldInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
 			String ldcInsn = p_owner + "/" + p_name + ":" + p_desc;
 			switch (p_opcode) {
 			case Opcodes.GETFIELD:
@@ -237,10 +263,23 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
 	}
-
+	
+	/**
+	 * Visits a jump instruction. A jump instruction is an instruction that may jump to another instruction.
+	 * Parameters:
+	 * 		opcode - the opcode of the type instruction to be visited. This opcode is either IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE, GOTO, JSR, IFNULL or IFNONNULL.
+	 *		label - the operand of the instruction to be visited. This operand is a label that designates the instruction to which the jump instruction may jump. 
+	 */
 	public void visitJumpInsn(int p_opcode, Label p_label) {
+
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_label.toString()+"| -- visitJumpInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
 			// InsnList il = this.methNode.instructions;
 			// ListIterator<AbstractInsnNode> ilIt = il.iterator();
 			// while(ilIt.hasNext()){
@@ -252,7 +291,7 @@ public class MyMethodVisitor extends MethodVisitor {
 					|| (p_opcode == Opcodes.IFNULL)
 					|| (p_opcode == Opcodes.IFNONNULL)) {
 
-				String jumpStr = this.getFullName() + "/"
+				String jumpStr = this.fqName + "/"
 						+ Mnemonic.OPCODE[p_opcode] + ":" + p_opcode;
 				try {
 					jumpStr += ":" + p_label.getOffset();
@@ -268,15 +307,28 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		mv.visitJumpInsn(p_opcode, p_label);
 	}
-
+	
+	/**
+	 * Visits an instruction with a single int operand.
+	 * Parameters:
+	 * 		opcode - the opcode of the instruction to be visited. This opcode is either BIPUSH, SIPUSH or NEWARRAY.
+	 * 		operand - the operand of the instruction to be visited.
+	 */
 	public void visitIntInsn(int p_opcode, int p_operand) {
+
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_operand+"| -- visitIntInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
 			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
 			// null, null);
 			String ucaHAStr;
 			if (p_opcode == Opcodes.NEWARRAY) {
-				ucaHAStr = this.getFullName() + ":" + p_operand + ":"
+				ucaHAStr = this.fqName + ":" + p_operand + ":"
 						+ p_opcode;
 				mv.visitLdcInsn(ucaHAStr);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
@@ -284,7 +336,7 @@ public class MyMethodVisitor extends MethodVisitor {
 						"(Ljava/lang/String;)V", false);
 			} else if ((p_opcode >= Opcodes.ACONST_NULL)
 					&& (p_opcode <= Opcodes.SIPUSH)) {
-				ucaHAStr = this.getFullName() + "/" + Mnemonic.OPCODE[p_opcode]
+				ucaHAStr = this.fqName + "/" + Mnemonic.OPCODE[p_opcode]
 						+ "_" + p_operand + ":" + p_opcode;
 				mv.visitLdcInsn(ucaHAStr);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
@@ -295,21 +347,34 @@ public class MyMethodVisitor extends MethodVisitor {
 		}
 		mv.visitIntInsn(p_opcode, p_operand);
 	}
-
+	
+	/**
+	 * Visits a type instruction. A type instruction is an instruction that takes the internal name of a class as parameter.
+	 * Parameters:
+	 * 		opcode - the opcode of the type instruction to be visited. This opcode is either NEW, ANEWARRAY, CHECKCAST or INSTANCEOF.
+	 * 		type - the operand of the instruction to be visited. This operand must be the internal name of an object or array class (see getInternalName). 
+	 */
 	public void visitTypeInsn(int p_opcode, String p_type) {
+
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_type+"| -- visitTypeInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
 			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
 			// null, null);
 			String ucaHAStr = "";
 			if (p_opcode == Opcodes.ANEWARRAY) {
-				ucaHAStr = this.getFullName() + ":" + p_type + ":" + p_opcode;
+				ucaHAStr = this.fqName + ":" + p_type + ":" + p_opcode;
 				mv.visitLdcInsn(ucaHAStr);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 						UcTransformer.HOOKMETHOD, "newArray",
 						"(Ljava/lang/String;)V", false);
 			} else if (p_opcode == Opcodes.NEW) {
-				ucaHAStr = this.getFullName() + ":" + p_type + ":" + p_opcode;
+				ucaHAStr = this.fqName + ":" + p_type + ":" + p_opcode;
 				mv.visitLdcInsn(ucaHAStr);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 						UcTransformer.HOOKMETHOD, "newInstr",
@@ -334,14 +399,25 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 		}
 	}
-
+	
+	/**
+	 * Visits a MULTIANEWARRAY instruction.
+	 * Parameters:
+	 * 		desc - an array type descriptor (see Type).
+	 * 		dims - number of dimensions of the array to allocate. 
+	 */
 	public void visitMultiANewArrayInsn(String p_desc, int p_dim) {
+
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
-			// null, null);
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[197]+"|Desc: "+p_desc+" -Dim: "+p_dim+"| -- visitMultiANewArrayInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
 
-			String ucaHAStr = this.getFullName() + "::"
+			String ucaHAStr = this.fqName + "::"
 					+ Opcodes.MULTIANEWARRAY;
 			mv.visitLdcInsn(ucaHAStr);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
@@ -351,12 +427,34 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		mv.visitMultiANewArrayInsn(p_desc, p_dim);
 	}
-
+	
+	/**
+	 * Visits a LDC instruction. Note that new constant types may be added in future versions of the Java Virtual Machine. To easily detect new constant types, implementations of this method should check for unexpected constant types, like this:
+	 * if (cst instanceof Integer) {
+	 * } else if (cst instanceof Float) {
+	 * } else if (cst instanceof Long) {
+	 * } else if (cst instanceof Type) {
+	 * 		int sort = ((Type) cst).getSort();
+	 * 		if (sort == Type.OBJECT) {
+	 * 		} else if (sort == Type.ARRAY) {
+	 * 		} else if (sort == Type.METHOD) {
+	 * 		} else {}
+	 *} else if (cst instanceof Handle) {
+	 *} else {}
+	 * Parameters:
+	 * 		cst - the constant to be loaded on the stack. This parameter must be a non null Integer, a Float, a Long, a Double, a String, a Type of OBJECT or ARRAY sort for .class constants, for classes whose version is 49.0, a Type of METHOD sort or a Handle for MethodType and MethodHandle constants, for classes whose version is 51.0. 
+	 */
 	public void visitLdcInsn(Object cst) {
+
 		Label label = this.getCurrentLabel();
 		if (this.checkChopNode(label)) {
-
-			String ucaHAStr = this.getFullName() + ":"
+			String ldcInsn = this.fqName+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[18]+"|"+cst.toString()+"| -- visitLdcInsn";
+			mv.visitLdcInsn(ldcInsn);
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
+		}
+		else if (false == true){
+			String ucaHAStr = this.fqName + ":"
 					+ cst.toString().replace(":", "&#58;");
 			// Label lab = this.insertChecks(mv, Disassembler.class.getName(),
 			// null, null);
@@ -368,7 +466,16 @@ public class MyMethodVisitor extends MethodVisitor {
 		}
 		mv.visitLdcInsn(cst);
 	}
-
+	
+	/**
+	 * Visits a method instruction. A method instruction is an instruction that invokes a method.
+	 * Parameters:
+	 * 		opcode - the opcode of the type instruction to be visited. This opcode is either INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or INVOKEINTERFACE.
+	 * 		owner - the internal name of the method's owner class (see getInternalName).
+	 * 		name - the method's name.
+	 * 		desc - the method's descriptor (see Type).
+	 * 		itf - if the method's owner class is an interface. 
+	 */
 	public void visitMethodInsn(int p_opcode, String p_owner, String p_name,
 			String p_desc) {
 		// Skip all constructor invocation
@@ -396,26 +503,21 @@ public class MyMethodVisitor extends MethodVisitor {
 		}
 
 		String e = ConfigProperties
-				.getProperty(ConfigProperties.PROPERTIES.ENFORCEMENT.toString());
+				.getProperty(ConfigProperties.PROPERTIES.ENFORCEMENT);
 		boolean enforcement = new Boolean(e);
 
 		Label label = this.getCurrentLabel();
-		String invokerFQN = this.className.replace("/", ".") + "."
-				+ this.methodName + this.description;
+		String invokerFQN = this.fqName + this.description;
+		
 		// Check if method invocation belongs to the set of sinks or sources
-		List<SinkSource> sors = StaticAnalysis.getType(invokerFQN,
-				label.getOffset());		
-		
-		//System.out.println("METHODVISITOR: "+invokerFQN+", "+label.getOffset()+", "+sors.size()+", "+p_owner+"."+p_name);
-		
+		List<SinkSource> sors = StaticAnalysis.getType(invokerFQN, label.getOffset());		
 		if (sors.size() == 0) {
 			if (this.checkChopNode(label)) {
-				// Label lab = this.insertChecks(mv,
-				// Disassembler.class.getName(), null, null);
-				mv.visitLdcInsn(invokerFQN);
+				String ldcInsn = this.fqName+this.description+"|"+label.getOffset()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_owner + "." + p_name + ":" + p_desc+"|-- visitMethodInsn";
+				mv.visitLdcInsn(ldcInsn);
+//				mv.visitLdcInsn(invokerFQN);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-						UcTransformer.HOOKMETHOD, "logMethodInvoked",
-						"(Ljava/lang/String;)V", false);
+						UcTransformer.HOOKMETHOD, "logChopNode", "(Ljava/lang/String;)V", false);
 			}
 
 			boolean isIntf = false;
@@ -425,37 +527,36 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, isIntf);
 			return;
 		}
+		
 		SinkSource sinkSource= null;
 		Iterator<SinkSource> it = sors.iterator();
 		while (it.hasNext()) {
 			sinkSource = it.next();
 		}
 
-		final String delim = UcTransformer.STRDELIM;
-		invokerFQN = this.getFullName() + delim + this.description + delim
+		final String delim = Utility.STRDELIM;
+		invokerFQN = this.fqName + delim + this.description + delim
 				+ p_owner.replace("/", ".") + "." + p_name + delim + p_desc
 				+ delim + label.getOffset() + delim + p_opcode + delim
 				+ sinkSource.getId() + delim + sinkSource.getContextAsString();
 
 		if (p_opcode != Opcodes.INVOKESTATIC) {
-			String d_desc = Utility.createHelperMethod(p_opcode, p_owner,	p_name, p_desc, cv, this.className, sors);
-			Boolean b = new Boolean(
+			String d_desc = Utility.createASMHelperMethod(p_opcode, p_owner, p_name, p_desc, cv, this.className, sors);
+			Boolean timer2 = new Boolean(
 					ConfigProperties
-							.getProperty(ConfigProperties.PROPERTIES.TIMER_T2
-									.toString()));
-			if (b) {
+							.getProperty(ConfigProperties.PROPERTIES.TIMER_T2));
+			if (timer2) {
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 						UcTransformer.HOOKMETHOD, "timerT2Start", "()V", false);
 			}
-			
+			invokerFQN = sinkSource.getId();
 			mv.visitLdcInsn(invokerFQN);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className.replace(".", "/"), p_name, d_desc, false);
 
-//			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,
-//					"methodInvoked", "(Ljava/lang/String;)Z", false);
+//			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD,"methodInvoked", "(Ljava/lang/String;)Z", false);
 //			mv.visitInsn(Opcodes.POP);
 //			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, false);
-			if (b) {
+			if (timer2) {
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 						UcTransformer.HOOKMETHOD, "timerT2Stop", "()V", false);
 			}
@@ -586,7 +687,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				// this.insertChecks(mv, Disassembler.class.getName(), null,
 				// endLab);
 				// if(this.isInstance == false){
-				// mv.visitLdcInsn(this.getFullName()+":"+p_owner+"/"+p_name+":"+p_desc+":"+p_opcode);
+				// mv.visitLdcInsn(this.fqName+":"+p_owner+"/"+p_name+":"+p_desc+":"+p_opcode);
 				// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 				// UcTransformer.HOOKMETHOD,
 				// "methodExited", "(Ljava/lang/String;)V", false);
@@ -594,7 +695,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				// mv.visitVarInsn(Opcodes.ALOAD, 0);
 				// // mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
 				// Object.class.getName().replace(".", "/"), "hashCode", "()I");
-				// mv.visitLdcInsn(this.getFullName()+":"+p_owner+"/"+p_name+":"+p_desc+":"+p_opcode);
+				// mv.visitLdcInsn(this.fqName+":"+p_owner+"/"+p_name+":"+p_desc+":"+p_opcode);
 				// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 				// UcTransformer.HOOKMETHOD,
 				// "methodExited", "(Ljava/lang/Object;Ljava/lang/String;)V",

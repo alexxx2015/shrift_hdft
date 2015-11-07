@@ -20,12 +20,17 @@ public final class ConfigProperties {
 		, ENFORCEMENT
 		, STATISTICS
 		, BLACKLIST
+		, WHITELIST
 		, INSTRUMENTATION
 		, TIMER_T1
 		, TIMER_T2
 		, TIMER_T3
 		, TIMER_T4
 		, TIMER_T5
+		, NETCOM
+		, UC_PROPERTIES
+		, PDP_ASYNCOM
+		, UC4WIN_AUTOSTART
 	}
 	
 	private static Properties CONFIGURATION = null;	
@@ -35,16 +40,18 @@ public final class ConfigProperties {
 		CONFIGURATION= null;
 	}
 	
-	public static String getProperty(String property){
+	public static String getProperty(PROPERTIES string){
 		if(CONFIGURATION == null){
 			if(configFile == null)
 				configFile = "/uc.config";
 			URL ucConfig = ConfigProperties.class.getResource(configFile);
+			////System.out.println(ucConfig);
 			File f = new File(configFile);
 			if(ucConfig != null){
 				f = new File(ucConfig.getFile());
 			}
 //			File f = new File("./uc.config");
+			////System.out.println(""+ f + f.exists());
 			if(f.exists()){
 				try {
 					FileInputStream fis = new FileInputStream(f);
@@ -59,7 +66,7 @@ public final class ConfigProperties {
 //						}
 //					}
 				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
+					// TODO Auto-generPROPERTIESated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -67,7 +74,9 @@ public final class ConfigProperties {
 				}
 			}
 		}
-		String _return = CONFIGURATION.getProperty(property);
+		////System.out.println(string);
+		////System.out.println(CONFIGURATION);
+		String _return = CONFIGURATION.getProperty(string.toString());
  		return _return;
 	}	
 }

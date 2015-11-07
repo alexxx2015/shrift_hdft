@@ -1,7 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>UsageControlSystem</groupId>
+	<parent>
+		<groupId>UsageControlSystem</groupId>
+		<artifactId>Core</artifactId>
+		<version>1.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 	<artifactId>uc-java-pep</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
@@ -13,6 +18,11 @@
 	</repositories>
 
 	<dependencies>
+		<dependency>
+			<groupId>it.uniroma1.dis.wsngroup.gexf4j</groupId>
+			<artifactId>gexf4j</artifactId>
+			<version>0.4.4-BETA</version>
+		</dependency>
 		<dependency>
 			<groupId>org.objectweb.asm</groupId>
 			<artifactId>java-pep-asm</artifactId>
@@ -27,7 +37,7 @@
 			<groupId>UsageControlSystem</groupId>
 			<artifactId>CommunicationBase</artifactId>
 			<version>1.0</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>UsageControlSystem</groupId>
 			<artifactId>Pdp</artifactId>
@@ -46,12 +56,38 @@
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>catalina</artifactId>
-			<version>6.0.29</version>
-		</dependency>		
+			<version>6.0.44</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>6.0.44</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-util</artifactId>
+			<version>8.0.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-api</artifactId>
+			<version>8.0.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-util-scan</artifactId>
+			<version>8.0.26</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3.1</version>
 		</dependency>
 	</dependencies>
 
@@ -61,8 +97,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -78,6 +114,13 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<archive>
+								<manifestFile>${basedir}/META-INF/MANIFEST.MF</manifestFile>
+							</archive>
+							<excludes>
+								<exclude>**/uc.properties</exclude>
+								<exclude>**/uc.config</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 				</executions>
@@ -87,11 +130,13 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
+					<outputDirectory>/media/sf_vm_exchange</outputDirectory>
 					<archive>
 						<manifestFile>${basedir}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 </project>

@@ -27,9 +27,14 @@ public class ReportReader {
 	private static String TAG_CONTEXT = "context";
 	private static String TAG_CREATION_SITES = "creation-sites";
 	private static String TAG_CREATION_SITE = "creation-site";
+	private static String TAG_CHOPNODE = "chopNode";
 	private static String TAG_FLOWS = "flows";
 	private static String ATTR_INDEX = "index";
 	private static String ATTR_ID = "id";
+	private static String ATTR_BYTECODEINDEX = "byteCodeIndex";
+	private static String ATTR_OWNERMETHOD = "ownerMethod";
+	private static String ATTR_LABEL = "label";
+	private static String ATTR_OPERATION = "operation";
 
 	private SAXHandler reader = null;
 
@@ -94,7 +99,7 @@ public class ReportReader {
 				this.currentCreationSite = new CreationSite();
 			}
 			// SOURCE / SINK
-			else if (TAG_SOURCE.equals(qname) || TAG_SINK.equals(qname)) {
+			else if (TAG_SOURCE.equals(qname) || TAG_SINK.equals(qname) || TAG_CHOPNODE.equals(qname)) {
 				if (!this.currentPart.equals(REPORT_PARTS.FLOWS)) {
 					if (TAG_SOURCE.equals(qname)) {
 						this.currentELem = new SinkSource(NODETYPE.SOURCE);
@@ -108,6 +113,12 @@ public class ReportReader {
 					} else if (TAG_SOURCE.equals(qname)) {
 						this.currentFlow
 								.addSource(attributes.getValue(ATTR_ID));
+					} else if (TAG_CHOPNODE.equals(qname)){
+						int bci = Integer.parseInt(attributes.getValue(ATTR_BYTECODEINDEX));
+						String om = attributes.getValue(ATTR_OWNERMETHOD);
+						String op = attributes.getValue(ATTR_OPERATION);
+						String lbl = attributes.getValue(ATTR_LABEL);
+						this.currentFlow.addChopNode(bci, om, lbl, op);
 					}
 				}
 			}

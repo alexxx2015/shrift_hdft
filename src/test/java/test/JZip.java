@@ -1,5 +1,7 @@
 package test;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +26,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class JZip implements TestIntf {
+public class JZip  implements TestIntf {
 	List<String> fileList;
 
 	private Properties CONFIGURATION = null;
@@ -35,18 +37,17 @@ public class JZip implements TestIntf {
 	private String[] args;
 	private String commandline = "";
 	
-	public static void test(long l, Object o, double d){
+	public JZip(){
 		
 	}
-
-	public JZip() {
-
-	}
-
 	public JZip(String[] args) {
 		this.args = args;
 		if (args != null && args.length > 0) {
-			this.commandline = args[0];
+			StringBuilder sb = new StringBuilder();
+			for (String s : args) {
+				sb.append(s);
+			}
+			this.commandline = sb.toString();
 		}
 	}
 
@@ -130,7 +131,7 @@ public class JZip implements TestIntf {
 				} else {
 					instruction = br.readLine();
 				}
-				
+
 				if (instruction == null)
 					break;
 
@@ -250,9 +251,10 @@ public class JZip implements TestIntf {
 		byte[] buffer = new byte[1024];
 
 		try {
-
+			
 			FileOutputStream fos = new FileOutputStream(zipFile);
-			ZipOutputStream zos = new ZipOutputStream(fos);
+			BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
+			ZipOutputStream zos = new ZipOutputStream(bos);
 
 			System.out.println("Output to Zip : " + zipFile);
 
@@ -264,9 +266,10 @@ public class JZip implements TestIntf {
 
 				FileInputStream in = new FileInputStream(sourceFolder
 						+ File.separator + file);
+				BufferedInputStream bin = new BufferedInputStream(in, buffer.length);
 
 				int len;
-				while ((len = in.read(buffer)) > 0) {
+				while ((len = bin.read(buffer)) > 0) {
 					zos.write(buffer, 0, len);
 				}
 
@@ -427,10 +430,9 @@ public class JZip implements TestIntf {
 			}
 		}
 	}
-
 	@Override
 	public void runtest() {
 		// TODO Auto-generated method stub
-		main(new String[] {});
+		main(new String[] {});		
 	}
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .setting
 !.settings
 !.project
@@ -9,3 +10,13 @@ derby.log
 log
 logs
 /target
+=======
+!.settings
+!.project
+!.gitignore
+.log
+logging
+/target/
+pipdb/
+derby.log
+>>>>>>> 7b9c464c07931e84059d29ef7c88d3a95c719b9c

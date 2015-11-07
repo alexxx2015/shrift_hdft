@@ -10,7 +10,6 @@ public class MyClassWriter extends ClassWriter {
 	
 	public MyClassWriter(ClassReader arg0, int arg1) {
 		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
 	}
 	
 	@Override		
@@ -24,11 +23,8 @@ public class MyClassWriter extends ClassWriter {
         
         
         try {
-//        	System.out.println("MCW GCSC: "+type1+", "+type2);
             c = Class.forName(type1.replace('/', '.'), false, classLoader);
-//        	System.out.println("MCW GCSC1: "+type1);
             d = Class.forName(type2.replace('/', '.'), false, classLoader);
-//        	System.out.println("MCW GCSC2: "+type2);
         } catch (Exception e) {
             throw new RuntimeException(e.toString());
         } 

@@ -2,6 +2,8 @@ package edu.tum.uc.jvm;
 import java.security.AccessControlException;
 import org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader;
 
+import edu.tum.uc.jvm.asm.MirrorStack;
+
 
 
 
@@ -30,7 +32,9 @@ public class TomcatClassLoader extends TomcatInstrumentableClassLoader{
 	}
 	
 	private void addUCTransformer(){		
-		super.addTransformer(new UcTransformer(true));
+		//super.addTransformer(new UcTransformer(true));
+		super.addTransformer(new MyUcTransformer(true));
+	    System.out.println("[TCCL]: Added MyUcTransformer");
 	}
 	
 //	@Override

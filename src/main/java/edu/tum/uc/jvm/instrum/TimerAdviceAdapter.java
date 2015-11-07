@@ -57,7 +57,7 @@ public class TimerAdviceAdapter extends AdviceAdapter {
     protected void onMethodEnter() {
 	if (shouldAddTimer()) {
 	    mv.visitLdcInsn(fqName);
-	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "startMethodTimer",
+	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startMethodTimer",
 		    "(Ljava/lang/String;)V", false);
 	}
     }
@@ -73,12 +73,12 @@ public class TimerAdviceAdapter extends AdviceAdapter {
     protected void onMethodExit(int opcode) {
 	if (shouldAddTimer()) {
 	    mv.visitLdcInsn(fqName);
-	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "stopMethodTimer",
+	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "stopMethodTimer",
 		    "(Ljava/lang/String;)V", false);
 	}
 
 	if (this.methodName.equals("main")) {
-	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "dumpStatistics", "()V", false);
+	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "dumpStatistics", "()V", false);
 	}
     }
 

@@ -52,7 +52,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
     protected void onMethodExit(int opcode) {
 	if (this.methodName.equals("main")) {
 	    mv.visitLdcInsn(fqName);
-	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "mainMethodReturned",
+	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "mainMethodReturned",
 		    "(Ljava/lang/String;)V", false);
 	}
     }

@@ -169,7 +169,8 @@ public class UcCommunicator {
     }
 
     private IResponse sendEvent(IEvent event, boolean forceAsync) {
-	synchronized (this.pdpClient) {
+    Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
+	synchronized (o) {
 	    // Synchronous mode
 	    if (!this.async && !forceAsync) {
 		if (this.netcom)

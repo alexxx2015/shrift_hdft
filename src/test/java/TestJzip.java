@@ -24,6 +24,7 @@ public class TestJzip extends AbstractTest {
 
 	@Before
 	public void init() throws Exception {
+		this.startPdpServer=true;
 		init("/uc-config/uc-myjzip.config");
 	}
 

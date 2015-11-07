@@ -30,7 +30,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 	private static ProtectionDomain myProtDom;
 
-	public static final String DELEGATECLASSNAME = InstrumDelegate.class
+	public static final String DELEGATECLASS = InstrumDelegate.class
 			.getName().replace(".", "/");
 
 	// true if running instrumentation in a webservice

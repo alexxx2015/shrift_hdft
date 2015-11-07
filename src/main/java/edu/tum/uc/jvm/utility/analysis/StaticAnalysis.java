@@ -31,6 +31,28 @@ public class StaticAnalysis {
 		} catch (Exception e) {
 		}
 	}
+	
+	public static SinkSource getSinkById(String p_sinkId){
+		SinkSource _return = null;
+		for(SinkSource s : reportreader.getSinks()){
+			if(p_sinkId.equals(s.getId())){
+				_return = s;
+				break;
+			}
+		}
+		return _return;
+	}
+	
+	public static SinkSource getSourceById(String p_sourceId){
+		SinkSource _return = null;
+		for(SinkSource s : reportreader.getSources()){
+			if(p_sourceId.equals(s.getId())){
+				_return = s;
+				break;
+			}
+		}
+		return _return;
+	}
 
 	public static List<SinkSource> getSinks() {
 		return reportreader.getSinks();
@@ -159,7 +181,12 @@ public class StaticAnalysis {
 	
 	//Checks if bytecodeOffset in method parentMethodFQN is a source
 	public static List<SinkSource> isSource(String parentMethodFQN, int bytecodeOffset){
-		return contains(parentMethodFQN, bytecodeOffset, getSources());
+		List<SinkSource> _return = new LinkedList<SinkSource>();
+		for(SinkSource s : contains(parentMethodFQN, bytecodeOffset, getSources())){
+			if(s.is_return())
+				_return.add(s);
+		}
+		return _return;
 	}
 	
 	//Checks if bytecodeOffset in method parentMethodFQN is a source

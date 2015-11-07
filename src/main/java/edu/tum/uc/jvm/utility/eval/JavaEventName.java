@@ -14,5 +14,6 @@ public class JavaEventName {
     public final static String RETURN_STATIC_METHOD = "ReturnStaticMethod";
     public final static String RETURN_MAIN_METHOD = "ReturnMainMethod";
     public final static String PREPARE_METHOD_RETURN = "PrepareMethodReturn";
+    public final static String SOURCE_INVOKED = "Source";
     
 }

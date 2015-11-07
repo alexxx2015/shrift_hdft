@@ -541,7 +541,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				+ sinkSource.getId() + delim + sinkSource.getContextAsString();
 
 		if (p_opcode != Opcodes.INVOKESTATIC) {
-			String d_desc = Utility.createHelperMethod(p_opcode, p_owner, p_name, p_desc, cv, this.className, sors);
+			String d_desc = Utility.createASMHelperMethod(p_opcode, p_owner, p_name, p_desc, cv, this.className, sors);
 			Boolean timer2 = new Boolean(
 					ConfigProperties
 							.getProperty(ConfigProperties.PROPERTIES.TIMER_T2));

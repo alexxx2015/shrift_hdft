@@ -464,6 +464,56 @@ public class InstrumDelegate {
 	// System.out.println();
     }
 
+
+    public static boolean sourceInvoked(Object p_returnobj, Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel){
+    	boolean _return = true;
+    	String fileName = Utility.extractFileDescriptor(p_ownerobj);
+    	String[] sinksourceIds = p_source.split("\\|");
+    	String calleeObjMemAddr = getAddress(p_ownerobj);
+    	String parentObjMemAddr =  getAddress(p_parentobj);
+    	String returnObjMemAddr = getAddress(p_returnobj);
+    	for(String s : sinksourceIds){
+    		SinkSource sinksource = StaticAnalysis.getSinkById(s);
+    		Map<String, String> eventParams = new HashMap<String,String>();
+    		eventParams.put("parentObjectAddress", parentObjMemAddr);
+    		eventParams.put("parentClass", p_parentClass);
+    		eventParams.put("parentMethod", p_parentmethodname);
+    		eventParams.put("calledObjectClass", p_ownerclass);
+    		eventParams.put("calledObjectAddress", calleeObjMemAddr);
+    		eventParams.put("calledMethod", p_ownermethod);
+    		eventParams.put("returnObjectAddress", returnObjMemAddr);
+    		eventParams.put("fileName", fileName);
+    		eventParams.put("chopLabel", p_chopLabel);
+//    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
+//    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
+    		createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
+    	}
+    	return _return;
+    }
+    public static boolean sinkInvoked(Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object[] p_ownermethodparams, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel){
+    	boolean _return = true;
+    	String fileName = "";//Utility.extractFileDescriptor(p_ownerobj);
+    	String[] sinkIds = p_source.split("\\|");
+    	String calleeObjMemAddr = "4711";//getAddress(p_ownerobj);
+    	String parentObjMemAddr =  getAddress(p_parentobj);
+    	for(String s : sinkIds){
+    		SinkSource sinksource = StaticAnalysis.getSinkById(s);
+    		Map<String, String> eventParams = new HashMap<String,String>();
+    		eventParams.put("parentObjectAddress", parentObjMemAddr);
+    		eventParams.put("parentClass", p_parentClass);
+    		eventParams.put("parentMethod", p_parentmethodname);
+    		eventParams.put("calledObjectClass", p_ownerclass);
+    		eventParams.put("calledObjectAddress", calleeObjMemAddr);
+    		eventParams.put("calledMethod", p_ownermethod);
+    		eventParams.put("fileName", fileName);
+    		eventParams.put("chopLabel", p_chopLabel);
+//    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
+//    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
+    		createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
+    	}
+    	return _return;
+    }
+
     /**
      * Extracts the addresses of all objects, puts the given parameters into a map and creates a
      * <i>ReturnInstanceMethod</i> event.

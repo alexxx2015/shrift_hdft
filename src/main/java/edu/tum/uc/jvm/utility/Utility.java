@@ -26,10 +26,11 @@ import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+
+import com.restfb.Parameter;
 
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.cm.factories.IMessageFactory;
@@ -750,6 +751,13 @@ public class Utility {
 		} catch (Exception e) {
 		}
 
+		return _return;
+	}
+	
+	public Parameter[] addSinkSourceParam(Parameter[] p_param, String p_sinksource, String p_sinksourceId){
+		Parameter[] _return = new Parameter[p_param.length+1];
+		System.arraycopy(p_param, 0, _return, 0, p_param.length);
+		_return[_return.length-1] = Parameter.with(p_sinksource, p_sinksourceId);
 		return _return;
 	}
 

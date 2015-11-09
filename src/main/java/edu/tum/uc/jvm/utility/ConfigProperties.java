@@ -31,6 +31,7 @@ public final class ConfigProperties {
 		, UC_PROPERTIES
 		, PDP_ASYNCOM
 		, UC4WIN_AUTOSTART
+		, IFT
 	}
 	
 	private static Properties CONFIGURATION = null;	

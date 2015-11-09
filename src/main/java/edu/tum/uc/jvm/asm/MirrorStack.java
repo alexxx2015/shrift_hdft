@@ -696,8 +696,8 @@ public class MirrorStack {
 
 		boolean _return;
 
-		String fileDescriptor = Utility.extractFileDescriptor(o);
-		event.getParameters().put("fileDescriptor", fileDescriptor);
+		Map<String,String> fileDescriptor = Utility.extractFileDescriptor(o);
+		event.getParameters().put("fileDescriptor", fileDescriptor.get("fd"));
 
 		Boolean timer3 = new Boolean(
 				ConfigProperties
@@ -812,15 +812,15 @@ public class MirrorStack {
 						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3));
 		if (timer3) {
 			long start = System.nanoTime();
-			String fileDescriptor = Utility.extractFileDescriptor(o);
-			p_methName += Utility.STRDELIM + fileDescriptor;
+			Map<String,String> fileDescriptor = Utility.extractFileDescriptor(o);
+			p_methName += Utility.STRDELIM + fileDescriptor.get("fd");
 			// System.out.println("MIRROR STACK " + p_methName);
 			methodExited(p_methName);
 			StatisticsWriter.logExecutionTimerT3(p_methName, System.nanoTime()
 					- start);
 		} else {
-			String fileDescriptor = Utility.extractFileDescriptor(o);
-			p_methName += Utility.STRDELIM + fileDescriptor;
+			Map<String,String> fileDescriptor = Utility.extractFileDescriptor(o);
+			p_methName += Utility.STRDELIM + fileDescriptor.get("fd");
 			// System.out.println("MIRROR STACK " + p_methName);
 			methodExited(p_methName);
 		}

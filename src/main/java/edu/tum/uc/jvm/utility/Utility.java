@@ -141,8 +141,9 @@ public class Utility {
 	 * @param obj
 	 * @return
 	 */
-	public static String extractFileDescriptor(Object obj) {
-		String fileDescriptor = "", handle = "";
+	public static Map<String,String> extractFileDescriptor(Object obj) {
+		Map<String,String> _return = new HashMap<String,String>();
+//		String fileDescriptor = "", handle = "";
 		String osSystem = System.getProperty("os.name");
 		try {
 			if ((obj instanceof Writer) || (obj instanceof Reader)) {
@@ -176,7 +177,8 @@ public class Utility {
 												if (fdOs instanceof Integer) {
 													// System.out.println("Mirror
 													// fdOs: "+fdOs);
-													fileDescriptor = String.valueOf(fdOs);
+													_return.put("fd", String.valueOf(fdOs));
+//													fileDescriptor = String.valueOf(fdOs);
 												}
 											}
 											if ("handle".equals(field.getName().toLowerCase())
@@ -184,13 +186,17 @@ public class Utility {
 												field.setAccessible(true);
 												Object handleOs = field.get(fd);
 												if (handleOs instanceof Long) {
-													handle = String.valueOf(handleOs);
+													_return.put("handle", String.valueOf(handleOs));
+//													handle = String.valueOf(handleOs);
 												}
 											}
 										}
 									}
 								}
 							}
+						}
+						else if (lock instanceof Reader){
+							_return = extractFileDescriptor(lock);
 						}
 					}
 				}
@@ -216,7 +222,8 @@ public class Utility {
 									if (fdOs instanceof Integer) {
 										// System.out.println("Mirror fdOs:
 										// "+fdOs);
-										fileDescriptor = String.valueOf(fdOs);
+										_return.put("fd", String.valueOf(fdOs));
+//										fileDescriptor = String.valueOf(fdOs);
 									}
 								}
 
@@ -225,7 +232,8 @@ public class Utility {
 									field.setAccessible(true);
 									Object handleOs = field.get(fd);
 									if (handleOs instanceof Long) {
-										handle = String.valueOf(handleOs);
+										_return.put("handle", String.valueOf(handleOs));
+//										handle = String.valueOf(handleOs);
 									}
 								}
 							}
@@ -238,10 +246,10 @@ public class Utility {
 				while (it.hasNext()) {
 					java.lang.reflect.Field field = it.next();
 					// Find attribute "lock" -> FileOutputStream
-					if ("out".equals(field.getName().toLowerCase())) {
+					if ("out".equals(field.getName().toLowerCase()) || "in".equals(field.getName().toLowerCase())) {
 						field.setAccessible(true);
 						Object out = field.get(obj);
-						if (out instanceof FileOutputStream) {
+						if ((out instanceof FileOutputStream) || (out instanceof FileInputStream)) {
 							java.util.List<java.lang.reflect.Field> attrs2 = getAllFields(out);
 							Iterator<java.lang.reflect.Field> it2 = attrs2.iterator();
 							while (it2.hasNext()) {
@@ -263,7 +271,8 @@ public class Utility {
 												if (fdOs instanceof Integer) {
 													// System.out.println("Mirror
 													// fdOs: "+fdOs);
-													fileDescriptor = String.valueOf(fdOs);
+													_return.put("fd", String.valueOf(fdOs));
+//													fileDescriptor = String.valueOf(fdOs);
 												}
 											}
 
@@ -272,13 +281,36 @@ public class Utility {
 												field.setAccessible(true);
 												Object handleOs = field.get(fd);
 												if (handleOs instanceof Long) {
-													handle = String.valueOf(handleOs);
+													_return.put("handle", String.valueOf(handleOs));
+//													handle = String.valueOf(handleOs);
 												}
 											}
 										}
 									}
 								}
+								else if ("path".equals(field.getName().toLowerCase())) {
+									field.setAccessible(true);
+									Object path = field.get(out);
+									if (path instanceof String) {
+										_return.put("path", String.valueOf(path));
+//										handle = String.valueOf(handleOs);
+									}
+								}
 							}
+						}
+					}
+				}
+			} else if (obj instanceof File){
+				List<java.lang.reflect.Field> attrs = getAllFields(obj);
+				Iterator<java.lang.reflect.Field> it = attrs.iterator();
+				while (it.hasNext()) {
+					java.lang.reflect.Field field = it.next();
+					// Find attribute "lock" -> FileOutputStream
+					if ("path".equals(field.getName().toLowerCase())) {
+						field.setAccessible(true);
+						Object path = field.get(obj);
+						if(path instanceof String){
+							_return.put("path", String.valueOf(path));
 						}
 					}
 				}
@@ -292,13 +324,13 @@ public class Utility {
 		}
 		// System.out.println("FileDescriptor: "+fileDescriptor);
 
-		if ("-1".equals(fileDescriptor) || "".equals(fileDescriptor)) {
-			if (!"-1".equals(handle) && !"".equals(handle)) {
-				fileDescriptor = handle;
+		if ("-1".equals(_return.get("fd")) || "".equals(_return.get("fd"))) {
+			if (!"-1".equals(_return.get("handle")) && !"".equals(_return.get("handle"))) {
+				_return.put("fd", _return.get("handle"));
 			}
 		}
 
-		return fileDescriptor;
+		return _return;
 	}
 
 	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
@@ -428,22 +460,54 @@ public class Utility {
 			// UcTransformer.HOOKMETHOD, "timerT4Stop",
 			// "(Ljava/lang/String;)V", false);
 			// }
-
-			// Send an event to the pdp
-			if (retT.getSort() != Type.VOID || isConstructor) {
-				mv.visitInsn(Opcodes.DUP);
-			} else {
+			
+			//Send event to pdp
+			if(p_sources.size() > 0){
+				for(SinkSource s : p_sources){
+					if(s.is_return()){
+						if (retT.getSort() != Type.VOID || isConstructor) {
+							mv.visitInsn(Opcodes.DUP);
+						} else {
+							mv.visitInsn(Opcodes.ACONST_NULL);
+						}
+					}
+					else{
+						int param = s.getParam();
+						if(param > 0 && retT.getSize() > 0){
+							i = paramStartIndex + param - 1;
+							Type t = argT[param-1];
+							if (t.getSort() == Type.OBJECT) {
+								mv.visitVarInsn(Opcodes.ALOAD, i);
+							} else if (t.getSort() == Type.ARRAY) {
+								mv.visitVarInsn(Opcodes.ALOAD, i);
+							} else if (t.getSort() == Type.DOUBLE) {
+								mv.visitVarInsn(Opcodes.DLOAD, i);
+							} else if (t.getSort() == Type.FLOAT) {
+								mv.visitVarInsn(Opcodes.FLOAD, i);
+							} else if (t.getSort() == Type.LONG) {
+								mv.visitVarInsn(Opcodes.LLOAD, i);
+							} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)) {
+								mv.visitVarInsn(Opcodes.ILOAD, i);
+							}
+							break;
+						} else{
+							mv.visitInsn(Opcodes.ACONST_NULL);
+						}
+					}
+				}
+			} else{
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			}
+
 			if(isConstructor || isStatic)
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			else
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject
-			mv.visitLdcInsn(p_ownerclass);
+			mv.visitLdcInsn(p_ownerclass.replace("/", "."));
 			mv.visitLdcInsn(p_ownermethod);
 			mv.visitVarInsn(Opcodes.ALOAD, parentObjIndex);// Load parentObj ref
 			// mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
-			mv.visitLdcInsn(p_parentclass); // Load parent class name
+			mv.visitLdcInsn(p_parentclass.replace("/", ".")); // Load parent class name
 			mv.visitVarInsn(Opcodes.ALOAD, parentMethodIndex); // Load parent method name
 			mv.visitVarInsn(Opcodes.ALOAD, sinksourceIndex); // Load sinksource-ids
 			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
@@ -468,7 +532,7 @@ public class Utility {
 			}
 
 			Type[] myArgT = Type.getArgumentTypes(wrapperMethodDesc.toString());
-			mv.visitMaxs(myArgT.length+5, myArgT.length+5);
+			mv.visitMaxs(myArgT.length+6, myArgT.length+5);
 			mv.visitEnd();
 //			cv.visitEnd();
 		} catch (Exception e) {
@@ -605,7 +669,7 @@ public class Utility {
 			else if(!isStatic){
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject 
 			}
-			mv.visitLdcInsn(p_ownerclass);
+			mv.visitLdcInsn(p_ownerclass.replace("/", "."));
 			mv.visitLdcInsn(p_ownermethod);
 			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);//Load method params
 			mv.visitVarInsn(Opcodes.ALOAD, parentObjIndex);// Load parentObj ref

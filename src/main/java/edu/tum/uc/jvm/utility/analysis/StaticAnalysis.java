@@ -183,15 +183,32 @@ public class StaticAnalysis {
 	public static List<SinkSource> isSource(String parentMethodFQN, int bytecodeOffset){
 		List<SinkSource> _return = new LinkedList<SinkSource>();
 		for(SinkSource s : contains(parentMethodFQN, bytecodeOffset, getSources())){
+			int param = s.getParam();
 			if(s.is_return())
+				_return.add(s);
+			else if(param > 0)
 				_return.add(s);
 		}
 		return _return;
+//		return contains(parentMethodFQN, bytecodeOffset, getSources());
 	}
 	
 	//Checks if bytecodeOffset in method parentMethodFQN is a source
 	public static List<SinkSource> isSink(String parentMethodFQN, int bytecodeOffset){
 		return contains(parentMethodFQN, bytecodeOffset, getSinks());
+	}
+	public static List<SinkSource> isSinkWinthFlow(String parentMethodFQN, int bytecodeOffset){
+		List<SinkSource> _return = new LinkedList<SinkSource>();
+		List<SinkSource> sinks = contains(parentMethodFQN, bytecodeOffset, getSinks());
+		List<Flow> flows = getFlows();
+		for(Flow f : flows){
+			if(f.getSource() != null && f.getSource().size() != 0)
+				for(SinkSource s : sinks){
+					if(f.getSink().equals(s.getId()))
+						_return.add(s);
+				}
+		}
+		return _return;
 	}
 	
 	private static List<SinkSource> contains(String parentMethodFQN, int bytecodeOffset, List<SinkSource> list){

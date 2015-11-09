@@ -3,6 +3,7 @@ package edu.tum.uc.jvm.instrum;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +11,7 @@ import java.util.Vector;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
@@ -17,11 +19,9 @@ import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.Flow;
-import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 import edu.tum.uc.jvm.utility.eval.JavaEventName;
-import edu.tum.uc.jvm.utility.eval.MethodTimer;
 import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
 
 /**
@@ -465,19 +465,28 @@ public class InstrumDelegate {
     }
 
 
-    public static boolean sourceInvoked(Object p_returnobj, Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel){
+    public static boolean sourceInvoked(Object p_sourceobj, Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel){
     	boolean _return = true;
-    	String fileName = Utility.extractFileDescriptor(p_ownerobj);
+    	Map<String,String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
     	String[] sourceIds = p_source.split("\\|");
     	String calleeObjMemAddr = getAddress(p_ownerobj);
     	String parentObjMemAddr =  getAddress(p_parentobj);
-    	String returnObjMemAddr = getAddress(p_returnobj);
+    	String returnObjMemAddr = getAddress(p_sourceobj);
     	String returnObjectClass = "";
-    	if(p_returnobj != null){
-    		returnObjectClass = p_returnobj.getClass().getCanonicalName();
+    	if(p_sourceobj != null){
+    		returnObjectClass = p_sourceobj.getClass().getCanonicalName();
     	}
     	for(String s : sourceIds){
-    		SinkSource sinksource = StaticAnalysis.getSinkById(s);
+    		SinkSource source = StaticAnalysis.getSourceById(s);
+    		int param = source.getParam();
+    		String sourceParam = "";
+    		if(source.is_return()) {
+    			sourceParam = "ret";
+    		} else if (param > 0){
+    			sourceParam = String.valueOf(param);
+    		}
+    		
+    		
     		Map<String, String> eventParams = new HashMap<String,String>();
     		eventParams.put("parentObjectAddress", parentObjMemAddr);
     		eventParams.put("parentClass", p_parentClass);
@@ -487,8 +496,10 @@ public class InstrumDelegate {
     		eventParams.put("calleeMethod", p_ownermethod);
     		eventParams.put("returnObjectAddress", returnObjMemAddr);
     		eventParams.put("returnObjectClass", returnObjectClass);
-    		eventParams.put("fileName", fileName);
+    		eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
     		eventParams.put("chopLabel", p_chopLabel);
+    		eventParams.put("sourceParam", sourceParam);
+    		eventParams.put("sourceId", source.getId());
 //    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
 //    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
     		createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
@@ -497,12 +508,27 @@ public class InstrumDelegate {
     }
     public static boolean sinkInvoked(Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object[] p_ownermethodparams, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel){
     	boolean _return = true;
-    	String fileName = "";//Utility.extractFileDescriptor(p_ownerobj);
+    	Map<String,String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
     	String[] sinkIds = p_source.split("\\|");
-    	String calleeObjMemAddr = "4711";//getAddress(p_ownerobj);
+    	String calleeObjMemAddr = getAddress(p_ownerobj);
     	String parentObjMemAddr =  getAddress(p_parentobj);
+    	List<String> dependsOnSources = new LinkedList<String>();
     	for(String s : sinkIds){
-    		SinkSource sinksource = StaticAnalysis.getSinkById(s);
+    		SinkSource sink = StaticAnalysis.getSinkById(s);
+    		int param = sink.getParam();
+    		String sinkParam = "";
+    		if(sink.is_return()) {
+    			sinkParam = "ret";
+    		} else {
+    			sinkParam = String.valueOf(param);
+    		}
+    		for(Flow f: StaticAnalysis.getFlows()){
+    			if(f.getSink().equals(sink.getId())){
+    				dependsOnSources = f.getSource();
+    				break;
+    			}
+    		}
+    		
     		Map<String, String> eventParams = new HashMap<String,String>();
     		eventParams.put("parentObjectAddress", parentObjMemAddr);
     		eventParams.put("parentClass", p_parentClass);
@@ -510,8 +536,11 @@ public class InstrumDelegate {
     		eventParams.put("calledObjectClass", p_ownerclass);
     		eventParams.put("calledObjectAddress", calleeObjMemAddr);
     		eventParams.put("calledMethod", p_ownermethod);
-    		eventParams.put("fileName", fileName);
+    		eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
     		eventParams.put("chopLabel", p_chopLabel);
+    		eventParams.put("sinkParam", sinkParam);
+    		eventParams.put("sinkId", sink.getId());
+    		eventParams.put("dependsOnSources", JSONArray.toJSONString(dependsOnSources));
 //    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
 //    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
     		createEvent(JavaEventName.SINK_INVOKED, eventParams);

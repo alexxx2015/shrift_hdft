@@ -590,7 +590,7 @@
     </sink>
   </sinks>
   <creation-sites/>
-  <flows>
+  <flows><!--
     <sink id="Sink0">
       <source id="Source0"/>
       <chop/>
@@ -646,7 +646,7 @@
         <chopNode byteCodeIndex="381" label="v112 = v107.mkdirs()" operation="call" ownerMethod="jzip.JZip.parseAndRun([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="169" label="this.parseAndRun(v37)" operation="call" ownerMethod="jzip.JZip.start()V"/>
       </chop>
-    </sink>
+    </sink>-->
     <sink id="Sink9">
       <source id="Source0"/>
       <chop>

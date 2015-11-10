@@ -34,6 +34,7 @@ import com.restfb.Parameter;
 
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
+import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import de.tum.in.i22.uc.cm.factories.IMessageFactory;
 import de.tum.in.i22.uc.cm.factories.MessageFactoryCreator;
 import edu.tum.uc.jvm.MyUcTransformer;
@@ -755,10 +756,10 @@ public class Utility {
 		return _return;
 	}
 	
-	public static Parameter[] addSinkSourceParam(Parameter[] p_param, String p_sinksource, String p_sinksourceId){
+	public static Parameter[] addSinkSourceParam(Parameter[] p_param, SourceSinkName.Type p_sinksource, String p_sinksourceId){
 		Parameter[] _return = new Parameter[p_param.length+1];
 		System.arraycopy(p_param, 0, _return, 0, p_param.length);
-		_return[_return.length-1] = Parameter.with(p_sinksource, p_sinksourceId);
+		_return[_return.length-1] = Parameter.with(p_sinksource.name(), p_sinksourceId);
 		return _return;
 	}
 

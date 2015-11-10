@@ -804,7 +804,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				.equals("com.restfb.facebookclient")
 				&& p_name.toLowerCase().equals("fetchobject")) {
 			mv.visitFieldInsn(Opcodes.GETSTATIC,
-					SourceSinkName.Type.class.getCanonicalName().replace(".", "/"),
+					SourceSinkName.class.getCanonicalName().replace(".", "/")+"$Type",
 					SourceSinkName.Type.SOURCE.name(),
 					"Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;");
 

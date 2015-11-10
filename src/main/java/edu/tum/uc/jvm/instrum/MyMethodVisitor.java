@@ -12,6 +12,7 @@ import org.objectweb.asm.Type;
 
 import com.restfb.Parameter;
 
+import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
@@ -799,6 +800,8 @@ public class MyMethodVisitor extends MethodVisitor {
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
 		if(p_owner.replace("/", ".").toLowerCase().equals("com.restfb.facebookclient") && p_name.toLowerCase().equals("fetchobject")){
+			mv.visitLdcInsn(SourceSinkName.Type.SOURCE);
+			mv.visitLdcInsn("Source1");
 			mv.visitMethodInsn(
 					Opcodes.INVOKESTATIC,
 					MyUcTransformer.DELEGATECLASS,

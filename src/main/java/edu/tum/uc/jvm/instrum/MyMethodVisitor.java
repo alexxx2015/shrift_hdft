@@ -800,12 +800,12 @@ public class MyMethodVisitor extends MethodVisitor {
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
 		if(p_owner.replace("/", ".").toLowerCase().equals("com.restfb.facebookclient") && p_name.toLowerCase().equals("fetchobject")){
-			mv.visitLdcInsn(SourceSinkName.Type.SOURCE);
+			mv.visitLdcInsn("Source");
 			mv.visitLdcInsn("Source1");
 			mv.visitMethodInsn(
 					Opcodes.INVOKESTATIC,
 					MyUcTransformer.DELEGATECLASS,
-					"restfb",
+					"addSinkSourceParam",
 					"([Lcom/restfb/Parameter;Ljava/lang/String;Ljava/lang/String;)[Lcom/restfb/Parameter;",
 					false);
 			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
@@ -820,8 +820,12 @@ public class MyMethodVisitor extends MethodVisitor {
 			
 			String[] wrapperDesc = Utility.createSourceWrapper(p_opcode,
 					p_owner, p_name, p_desc, cv, this.className, sources);
-
-			mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
+			
+			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+				mv.visitInsn(Opcodes.ACONST_NULL);
+			} else {
+				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
+			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(ldc);// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
@@ -847,8 +851,11 @@ public class MyMethodVisitor extends MethodVisitor {
 			for (SinkSource s : sinks) {
 				ldc += s.getId() + "|";
 			}
-
-			mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
+			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+				mv.visitInsn(Opcodes.ACONST_NULL);
+			} else {
+				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
+			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(ldc);// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());

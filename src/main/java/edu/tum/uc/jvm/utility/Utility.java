@@ -446,7 +446,7 @@ public class Utility {
 			// }
 
 			// Execute original method
-			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, false);
+			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, p_opcode == Opcodes.INVOKEINTERFACE);
 			
 //			int constructorIndex = -1;
 //			if(isConstructor){

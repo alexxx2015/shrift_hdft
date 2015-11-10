@@ -819,7 +819,7 @@ public class MyMethodVisitor extends MethodVisitor {
 					Opcodes.INVOKESTATIC,
 					MyUcTransformer.DELEGATECLASS,
 					"addSinkSourceParam",
-					"([Lcom/restfb/Parameter;de/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;Ljava/lang/String;)[Lcom/restfb/Parameter;",
+					"([Lcom/restfb/Parameter;Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;Ljava/lang/String;)[Lcom/restfb/Parameter;",
 					false);
 			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc,
 					p_opcode == Opcodes.INVOKEINTERFACE);

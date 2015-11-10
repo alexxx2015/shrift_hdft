@@ -799,12 +799,13 @@ public class MyMethodVisitor extends MethodVisitor {
 		List<SinkSource> sources = StaticAnalysis.isSource(fqName, ofs);
 		List<SinkSource> sinks = StaticAnalysis.isSinkWinthFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
+		String h = SourceSinkName.Type.class.getName().replace(".", "/");
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
 		if (p_owner.replace("/", ".").toLowerCase()
 				.equals("com.restfb.facebookclient")
 				&& p_name.toLowerCase().equals("fetchobject")) {
 			mv.visitFieldInsn(Opcodes.GETSTATIC,
-					SourceSinkName.class.toString(),
+					SourceSinkName.Type.class.toString().replace(".", "/"),
 					SourceSinkName.Type.SOURCE.name(),
 					"Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;");
 

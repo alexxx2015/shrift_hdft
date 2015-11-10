@@ -754,7 +754,7 @@ public class Utility {
 		return _return;
 	}
 	
-	public Parameter[] addSinkSourceParam(Parameter[] p_param, String p_sinksource, String p_sinksourceId){
+	public static Parameter[] addSinkSourceParam(Parameter[] p_param, String p_sinksource, String p_sinksourceId){
 		Parameter[] _return = new Parameter[p_param.length+1];
 		System.arraycopy(p_param, 0, _return, 0, p_param.length);
 		_return[_return.length-1] = Parameter.with(p_sinksource, p_sinksourceId);

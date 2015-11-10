@@ -10,6 +10,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import com.restfb.Parameter;
+
 import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
@@ -796,7 +798,16 @@ public class MyMethodVisitor extends MethodVisitor {
 		List<SinkSource> sinks = StaticAnalysis.isSinkWinthFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
-		if (sources != null && sources.size() > 0) {
+		if(p_owner.replace("/", ".").toLowerCase().equals("com.restfb.facebookclient") && p_name.toLowerCase().equals("fetchobject")){
+			mv.visitMethodInsn(
+					Opcodes.INVOKESTATIC,
+					MyUcTransformer.DELEGATECLASS,
+					"restfb",
+					"([Lcom/restfb/Parameter;Ljava/lang/String;Ljava/lang/String;)[Lcom/restfb/Parameter;",
+					false);
+			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
+		}
+		else if (sources != null && sources.size() > 0) {
 			chopNode = chopNode == null ? chopNode = new Flow().new Chop(-1,
 					"", "", "") : chopNode;
 			String ldc = "";

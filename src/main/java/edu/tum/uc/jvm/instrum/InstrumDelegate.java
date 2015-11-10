@@ -13,6 +13,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import com.restfb.Parameter;
+
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import edu.tum.uc.jvm.UcCommunicator;
@@ -546,7 +548,11 @@ public class InstrumDelegate {
     		createEvent(JavaEventName.SINK_INVOKED, eventParams);
     	}
     	return _return;
+    }	
+    public static Parameter[] addSinkSourceParam(Parameter[] p_param, String p_sinksource, String p_sinksourceId){
+    	return Utility.addSinkSourceParam(p_param, p_sinksource, p_sinksourceId);
     }
+
 
     /**
      * Extracts the addresses of all objects, puts the given parameters into a map and creates a

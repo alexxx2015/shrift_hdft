@@ -33,6 +33,7 @@ import org.objectweb.asm.Type;
 import com.restfb.Parameter;
 
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
+import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
 import de.tum.in.i22.uc.cm.factories.IMessageFactory;
 import de.tum.in.i22.uc.cm.factories.MessageFactoryCreator;
 import edu.tum.uc.jvm.MyUcTransformer;

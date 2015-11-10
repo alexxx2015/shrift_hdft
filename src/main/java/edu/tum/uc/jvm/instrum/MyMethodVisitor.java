@@ -63,7 +63,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	 */
 	private ClassWriter cv;
 	/**
-	 * Determines if Information Flow Tracking should be instrumented or not. 
+	 * Determines if Information Flow Tracking should be instrumented or not.
 	 * */
 	private boolean ift = true;
 
@@ -82,8 +82,9 @@ public class MyMethodVisitor extends MethodVisitor {
 		this.fqName = this.className.replace("/", ".") + "|" + this.methodName
 				+ this.descriptor;
 		this.chopNodes = p_chopNodes;
-		
-		this.ift = Boolean.parseBoolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.IFT));
+
+		this.ift = Boolean.parseBoolean(ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.IFT));
 	}
 
 	/**
@@ -101,7 +102,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	 *            The opcode of the instruction to be visited.
 	 */
 	public void visitInsn(int p_opcode) {
-		if(!this.ift){
+		if (!this.ift) {
 			mv.visitInsn(p_opcode);
 			return;
 		}
@@ -481,11 +482,11 @@ public class MyMethodVisitor extends MethodVisitor {
 	 *            The amount to increment the local variable by.
 	 */
 	public void visitIincInsn(int p_var, int p_inc) {
-		if(!this.ift){
+		if (!this.ift) {
 			mv.visitIincInsn(p_var, p_inc);
 			return;
 		}
-		
+
 		// opcode is IINC
 		// binary
 
@@ -549,7 +550,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	 *            An internal name of an object or array class.
 	 */
 	public void visitTypeInsn(int p_opcode, String p_type) {
-		if(!this.ift){
+		if (!this.ift) {
 			mv.visitTypeInsn(p_opcode, p_type);
 			return;
 		}
@@ -618,7 +619,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	 */
 	public void visitFieldInsn(int p_opcode, String p_owner, String p_name,
 			String p_desc) {
-		if(!this.ift){
+		if (!this.ift) {
 			mv.visitFieldInsn(p_opcode, p_owner, p_name, p_desc);
 			return;
 		}
@@ -799,28 +800,40 @@ public class MyMethodVisitor extends MethodVisitor {
 		List<SinkSource> sinks = StaticAnalysis.isSinkWinthFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
-		if(p_owner.replace("/", ".").toLowerCase().equals("com.restfb.facebookclient") && p_name.toLowerCase().equals("fetchobject")){
-			mv.visitLdcInsn("Source");
-			mv.visitLdcInsn("Source1");
+		if (p_owner.replace("/", ".").toLowerCase()
+				.equals("com.restfb.facebookclient")
+				&& p_name.toLowerCase().equals("fetchobject")) {
+			mv.visitFieldInsn(Opcodes.GETSTATIC,
+					SourceSinkName.class.toString(),
+					SourceSinkName.Type.SOURCE.name(),
+					"Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;");
+
+			String ldc = "";
+			if (sources != null && sources.size() > 0) {
+				for (SinkSource s : sources) {
+					ldc += s.getId() + "|";
+				}
+			}
+			mv.visitLdcInsn(ldc);
 			mv.visitMethodInsn(
 					Opcodes.INVOKESTATIC,
 					MyUcTransformer.DELEGATECLASS,
 					"addSinkSourceParam",
 					"([Lcom/restfb/Parameter;Ljava/lang/String;Ljava/lang/String;)[Lcom/restfb/Parameter;",
 					false);
-			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
-		}
-		else if (sources != null && sources.size() > 0) {
+			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc,
+					p_opcode == Opcodes.INVOKEINTERFACE);
+		} else if (sources != null && sources.size() > 0) {
 			chopNode = chopNode == null ? chopNode = new Flow().new Chop(-1,
 					"", "", "") : chopNode;
 			String ldc = "";
 			for (SinkSource s : sources) {
 				ldc += s.getId() + "|";
 			}
-			
+
 			String[] wrapperDesc = Utility.createSourceWrapper(p_opcode,
 					p_owner, p_name, p_desc, cv, this.className, sources);
-			
+
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			} else {
@@ -829,7 +842,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(ldc);// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
-			
+
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className,
 					wrapperDesc[0], wrapperDesc[1], false);// this.className.replace(".",
 															// "/")
@@ -1352,11 +1365,11 @@ public class MyMethodVisitor extends MethodVisitor {
 	}
 
 	public static void t() {
-		Object o = new Object();
-		v1(o);
+		SourceSinkName.Type t = SourceSinkName.Type.SOURCE, t1;
+		t1(t);
 	}
 
-	private static void v1(Object o) {
-
+	public static void t1(SourceSinkName.Type t) {
+		SourceSinkName.Type t1 = t;
 	}
 }

@@ -1,5 +1,6 @@
 package edu.tum.uc.jvm.utility.analysis;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.Properties;
 
 import org.objectweb.asm.Label;
 
+import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 
 public class StaticAnalysis {
@@ -18,6 +20,11 @@ public class StaticAnalysis {
 
 	public static enum NODETYPE {
 		NONE, SOURCE, SINK, BOTH, ERROR, CHOP_NODE;
+	}
+	
+	static {
+		String file = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT);
+		StaticAnalysis.importXML(new File(file).getAbsolutePath());
 	}
 
 	// public StaticAnalysis() {

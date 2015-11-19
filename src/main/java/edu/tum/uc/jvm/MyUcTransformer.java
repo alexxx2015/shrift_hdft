@@ -38,7 +38,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 	{
 		// Initialize pdp communication
-		UcCommunicator.getInstance().initPDP();
+//		UcCommunicator.getInstance().initPDP();
 
 		// Populate PIP
 		// Utility.populatePip(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
@@ -93,11 +93,12 @@ public class MyUcTransformer implements ClassFileTransformer {
 		//Only instrument whitelisted classes and they are not allowed to be in the blacklist
 		if(!Utility.isWhitelisted(className)){
 			if (Utility.isBlacklisted(className)) {
-				return null;
+				return classfileBuffer;
 			}
+			return classfileBuffer;
 		}
 		
-		//System.out.println("[MyUcTransformer]: Will instrument class: " + className);
+//		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
 		String statistic = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
@@ -132,6 +133,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 			try {
 				File f = new File(s + cr.getClassName().replace("/", "_")
 						+ ".class");
+//				System.out.println("DUMPED: "+f.getName());
 				if (!f.getParentFile().exists()) {
 				    f.getParentFile().mkdirs();
 				}

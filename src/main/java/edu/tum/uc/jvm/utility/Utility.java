@@ -468,9 +468,17 @@ public class Utility {
 			if(p_sources.size() > 0){
 				for(SinkSource s : p_sources){
 					if(s.is_return()){
-						if (retT.getSort() != Type.VOID || isConstructor) {
+						if (isConstructor) {
 							mv.visitInsn(Opcodes.DUP);
-						} else {
+						} else if (retT.getSort() != Type.VOID){
+							boolean retValueIsBig = retT.getSize() == 2;
+							if (retValueIsBig) {
+								mv.visitInsn(Opcodes.DUP2);
+							} else {
+								mv.visitInsn(Opcodes.DUP);
+							}
+							Utility.boxTopStackValue(mv, retT);
+						}else {
 							mv.visitInsn(Opcodes.ACONST_NULL);
 						}
 					}

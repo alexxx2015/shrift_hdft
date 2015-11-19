@@ -41,6 +41,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	 * The name of the class this method belongs to.
 	 */
 	private String className;
+	private String superName;
 	/**
 	 * The access flags of the method.
 	 */
@@ -69,11 +70,12 @@ public class MyMethodVisitor extends MethodVisitor {
 
 	protected MyMethodVisitor(int p_api, MethodVisitor p_mv, int p_access,
 			String p_name, String p_desc, String p_signature,
-			String p_className, List<Chop> p_chopNodes, ClassWriter cv) {
+			String p_className, List<Chop> p_chopNodes, ClassWriter cv, String p_superName) {
 		super(p_api, p_mv);
 
 		this.methodName = p_name;
 		this.className = p_className;
+		this.superName = p_superName;
 		this.accessFlags = p_access;
 
 		this.descriptor = p_desc;
@@ -784,6 +786,17 @@ public class MyMethodVisitor extends MethodVisitor {
 	 */
 	public void visitMethodInsn(int p_opcode, String p_owner, String p_name,
 			String p_desc) {
+		boolean isSuperConstructor = false;
+		if(this.superName != null && !"".equals(this.superName) && p_owner.equals(this.superName)){
+			isSuperConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_name.equals("<init>");
+		}
+		//Do not instrument super-constructor invocations
+		if(isSuperConstructor){
+			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc,
+					p_opcode == Opcodes.INVOKEINTERFACE);
+			return;
+		}
+		
 		boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL
 				&& p_name.equals("<init>");
 
@@ -1206,7 +1219,9 @@ public class MyMethodVisitor extends MethodVisitor {
 			// Load parent object (or null if parent method is static)
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
-			} else {
+			} else if (isConstructor){
+				mv.visitInsn(Opcodes.ACONST_NULL);
+			}else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 			}
 			mv.visitLdcInsn(this.getCurrentLabel().getOffset());
@@ -1225,6 +1240,10 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitInsn(Opcodes.SWAP);
 				mv.visitInsn(Opcodes.POP);
 			}
+//			else if(isConstructor && isSuperConstructor){
+//				mv.visitVarInsn(Opcodes.ASTORE, 0);
+//				mv.visitInsn(Opcodes.POP);
+//			}
 		} else {
 			// do nothing
 			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc,

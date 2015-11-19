@@ -96,6 +96,8 @@ public class UcCommunicator {
     }
 
     protected void initPDP() {
+    	if(this.pdpClient != null || this.pdpController != null)
+    		return;
 	boolean netcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));
 	if (netcom) {
 	    try {
@@ -169,6 +171,7 @@ public class UcCommunicator {
     }
 
     private IResponse sendEvent(IEvent event, boolean forceAsync) {
+	UcCommunicator.getInstance().initPDP();
     Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
 	synchronized (o) {
 	    // Synchronous mode

@@ -20,6 +20,7 @@ import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
  *
  */
 public class MyClassAdapter extends ClassVisitor {
+	private String superName;
     /**
      * The name of the class.
      */
@@ -75,7 +76,7 @@ public class MyClassAdapter extends ClassVisitor {
 			this.className);
 		// actual instrumentation for tracking events
 		mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
-			chopNodes, this.classWriter);
+			chopNodes, this.classWriter, this.superName);
 	    } else {
 		// only timers for methods, no other additional bytecode
 		TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,
@@ -84,5 +85,10 @@ public class MyClassAdapter extends ClassVisitor {
 	    }
 	}
 	return mv;
+    }
+    
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces){
+    	this.superName = superName;
+    	cv.visit(version, access, name, signature, superName, interfaces);
     }
 }

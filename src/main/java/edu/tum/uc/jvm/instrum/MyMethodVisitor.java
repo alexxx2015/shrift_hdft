@@ -32,6 +32,7 @@ public class MyMethodVisitor extends MethodVisitor {
      * The name of the class this method belongs to.
      */
     private String className;
+    private String superName;
     /**
      * The access flags of the method.
      */
@@ -54,11 +55,12 @@ public class MyMethodVisitor extends MethodVisitor {
     private ClassWriter cv;
 
     protected MyMethodVisitor(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc,
-	    String p_signature, String p_className, List<Chop> p_chopNodes, ClassWriter cv) {
+	    String p_signature, String p_className, List<Chop> p_chopNodes, ClassWriter cv, String p_superName) {
 	super(p_api, p_mv);
 
 	this.methodName = p_name;
 	this.className = p_className;
+	this.superName = p_superName;
 	this.accessFlags = p_access;
 
 	this.descriptor = p_desc;
@@ -660,6 +662,15 @@ public class MyMethodVisitor extends MethodVisitor {
      *            The method descriptor.
      */
     public void visitMethodInsn(int p_opcode, String p_owner, String p_name, String p_desc) {
+    	boolean isSuperConstructor = false;
+    	if(this.superName != null && !"".equals(this.superName) && p_owner.equals(this.superName)){
+    		isSuperConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_name.equals("<init>");
+    	}
+    	//Do not instrument super-constructor invocations
+    	if(isSuperConstructor){
+    		mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
+    		return;
+    	}
 
 	// get the chop node if there is one at the current bytecode offset
 	Chop chopNode = checkChopNode(this.getCurrentLabel());
@@ -672,7 +683,7 @@ public class MyMethodVisitor extends MethodVisitor {
 	boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod || isPrivateInstanceMethod || isInterfaceMethod;
 
 	// check for the chopnode to be present here and that it has the correct operation
-	if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL)) {
+	if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL) && chopNode.getLabel().contains(p_name)) {
 
 	    StringBuilder desc = new StringBuilder();
 	    // Generate new method signature

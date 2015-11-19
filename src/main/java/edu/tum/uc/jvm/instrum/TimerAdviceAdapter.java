@@ -88,8 +88,9 @@ public class TimerAdviceAdapter extends AdviceAdapter {
      * @return A boolean value indicating that a timer should be added.
      */
     private boolean shouldAddTimer() {
-	return (this.superClassName.contains("Servlet") && (this.methodName.equals("doPost") || this.methodName
+	return (this.superClassName.contains("Servlet") && Type.getArgumentTypes(this.descriptor).length == 2 && (this.methodName.equals("doPost") || this.methodName
 		.equals("doGet")))
-		|| (this.className.contains("JZip") && this.methodName.equals("start"));
+		|| (this.className.contains("JZip") && this.methodName.equals("start"))
+		|| (this.className.contains("Action") && this.methodName.equals("execute"));
     }
 }

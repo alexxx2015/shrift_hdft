@@ -36,347 +36,352 @@ import edu.tum.uc.jvm.utility.analysis.CreationSite;
 
 public class UcCommunicator {
 
-    private static UcCommunicator UC_COM;
-    private static UcCommunicator UC_COM2;
+	private static UcCommunicator UC_COM;
+	private static UcCommunicator UC_COM2;
 
-    private final String PDP_HOST;
-    private final String PDP_PORT;
+	private final String PDP_HOST;
+	private final String PDP_PORT;
 
-    private final String PIP_HOST;
-    private final String PIP_PORT;
+	private final String PIP_HOST;
+	private final String PIP_PORT;
 
-    private final String MYPEP_HOST;
-    private final String MYPEP_PORT;
+	private final String MYPEP_HOST;
+	private final String MYPEP_PORT;
 
-    // PDP client communicating via thrift
-    private Any2PdpClient pdpClient;
+	// PDP client communicating via thrift
+	private Any2PdpClient pdpClient;
 
-    private Any2PipClient pipClient;
+	private Any2PipClient pipClient;
 
-    // PDP client for local function calls
-    private Controller pdpController;
+	// PDP client for local function calls
+	private Controller pdpController;
 
-    private boolean async;
-    private boolean netcom;
+	private boolean async;
+	private boolean netcom;
 
-    private UcCommunicator() {
-	this.PDP_HOST = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PDP_HOST);
-	this.PDP_PORT = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PDP_PORT);
-	this.PIP_HOST = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PIP_HOST);
-	this.PIP_PORT = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PIP_PORT);
-	this.MYPEP_HOST = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.MYPEP_HOST);
-	this.MYPEP_PORT = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.MYPEP_PORT);
+	private UcCommunicator() {
+		this.PDP_HOST = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PDP_HOST);
+		this.PDP_PORT = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PDP_PORT);
+		this.PIP_HOST = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PIP_HOST);
+		this.PIP_PORT = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PIP_PORT);
+		this.MYPEP_HOST = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.MYPEP_HOST);
+		this.MYPEP_PORT = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.MYPEP_PORT);
 
-	this.async = false;
-	boolean pdpAsync = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PDP_ASYNCOM));
-	if (pdpAsync == true)
-	    this.async = true;
+		this.async = false;
+		boolean pdpAsync = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.PDP_ASYNCOM));
+		if (pdpAsync == true)
+			this.async = true;
 
-	this.netcom = false;
-	boolean configNetcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));
-	if (configNetcom == true) {
-	    this.netcom = true;
-	}
-    }
-
-    public static UcCommunicator getInstance() {
-	if (UcCommunicator.UC_COM == null) {
-	    UcCommunicator.UC_COM = new UcCommunicator();
-	    // UcCommunicator.UC_COM.initPDP();
-	}
-	return UcCommunicator.UC_COM;
-    }
-
-    public static UcCommunicator get2ndInstance() {
-	if (UcCommunicator.UC_COM2 == null) {
-	    UcCommunicator.UC_COM2 = new UcCommunicator();
-	    // UcCommunicator.UC_COM.initPDP();
-	}
-	return UcCommunicator.UC_COM2;
-    }
-
-    protected void initPDP() {
-	boolean netcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));
-	if (netcom) {
-	    try {
-		if (this.pdpClient == null) {
-		    ThriftClientFactory thriftClientFactory = new ThriftClientFactory();
-		    this.pdpClient = thriftClientFactory.createAny2PdpClient(new IPLocation(this.PDP_HOST, Integer
-			    .parseInt(this.PDP_PORT)));
-		    this.pdpClient.connect();
-		    this.pipClient = thriftClientFactory.createAny2PipClient(new IPLocation(this.PIP_HOST, Integer
-			    .parseInt(this.PIP_PORT)));
-		    this.pipClient.connect();
-		    regPxp();
+		this.netcom = false;
+		boolean configNetcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));
+		if (configNetcom == true) {
+			this.netcom = true;
 		}
-	    } catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    }
-	} else {
-	    this.netcom = false;
-	    if (this.pdpController == null) {
-		String ucProperties = ConfigProperties.getProperty(PROPERTIES.UC_PROPERTIES);
-		String[] ucProp = new String[0];
-		if (!"".equals(ucProperties.trim())) {
-		    ucProp = new String[] { "-pp", ucProperties };
+	}
+
+	public static UcCommunicator getInstance() {
+		if (UcCommunicator.UC_COM == null) {
+			UcCommunicator.UC_COM = new UcCommunicator();
+			// UcCommunicator.UC_COM.initPDP();
 		}
-		this.pdpController = new Controller(ucProp);
-		this.pdpController.start();
-		if (this.pdpController.isStarted())
-		    System.out.println("PDP running");
-		else
-		    System.out.println("PDP not running");
-		while (!this.pdpController.isStarted()) {
-		    try {
-			System.out.println("Waiting for PDP");
-			Thread.sleep(50);
-		    } catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		    }
+		return UcCommunicator.UC_COM;
+	}
+
+	public static UcCommunicator get2ndInstance() {
+		if (UcCommunicator.UC_COM2 == null) {
+			UcCommunicator.UC_COM2 = new UcCommunicator();
+			// UcCommunicator.UC_COM.initPDP();
 		}
+		return UcCommunicator.UC_COM2;
+	}
+
+	protected void initPDP() {
+		if(this.pdpClient != null || this.pdpController != null)
+			return;
+		boolean netcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));
+		if (netcom) {
+			try {
+				if (this.pdpClient == null) {
+					ThriftClientFactory thriftClientFactory = new ThriftClientFactory();
+					this.pdpClient = thriftClientFactory
+							.createAny2PdpClient(new IPLocation(this.PDP_HOST, Integer.parseInt(this.PDP_PORT)));
+					this.pdpClient.connect();
+					this.pipClient = thriftClientFactory
+							.createAny2PipClient(new IPLocation(this.PIP_HOST, Integer.parseInt(this.PIP_PORT)));
+					this.pipClient.connect();
+					regPxp();
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			this.netcom = false;
+			if (this.pdpController == null) {
+				String ucProperties = ConfigProperties.getProperty(PROPERTIES.UC_PROPERTIES);
+				String[] ucProp = new String[0];
+				if (!"".equals(ucProperties.trim())) {
+					ucProp = new String[] { "-pp", ucProperties };
+				}
+				this.pdpController = new Controller(ucProp);
+				this.pdpController.start();
+				if (this.pdpController.isStarted())
+					System.out.println("PDP running");
+				else
+					System.out.println("PDP not running");
+				while (!this.pdpController.isStarted()) {
+					try {
+						System.out.println("Waiting for PDP");
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+				String uc4win_autostart = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.UC4WIN_AUTOSTART);
+				if (!"".equals(uc4win_autostart) && !"".equals(uc4win_autostart.trim())) {
+					uc4win_autostart = uc4win_autostart.trim();
+					String[] start = new String[] { "cmd.exe", "/c", "sc", "start", uc4win_autostart };
+					try {
+						Runtime.getRuntime().exec(start);
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	public boolean sendInitPdpEvent(IEvent event) {
+		// this.initPDP();
+		IResponse response = sendEvent(event);
+		if (response != null)
+			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+		return false;
+	}
+
+	private IResponse sendEvent(IEvent event) {
+		return sendEvent(event, false);
+	}
+
+	private IResponse sendEvent(IEvent event, boolean forceAsync) {
+		UcCommunicator.getInstance().initPDP();
+		Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
+		synchronized (o) {
+//			System.out.println("SEND EVENT "+event.toString());//AF added
+			// Synchronous mode
+			if (!this.async && !forceAsync) {
+				if (this.netcom)
+					return this.pdpClient.notifyEventSync(event);
+				else
+					return this.pdpController.notifyEventSync(event);
+			}
+			// Asynchronous mode
+			if (this.netcom)
+				this.pdpClient.notifyEventAsync(event);
+			else
+				this.pdpController.notifyEventAsync(event);
+			return new ResponseBasic(new StatusBasic(EStatus.ALLOW), null, null);
+		}
+	}
+
+	public boolean sendEvent2Pdp(IEvent event, String p_methName) {
+		event.getParameters().put("ThreadId", String.valueOf(Thread.currentThread().getId()));
+
+		IResponse response;
+		Boolean timer5 = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T5));
+		if (timer5) {
+			long start = System.nanoTime();
+			response = this.sendEvent(event);
+			StatisticsWriter.logExecutionTimerT5(p_methName, System.nanoTime() - start);
+
+			if (response != null) {
+				return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+			}
+		} else {
+			response = this.sendEvent(event);
+			if (response != null)
+				return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+		}
+		return false;
+	}
+
+	public boolean sendEvent2Pdp(IEvent event) {
+		return sendEvent2Pdp(event, false);
+	}
+
+	public boolean sendEvent2Pdp(IEvent event, boolean async) {
+		IResponse response;
+		response = this.sendEvent(event, async);
+		if (response != null)
+			return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+		return false;
+	}
+
+	public Map<String, Set<Map<String, String>>> filterPipDataModel(Map<String, String> params) {
+		return this.pipClient.filterModel(params);
+	}
+
+	public boolean sendEvent2Pdp(MethEvent event, String p_methName) {
+		// this.initPDP();
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("location", event.getMethodInvoker() + event.getMethodInvokerSig() + ":" + event.getOffset());
+		map.put("signature", event.getMethodInvokee() + event.getMethodInvokeeSig());
+		map.put("delimiter", event.getType().toString());
+		map.put("PEP", "Java");
+		map.put("ThreadId", String.valueOf(Thread.currentThread().getId()));
+		map.put("fileDescriptor", event.getFileDescriptor());
+		map.put("context", event.getContextIds());
+		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
+		String[] runningVmComp = runningVm.split("@");
+		if (runningVmComp.length > 0) {
+			map.put("PID", runningVmComp[0]);// Add process id
+		}
+
+		String sinkSource = "Sink";
+		if (event.getSinkSource().toLowerCase().startsWith("source")) {
+			sinkSource = "Source";
+		}
+		map.put("id", event.getSinkSource().toLowerCase());
+
+		// IEvent ievent = new
+		// EventBasic(event.getMethodInvokee(),map,event.isActual());
+		IEvent ievent = new EventBasic(sinkSource, map, event.isActual());
+		IResponse response;
+		Boolean netcom = new Boolean(ConfigProperties.getProperty(PROPERTIES.NETCOM));
+		Boolean timer5 = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T5));
+		if (timer5) {
+			long start = System.nanoTime();
+			if (netcom) {
+				response = this.pdpClient.notifyEventSync(ievent);
+				if (response != null) {
+					StatisticsWriter.logExecutionTimerT5(p_methName, System.nanoTime() - start);
+					return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+				}
+			} else {
+				this.pdpController.notifyEventAsync(ievent);
+				StatisticsWriter.logExecutionTimerT5(p_methName, System.nanoTime() - start);
+				return true;
+			}
+		} else {
+			if (netcom) {
+				response = this.pdpClient.notifyEventSync(ievent);
+
+				if (response != null)
+					return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+			} else {
+				this.pdpController.notifyEventAsync(ievent);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean sendContextEvent2PDP(Object obj, CreationSite cs) {
+		Map<String, String> param = new HashMap<String, String>();
+		param.put("objectId", String.valueOf(obj.hashCode()));
+		param.put("context", cs.getId());
+		param.put("contextLocation", cs.getLocation());
+		param.put("contextOffset", String.valueOf(cs.getOffset()));
+		param.put("PEP", "Java");
+		param.put("ThreadId", String.valueOf(Thread.currentThread().getId()));
+		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
+		String[] runningVmComp = runningVm.split("@");
+		if (runningVmComp.length > 0) {
+			param.put("PID", runningVmComp[0]);// Add process id
+		}
+
+		IMessageFactory _messageFactory = MessageFactoryCreator.createMessageFactory();
+
+		IEvent event = _messageFactory.createActualEvent("Context", param);
+		boolean netcom = new Boolean(ConfigProperties.getProperty(PROPERTIES.NETCOM));
+		IResponse response;
+		if (netcom == true) {
+			response = this.pdpClient.notifyEventSync(event);
+			if (response != null)
+				return response.getAuthorizationAction().isStatus(EStatus.ALLOW);
+		} else {
+			this.pdpController.notifyEventAsync(event);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean sendKillProcessEvent2Pdp() {
+		Map<String, String> param = new HashMap<String, String>();
+		param.put("PEP", "Windows");
+		String runningVm = ManagementFactory.getRuntimeMXBean().getName();
+		String[] runningVmComp = runningVm.split("@");
+		if (runningVmComp.length > 0) {
+			param.put("PID_Child", runningVmComp[0]);// Add process id
+		}
+		IMessageFactory _messageFactory = MessageFactoryCreator.createMessageFactory();
+		IEvent event = _messageFactory.createActualEvent("KillProcess", param);
+		IResponse response = sendEvent(event);
+		if (!netcom && this.pdpController != null)
+			this.pdpController.stop();
 
 		String uc4win_autostart = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.UC4WIN_AUTOSTART);
 		if (!"".equals(uc4win_autostart) && !"".equals(uc4win_autostart.trim())) {
-		    uc4win_autostart = uc4win_autostart.trim();
-		    String[] start = new String[] { "cmd.exe", "/c", "sc", "start", uc4win_autostart };
-		    try {
-			Runtime.getRuntime().exec(start);
-			Thread.sleep(2000);
-		    } catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		    } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		    }
+			uc4win_autostart = uc4win_autostart.trim();
+			String[] start = new String[] { "cmd.exe", "/c", "sc", "stop", uc4win_autostart };
+			try {
+				Runtime.getRuntime().exec(start);
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-	    }
-	}
-    }
 
-    public boolean sendInitPdpEvent(IEvent event) {
-	// this.initPDP();
-	IResponse response = sendEvent(event);
-	if (response != null)
-	    return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
-	return false;
-    }
-    
-    private IResponse sendEvent(IEvent event) {
-	return sendEvent(event, false);
-    }
+		System.exit(0);
 
-    private IResponse sendEvent(IEvent event, boolean forceAsync) {
-	synchronized (this.pdpClient) {
-	    // Synchronous mode
-	    if (!this.async && !forceAsync) {
-		if (this.netcom)
-		    return this.pdpClient.notifyEventSync(event);
-		else
-		    return this.pdpController.notifyEventSync(event);
-	    }
-	    // Asynchronous mode
-	    if (this.netcom)
-		this.pdpClient.notifyEventAsync(event);
-	    else
-		this.pdpController.notifyEventAsync(event);
-	    return new ResponseBasic(new StatusBasic(EStatus.ALLOW), null, null);
-	}
-    }
-
-    public boolean sendEvent2Pdp(IEvent event, String p_methName) {
-	event.getParameters().put("ThreadId", String.valueOf(Thread.currentThread().getId()));
-
-	IResponse response;
-	Boolean timer5 = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T5));
-	if (timer5) {
-	    long start = System.nanoTime();
-	    response = this.sendEvent(event);
-	    StatisticsWriter.logExecutionTimerT5(p_methName, System.nanoTime() - start);
-
-	    if (response != null) {
-		return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
-	    }
-	} else {
-	    response = this.sendEvent(event);
-	    if (response != null)
-		return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
-	}
-	return false;
-    }
-
-    public boolean sendEvent2Pdp(IEvent event) {
-	return sendEvent2Pdp(event, false);
-    }
-
-    public boolean sendEvent2Pdp(IEvent event, boolean async) {
-	IResponse response;
-	response = this.sendEvent(event, async);
-	if (response != null)
-	    return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
-	return false;
-    }
-
-    public Map<String, Set<Map<String, String>>> filterPipDataModel(Map<String, String> params) {
-	return this.pipClient.filterModel(params);
-    }
-
-    public boolean sendEvent2Pdp(MethEvent event, String p_methName) {
-	// this.initPDP();
-	Map<String, String> map = new HashMap<String, String>();
-	map.put("location", event.getMethodInvoker() + event.getMethodInvokerSig() + ":" + event.getOffset());
-	map.put("signature", event.getMethodInvokee() + event.getMethodInvokeeSig());
-	map.put("delimiter", event.getType().toString());
-	map.put("PEP", "Java");
-	map.put("ThreadId", String.valueOf(Thread.currentThread().getId()));
-	map.put("fileDescriptor", event.getFileDescriptor());
-	map.put("context", event.getContextIds());
-	String runningVm = ManagementFactory.getRuntimeMXBean().getName();
-	String[] runningVmComp = runningVm.split("@");
-	if (runningVmComp.length > 0) {
-	    map.put("PID", runningVmComp[0]);// Add process id
+		return false;
 	}
 
-	String sinkSource = "Sink";
-	if (event.getSinkSource().toLowerCase().startsWith("source")) {
-	    sinkSource = "Source";
-	}
-	map.put("id", event.getSinkSource().toLowerCase());
-
-	// IEvent ievent = new
-	// EventBasic(event.getMethodInvokee(),map,event.isActual());
-	IEvent ievent = new EventBasic(sinkSource, map, event.isActual());
-	IResponse response;
-	Boolean netcom = new Boolean(ConfigProperties.getProperty(PROPERTIES.NETCOM));
-	Boolean timer5 = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T5));
-	if (timer5) {
-	    long start = System.nanoTime();
-	    if (netcom) {
-		response = this.pdpClient.notifyEventSync(ievent);
-		if (response != null) {
-		    StatisticsWriter.logExecutionTimerT5(p_methName, System.nanoTime() - start);
-		    return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
+	public void regPxp() {
+		// initPDP();
+		PxpSpec pxpSpec = new PxpSpec(MYPEP_HOST, Integer.parseInt(MYPEP_PORT), "JAVAPXP", "This is a simple Java PXP");
+		boolean b;
+		if (netcom) {
+			b = this.pdpClient.registerPxp(pxpSpec);
+		} else {
+			b = this.pdpController.registerPxp(pxpSpec);
 		}
-	    } else {
-		this.pdpController.notifyEventAsync(ievent);
-		StatisticsWriter.logExecutionTimerT5(p_methName, System.nanoTime() - start);
-		return true;
-	    }
-	} else {
-	    if (netcom) {
-		response = this.pdpClient.notifyEventSync(ievent);
-
-		if (response != null)
-		    return (response.getAuthorizationAction().isStatus(EStatus.ALLOW));
-	    } else {
-		this.pdpController.notifyEventAsync(ievent);
-		return true;
-	    }
-	}
-	return false;
-    }
-
-    public boolean sendContextEvent2PDP(Object obj, CreationSite cs) {
-	Map<String, String> param = new HashMap<String, String>();
-	param.put("objectId", String.valueOf(obj.hashCode()));
-	param.put("context", cs.getId());
-	param.put("contextLocation", cs.getLocation());
-	param.put("contextOffset", String.valueOf(cs.getOffset()));
-	param.put("PEP", "Java");
-	param.put("ThreadId", String.valueOf(Thread.currentThread().getId()));
-	String runningVm = ManagementFactory.getRuntimeMXBean().getName();
-	String[] runningVmComp = runningVm.split("@");
-	if (runningVmComp.length > 0) {
-	    param.put("PID", runningVmComp[0]);// Add process id
+		if (b == true) {
+			this.startPxpServer(pxpSpec);
+		}
 	}
 
-	IMessageFactory _messageFactory = MessageFactoryCreator.createMessageFactory();
+	private void startPxpServer(final PxpSpec pxpSpec) {
+		IThriftServer pxpHandler = ThriftServerFactory.createPxpThriftServer(pxpSpec.getPort(), new MyJavaPxpHandler());
 
-	IEvent event = _messageFactory.createActualEvent("Context", param);
-	boolean netcom = new Boolean(ConfigProperties.getProperty(PROPERTIES.NETCOM));
-	IResponse response;
-	if (netcom == true) {
-	    response = this.pdpClient.notifyEventSync(event);
-	    if (response != null)
-		return response.getAuthorizationAction().isStatus(EStatus.ALLOW);
-	} else {
-	    this.pdpController.notifyEventAsync(event);
-	    return true;
+		// final JavaPxp.Processor pxpProcessor = new
+		// JavaPxp.Processor(pxpHandler);
+		// Runnable pxpRunner = new Runnable(){
+		// public void run(){
+		// try {
+		// TServerTransport serverTransport = new
+		// TServerSocket(pxpSpec.getPort());
+		// TServer server = new TSimpleServer(new
+		// Args(serverTransport).processor(pxpProcessor));
+		// System.out.println("Running UcCommunicator PXP server started");
+		// server.serve();
+		// } catch (TTransportException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
+		// };
+		new Thread(pxpHandler).start();
 	}
-	return false;
-    }
-
-    public boolean sendKillProcessEvent2Pdp() {
-	Map<String, String> param = new HashMap<String, String>();
-	param.put("PEP", "Windows");
-	String runningVm = ManagementFactory.getRuntimeMXBean().getName();
-	String[] runningVmComp = runningVm.split("@");
-	if (runningVmComp.length > 0) {
-	    param.put("PID_Child", runningVmComp[0]);// Add process id
-	}
-	IMessageFactory _messageFactory = MessageFactoryCreator.createMessageFactory();
-	IEvent event = _messageFactory.createActualEvent("KillProcess", param);
-	IResponse response = sendEvent(event);
-	if (!netcom && this.pdpController != null)
-	    this.pdpController.stop();
-
-	String uc4win_autostart = ConfigProperties.getProperty(ConfigProperties.PROPERTIES.UC4WIN_AUTOSTART);
-	if (!"".equals(uc4win_autostart) && !"".equals(uc4win_autostart.trim())) {
-	    uc4win_autostart = uc4win_autostart.trim();
-	    String[] start = new String[] { "cmd.exe", "/c", "sc", "stop", uc4win_autostart };
-	    try {
-		Runtime.getRuntime().exec(start);
-		Thread.sleep(1500);
-	    } catch (InterruptedException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    }
-	}
-
-	System.exit(0);
-
-	return false;
-    }
-
-    public void regPxp() {
-	// initPDP();
-	PxpSpec pxpSpec = new PxpSpec(MYPEP_HOST, Integer.parseInt(MYPEP_PORT), "JAVAPXP", "This is a simple Java PXP");
-	boolean b;
-	if (netcom) {
-	    b = this.pdpClient.registerPxp(pxpSpec);
-	} else {
-	    b = this.pdpController.registerPxp(pxpSpec);
-	}
-	if (b == true) {
-	    this.startPxpServer(pxpSpec);
-	}
-    }
-
-    private void startPxpServer(final PxpSpec pxpSpec) {
-	IThriftServer pxpHandler = ThriftServerFactory.createPxpThriftServer(pxpSpec.getPort(), new MyJavaPxpHandler());
-
-	// final JavaPxp.Processor pxpProcessor = new
-	// JavaPxp.Processor(pxpHandler);
-	// Runnable pxpRunner = new Runnable(){
-	// public void run(){
-	// try {
-	// TServerTransport serverTransport = new
-	// TServerSocket(pxpSpec.getPort());
-	// TServer server = new TSimpleServer(new
-	// Args(serverTransport).processor(pxpProcessor));
-	// System.out.println("Running UcCommunicator PXP server started");
-	// server.serve();
-	// } catch (TTransportException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
-	// };
-	new Thread(pxpHandler).start();
-    }
 }

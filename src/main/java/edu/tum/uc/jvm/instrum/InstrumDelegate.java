@@ -584,6 +584,9 @@ public class InstrumDelegate {
 
 	// System.out.println();
     }
+    public static void mainMethodInvoked() {
+    	UcCommunicator.getInstance().initPDP();
+    }
 
     /**
      * Extracts the addresses of all objects, puts the given parameters into a map and creates a

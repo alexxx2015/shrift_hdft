@@ -38,15 +38,15 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 	{
 		// Initialize pdp communication
-		UcCommunicator.getInstance().initPDP();
+//		UcCommunicator.getInstance().initPDP();
 
 		// Populate PIP
 		// Utility.populatePip(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 
 		// Create for all sinks and sources a corresponding object in the event
 		// repository
-		EventRepository.createEventObjects(ConfigProperties
-				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
+//		EventRepository.createEventObjects(ConfigProperties
+//				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 	}
 
 	public MyUcTransformer() {

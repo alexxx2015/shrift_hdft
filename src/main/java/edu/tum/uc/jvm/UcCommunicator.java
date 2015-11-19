@@ -95,7 +95,7 @@ public class UcCommunicator {
 		return UcCommunicator.UC_COM2;
 	}
 
-	protected void initPDP() {
+	public void initPDP() {
 		if(this.pdpClient != null || this.pdpController != null)
 			return;
 		boolean netcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));

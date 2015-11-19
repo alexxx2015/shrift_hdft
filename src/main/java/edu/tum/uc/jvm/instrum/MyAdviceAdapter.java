@@ -56,4 +56,11 @@ public class MyAdviceAdapter extends AdviceAdapter {
 		    "(Ljava/lang/String;)V", false);
 	}
     }
+    
+    protected void onMethodEnter(){
+    	if (this.methodName.equals("main")){// && !MyUcTransformer.instrument_webservice) {
+    	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "mainMethodInvoked",
+    		    "()V", false);
+    	}
+    }
 }

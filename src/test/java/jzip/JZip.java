@@ -55,11 +55,12 @@ public class JZip implements TestIntf{
 	}
 
 	public static void main(String[] args) {
-		JZip zipper = new JZip(args);
 		int iterations = 1;
 		if (args != null && args.length > 1) {
 			iterations = Integer.parseInt(args[1]);
+			args[1] = "";
 		}
+		JZip zipper = new JZip(args);
 		for (int i = 0; i < iterations; i++)
 			zipper.start();
 	}

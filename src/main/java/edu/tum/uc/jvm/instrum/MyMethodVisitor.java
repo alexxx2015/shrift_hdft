@@ -813,6 +813,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		List<SinkSource> sinks = StaticAnalysis.isSinkWinthFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
+			
 		if (p_owner.replace("/", ".").toLowerCase()
 				.equals("com.restfb.facebookclient")
 				&& p_name.toLowerCase().equals("fetchobject")) {

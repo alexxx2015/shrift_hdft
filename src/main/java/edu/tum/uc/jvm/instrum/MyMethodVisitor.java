@@ -1,16 +1,14 @@
 package edu.tum.uc.jvm.instrum;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.json.simple.JSONObject;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-
-import com.restfb.Parameter;
 
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.MyUcTransformer;
@@ -815,7 +813,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
 			
 		if (p_owner.replace("/", ".").toLowerCase()
-				.equals("com.restfb.facebookclient")
+				.equals("com.restfb.defaultfacebookclient")
 				&& p_name.toLowerCase().equals("fetchobject")) {
 			mv.visitFieldInsn(Opcodes.GETSTATIC,
 					SourceSinkName.class.getCanonicalName().replace(".", "/")+"$Type",
@@ -824,9 +822,11 @@ public class MyMethodVisitor extends MethodVisitor {
 
 			String ldc = "";
 			if (sources != null && sources.size() > 0) {
+				List<String> strings = new LinkedList<String>();
 				for (SinkSource s : sources) {
-					ldc += s.getId() + "|";
+					strings.add(s.getId());
 				}
+				ldc = String.join("|", strings);
 			}
 			mv.visitLdcInsn(ldc);
 			mv.visitMethodInsn(

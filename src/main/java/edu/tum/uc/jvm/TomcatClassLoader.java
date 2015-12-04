@@ -19,12 +19,12 @@ public class TomcatClassLoader extends TomcatInstrumentableClassLoader{
 	public TomcatClassLoader(ClassLoader parent){
 		super(parent);
 		this.addUCTransformer();
-		this.regPxp();
+//		this.regPxp();
 	}
 	
-	public void regPxp(){
-		UcCommunicator.getInstance().regPxp();
-	}
+//	public void regPxp(){
+//		UcCommunicator.getInstance().regPxp();
+//	}
 
 	private void initLoader(){
 		this.setDelegate(false);

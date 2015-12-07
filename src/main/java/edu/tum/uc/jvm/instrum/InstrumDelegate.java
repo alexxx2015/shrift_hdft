@@ -468,7 +468,7 @@ public class InstrumDelegate {
     }
 
 
-    public static boolean sourceInvoked(Object p_sourceobj, Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel){
+    public static boolean sourceInvoked(Object p_sourceobj, Object p_ownerobj, String p_ownerclass, String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source, String p_chopLabel, Object[] p_paramArgs){
     	boolean _return = true;
     	Map<String,String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
     	String[] sourceIds = p_source.split("\\|");
@@ -503,8 +503,8 @@ public class InstrumDelegate {
     		eventParams.put("chopLabel", p_chopLabel);
     		eventParams.put("sourceParam", sourceParam);
     		eventParams.put("sourceId", source.getId());
-//    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
-//    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
+    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_paramArgs))));
+    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_paramArgs))));
     		createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
     	}
     	return _return;
@@ -544,8 +544,8 @@ public class InstrumDelegate {
     		eventParams.put("sinkParam", sinkParam);
     		eventParams.put("sinkId", sink.getId());
     		eventParams.put("dependsOnSources", JSONArray.toJSONString(dependsOnSources));
-//    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
-//    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
+    		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_ownermethodparams))));
+    		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_ownermethodparams))));
     		createEvent(JavaEventName.SINK_INVOKED, eventParams);
     	}
     	return _return;

@@ -808,10 +808,10 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		int ofs = this.getCurrentLabel().getOffset();
 		List<SinkSource> sources = StaticAnalysis.isSource(fqName, ofs);
-		List<SinkSource> sinks = StaticAnalysis.isSinkWinthFlow(fqName, ofs);
+		List<SinkSource> sinks = StaticAnalysis.isSinkWithFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
-			
+
 		if (p_owner.replace("/", ".").toLowerCase()
 				.equals("com.restfb.defaultfacebookclient")
 				&& p_name.toLowerCase().equals("fetchobject")) {
@@ -838,11 +838,12 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc,
 					p_opcode == Opcodes.INVOKEINTERFACE);
 		} else if (sources != null && sources.size() > 0) {
-			chopNode = chopNode == null ? chopNode = new Flow().new Chop(-1,
-					"", "", "") : chopNode;
-			String ldc = "";
+			if (chopNode == null)
+				chopNode = new Flow().new Chop(-1, "", "", "");
+			
+			List<String> strings = new LinkedList<String>();
 			for (SinkSource s : sources) {
-				ldc += s.getId() + "|";
+				strings.add(s.getId());
 			}
 
 			String[] wrapperDesc = Utility.createSourceWrapper(p_opcode,
@@ -854,7 +855,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
-			mv.visitLdcInsn(ldc);// Load sinksourceIds
+			mv.visitLdcInsn(String.join("|", strings));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className,
@@ -874,17 +875,18 @@ public class MyMethodVisitor extends MethodVisitor {
 
 			String[] wrapperDesc = Utility.createSinkWrapper(p_opcode, p_owner,
 					p_name, p_desc, cv, this.className, sinks);
-			String ldc = "";
+			List<String> strings = new LinkedList<String>();
 			for (SinkSource s : sinks) {
-				ldc += s.getId() + "|";
+				strings.add(s.getId());
 			}
+			
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
-			mv.visitLdcInsn(ldc);// Load sinksourceIds
+			mv.visitLdcInsn(String.join("|", strings));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className,

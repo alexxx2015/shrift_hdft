@@ -204,7 +204,7 @@ public class StaticAnalysis {
 	public static List<SinkSource> isSink(String parentMethodFQN, int bytecodeOffset){
 		return contains(parentMethodFQN, bytecodeOffset, getSinks());
 	}
-	public static List<SinkSource> isSinkWinthFlow(String parentMethodFQN, int bytecodeOffset){
+	public static List<SinkSource> isSinkWithFlow(String parentMethodFQN, int bytecodeOffset){
 		List<SinkSource> _return = new LinkedList<SinkSource>();
 		List<SinkSource> sinks = contains(parentMethodFQN, bytecodeOffset, getSinks());
 		List<Flow> flows = getFlows();

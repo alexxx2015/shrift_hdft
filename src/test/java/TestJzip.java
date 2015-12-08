@@ -30,7 +30,7 @@ public class TestJzip extends AbstractTest {
 
 	@Test
 	public void testInstrumentation() {
-		try {			
+		try {
 			//Load and instrument JZip's bytecode
 			Class<?> clazz = jzip.JZip.class;
 			String className = clazz.getName().replace(".",

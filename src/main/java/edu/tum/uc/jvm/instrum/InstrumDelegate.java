@@ -489,7 +489,6 @@ public class InstrumDelegate {
     			sourceParam = String.valueOf(param);
     		}
     		
-    		
     		Map<String, String> eventParams = new HashMap<String,String>();
     		eventParams.put("parentObjectAddress", parentObjMemAddr);
     		eventParams.put("parentClass", p_parentClass);
@@ -505,6 +504,7 @@ public class InstrumDelegate {
     		eventParams.put("sourceId", source.getId());
     		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_paramArgs))));
     		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_paramArgs))));
+    		eventParams.put("methodArgValues", JSONArray.toJSONString(Arrays.asList(getValues(p_paramArgs))));
     		createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
     	}
     	return _return;
@@ -546,6 +546,7 @@ public class InstrumDelegate {
     		eventParams.put("dependsOnSources", JSONArray.toJSONString(dependsOnSources));
     		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_ownermethodparams))));
     		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_ownermethodparams))));
+    		eventParams.put("methodArgValues", JSONArray.toJSONString(Arrays.asList(getValues(p_ownermethodparams))));
     		createEvent(JavaEventName.SINK_INVOKED, eventParams);
     	}
     	return _return;
@@ -805,6 +806,24 @@ public class InstrumDelegate {
 	    objectClasses[i] = getClass(objects[i]);
 	}
 	return objectClasses;
+    }
+    
+    private static String[] getValues(Object[] objects){
+    	String[] _return = new String[objects.length];
+    	for(int i = 0; i < objects.length; i++){
+//    		String clazz = getClass(objects[i]);
+//    		if(clazz.toLowerCase().equals("java.lang.String")
+//    				|| clazz.toLowerCase().equals("java.lang.Double")
+//    				|| clazz.toLowerCase().equals("java.lang.Float")
+//    				|| clazz.toLowerCase().equals("java.lang.Long")
+//    				|| clazz.toLowerCase().equals("java.lang.Integer")
+//    				|| clazz.toLowerCase().equals("java.lang.Character")
+//    				|| clazz.toLowerCase().equals("java.lang.Byte")
+//    				|| clazz.toLowerCase().equals("java.lang.Boolean")
+//    				|| clazz.toLowerCase().equals("java.lang.Short"))
+    			_return[i] = String.valueOf(objects[i]);
+    	}
+    	return _return;
     }
 
     /**

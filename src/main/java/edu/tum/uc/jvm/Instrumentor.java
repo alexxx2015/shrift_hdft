@@ -31,7 +31,8 @@ public class Instrumentor {
 	//arg[2] = uc.config 
 	public static void main(String[] arg) throws IOException, IllegalClassFormatException {
 		// TODO Auto-generated method stub
-		arg = new String[]{"/home/osn/ws_securibench/JavaFTP/bin","/home/osn/instrumented","/home/osn/uc-reports/uc-jftp.config"};
+//		arg = new String[]{"/home/osn/ws_securibench/JavaFTP/bin","/home/osn/instrumented","/home/osn/uc-reports/uc-jftp.config"};
+		arg = new String[]{"/home/alex/instrumented/bin","/home/alex/instrumented","/home/alex/git_repos/uc4java/src/test/resources/uc-config/uc-implicitflows.config"};
 		if(arg.length != 3)
 			throw new IllegalArgumentException("Number of commandline parameters insufficient. arg[0]=SourceDir, arg[1]=DestDir, arg[2]=uc.config");
 		
@@ -71,7 +72,6 @@ public class Instrumentor {
 			//Dump instrumented Class
 			try {
 				File dumpFile = new File(destClassName);
-				System.out.println("DUMPED: "+dumpFile.getParentFile());
 				if (!dumpFile.getParentFile().exists()) {
 					dumpFile.getParentFile().mkdirs();
 				}

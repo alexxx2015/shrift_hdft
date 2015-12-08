@@ -39,8 +39,7 @@ public class JZip implements TestIntf{
 	private String[] args;
 	private String commandline = "";
 	
-	public JZip(){
-		
+	public JZip(){		
 	}
 
 	public JZip(String[] args) {
@@ -272,8 +271,8 @@ public class JZip implements TestIntf{
 				BufferedInputStream bin = new BufferedInputStream(in, 32768);
 
 				int len;
-				while ((len = bin.read(buffer)) > 0) {
-					zos.write(buffer, 0, len);
+				while ((len = bin.read(buffer)) > 0) {//Source9
+					zos.write(buffer, 0, len);//Sink49
 				}
 
 				in.close();

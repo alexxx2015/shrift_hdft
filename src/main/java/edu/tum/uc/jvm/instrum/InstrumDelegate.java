@@ -475,9 +475,9 @@ public class InstrumDelegate {
     	String calleeObjMemAddr = getAddress(p_ownerobj);
     	String parentObjMemAddr =  getAddress(p_parentobj);
     	String returnObjMemAddr = getAddress(p_sourceobj);
-    	String returnObjectClass = "";
+    	String sourceObjectClass = "";
     	if(p_sourceobj != null){
-    		returnObjectClass = p_sourceobj.getClass().getCanonicalName();
+    		sourceObjectClass = p_sourceobj.getClass().getCanonicalName();
     	}
     	for(String s : sourceIds){
     		SinkSource source = StaticAnalysis.getSourceById(s);
@@ -496,12 +496,12 @@ public class InstrumDelegate {
     		eventParams.put("calleeObjectClass", p_ownerclass);
     		eventParams.put("calleeObjectAddress", calleeObjMemAddr);
     		eventParams.put("calleeMethod", p_ownermethod);
-    		eventParams.put("returnObjectAddress", returnObjMemAddr);
-    		eventParams.put("returnObjectClass", returnObjectClass);
-    		eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
-    		eventParams.put("chopLabel", p_chopLabel);
+    		eventParams.put("sourceObjectAddress", returnObjMemAddr);
+    		eventParams.put("sourceObjectClass", sourceObjectClass);
     		eventParams.put("sourceParam", sourceParam);
     		eventParams.put("sourceId", source.getId());
+    		eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
+    		eventParams.put("chopLabel", p_chopLabel);
     		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_paramArgs))));
     		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_paramArgs))));
     		eventParams.put("methodArgValues", JSONArray.toJSONString(Arrays.asList(getValues(p_paramArgs))));

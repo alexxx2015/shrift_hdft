@@ -344,7 +344,6 @@ public class Utility {
 		StringBuilder wrapperMethodDesc = new StringBuilder();
 		try {
 			// ==> Preprocessing, create required method description, indizes,
-			// etc.
 			// Create method description of the to be invoked methods
 			wrapperMethodDesc.append("(");
 			int argIndex = -1;
@@ -564,7 +563,7 @@ public class Utility {
 				mv.visitInsn(Opcodes.AASTORE);
 				i++;
 				j++;
-			}			
+			}
 			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);//Load method params
 
 			

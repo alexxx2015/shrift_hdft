@@ -795,9 +795,11 @@ public class MyMethodVisitor extends MethodVisitor {
 			return;
 		}
 		
+		//Check if method invocation is a constructor invocation
 		boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL
 				&& p_name.equals("<init>");
-
+		
+		//Check method invocation access modifier
 		boolean isPublicInstanceMethod = p_opcode == Opcodes.INVOKEVIRTUAL;
 		boolean isPrivateInstanceMethod = p_opcode == Opcodes.INVOKESPECIAL
 				&& !p_name.equals("<init>");
@@ -806,29 +808,31 @@ public class MyMethodVisitor extends MethodVisitor {
 		boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod
 				|| isPrivateInstanceMethod || isInterfaceMethod;
 
+		//Get method invocation offset label
 		int ofs = this.getCurrentLabel().getOffset();
 		List<SinkSource> sources = StaticAnalysis.isSource(fqName, ofs);
 		List<SinkSource> sinks = StaticAnalysis.isSinkWithFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
 
+		//Restfb method invocation
 		if (p_owner.replace("/", ".").toLowerCase()
 				.equals("com.restfb.defaultfacebookclient")
-				&& p_name.toLowerCase().equals("fetchobject")) {
+				&& p_name.toLowerCase().equals("fetchobject")) {			
 			mv.visitFieldInsn(Opcodes.GETSTATIC,
 					SourceSinkName.class.getCanonicalName().replace(".", "/")+"$Type",
 					SourceSinkName.Type.SOURCE.name(),
 					"Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;");
 
-			String ldc = "";
+			String sourceIdsStr = "";
 			if (sources != null && sources.size() > 0) {
-				List<String> strings = new LinkedList<String>();
+				List<String> sourceIds = new LinkedList<String>();
 				for (SinkSource s : sources) {
-					strings.add(s.getId());
+					sourceIds.add(s.getId());
 				}
-				ldc = String.join("|", strings);
+				sourceIdsStr = String.join("|", sourceIds);
 			}
-			mv.visitLdcInsn(ldc);
+			mv.visitLdcInsn(sourceIdsStr);
 			mv.visitMethodInsn(
 					Opcodes.INVOKESTATIC,
 					MyUcTransformer.DELEGATECLASS,
@@ -841,13 +845,12 @@ public class MyMethodVisitor extends MethodVisitor {
 			if (chopNode == null)
 				chopNode = new Flow().new Chop(-1, "", "", "");
 			
-			List<String> strings = new LinkedList<String>();
+			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sources) {
-				strings.add(s.getId());
+				sourceIds.add(s.getId());
 			}
 
-			String[] wrapperDesc = Utility.createSourceWrapper(p_opcode,
-					p_owner, p_name, p_desc, cv, this.className, sources);
+			String[] wrapperDesc = Utility.createSourceWrapper(p_opcode,p_owner, p_name, p_desc, cv, this.className, sources);
 
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
@@ -855,7 +858,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
-			mv.visitLdcInsn(String.join("|", strings));// Load sinksourceIds
+			mv.visitLdcInsn(String.join("|", sourceIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className,
@@ -875,9 +878,9 @@ public class MyMethodVisitor extends MethodVisitor {
 
 			String[] wrapperDesc = Utility.createSinkWrapper(p_opcode, p_owner,
 					p_name, p_desc, cv, this.className, sinks);
-			List<String> strings = new LinkedList<String>();
+			List<String> sinkIds = new LinkedList<String>();
 			for (SinkSource s : sinks) {
-				strings.add(s.getId());
+				sinkIds.add(s.getId());
 			}
 			
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
@@ -886,7 +889,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
-			mv.visitLdcInsn(String.join("|", strings));// Load sinksourceIds
+			mv.visitLdcInsn(String.join("|", sinkIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className,

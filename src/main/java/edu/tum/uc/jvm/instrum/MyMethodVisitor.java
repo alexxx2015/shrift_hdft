@@ -815,33 +815,34 @@ public class MyMethodVisitor extends MethodVisitor {
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel());
 
-		//Restfb method invocation
-		if (p_owner.replace("/", ".").toLowerCase()
-				.equals("com.restfb.defaultfacebookclient")
-				&& p_name.toLowerCase().equals("fetchobject")) {			
-			mv.visitFieldInsn(Opcodes.GETSTATIC,
-					SourceSinkName.class.getCanonicalName().replace(".", "/")+"$Type",
-					SourceSinkName.Type.SOURCE.name(),
-					"Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;");
+		if (sources != null && sources.size() > 0) {
+			
+			//Restfb method invocation
+			if (p_owner.replace("/", ".").toLowerCase()
+					.equals("com.restfb.defaultfacebookclient")
+					&& p_name.toLowerCase().equals("fetchobject")) {			
+				mv.visitFieldInsn(Opcodes.GETSTATIC,
+						SourceSinkName.class.getCanonicalName().replace(".", "/")+"$Type",
+						SourceSinkName.Type.SOURCE.name(),
+						"Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;");
 
-			String sourceIdsStr = "";
-			if (sources != null && sources.size() > 0) {
-				List<String> sourceIds = new LinkedList<String>();
-				for (SinkSource s : sources) {
-					sourceIds.add(s.getId());
+				String sourceIdsStr = "";
+				if (sources != null && sources.size() > 0) {
+					List<String> sourceIds = new LinkedList<String>();
+					for (SinkSource s : sources) {
+						sourceIds.add(s.getId());
+					}
+					sourceIdsStr = String.join("|", sourceIds);
 				}
-				sourceIdsStr = String.join("|", sourceIds);
+				mv.visitLdcInsn(sourceIdsStr);
+				mv.visitMethodInsn(
+						Opcodes.INVOKESTATIC,
+						MyUcTransformer.DELEGATECLASS,
+						"addSinkSourceParam",
+						"([Lcom/restfb/Parameter;Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;Ljava/lang/String;)[Lcom/restfb/Parameter;",
+						false);
 			}
-			mv.visitLdcInsn(sourceIdsStr);
-			mv.visitMethodInsn(
-					Opcodes.INVOKESTATIC,
-					MyUcTransformer.DELEGATECLASS,
-					"addSinkSourceParam",
-					"([Lcom/restfb/Parameter;Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;Ljava/lang/String;)[Lcom/restfb/Parameter;",
-					false);
-			mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc,
-					p_opcode == Opcodes.INVOKEINTERFACE);
-		} else if (sources != null && sources.size() > 0) {
+			
 			if (chopNode == null)
 				chopNode = new Flow().new Chop(-1, "", "", "");
 			

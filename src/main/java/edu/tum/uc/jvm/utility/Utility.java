@@ -412,14 +412,57 @@ public class Utility {
 					wrapperMethodDesc.toString(), null, null);
 			mv.visitCode();
 
-			// Preprocessing, to execute the original method
+			//--> Load all parameters into an array
+			mv.visitLdcInsn(argT.length);
+			mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+			// Store it after all method params
+			int paramArrayIndex = ++argIndex;
+			mv.visitVarInsn(Opcodes.ASTORE, paramArrayIndex);
+			int i = paramStartIndex; // local variable index counter
+			int j = 0; // array entry counter
+			for (Type argType : argT) {
+				mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);
+				mv.visitLdcInsn(j);
+				if (argType.getSort() == Type.OBJECT) {
+					mv.visitVarInsn(Opcodes.ALOAD, i);
+				} else if (argType.getSort() == Type.ARRAY) {
+					mv.visitVarInsn(Opcodes.ALOAD, i);
+				} else {
+					if (argType.getSort() == Type.DOUBLE) {
+						mv.visitVarInsn(Opcodes.DLOAD, i);
+						i++;
+					} else if (argType.getSort() == Type.FLOAT) {
+						mv.visitVarInsn(Opcodes.FLOAD, i);
+					} else if (argType.getSort() == Type.LONG) {
+						mv.visitVarInsn(Opcodes.LLOAD, i);
+						i++;
+					} else if (argType.getSort() == Type.INT) {
+						mv.visitVarInsn(Opcodes.ILOAD, i);
+					} else if (argType.getSort() == Type.CHAR) {
+						mv.visitVarInsn(Opcodes.ILOAD, i);
+					} else if (argType.getSort() == Type.BYTE) {
+						mv.visitVarInsn(Opcodes.ILOAD, i);
+					} else if (argType.getSort() == Type.BOOLEAN) {
+						mv.visitVarInsn(Opcodes.ILOAD, i);
+					} else if (argType.getSort() == Type.SHORT) {
+						mv.visitVarInsn(Opcodes.ILOAD, i);
+					}
+					boxTopStackValue(mv, argType);
+				}
+				mv.visitInsn(Opcodes.AASTORE);
+				i++;
+				j++;
+			}
+			//<-- Load all parameters into an array
+
+			//--> Execute the original method
 			if(isConstructor){
 			    mv.visitTypeInsn(Opcodes.NEW, p_ownerclass);
 			    mv.visitInsn(Opcodes.DUP);
 			}else if (!isStatic){
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 			}
-			int i = paramStartIndex;
+			i = paramStartIndex;
 			for (Type t : argT) {
 				if (t.getSort() == Type.OBJECT) {
 					mv.visitVarInsn(Opcodes.ALOAD, i);
@@ -446,8 +489,8 @@ public class Utility {
 			// UcTransformer.HOOKMETHOD, "timerT4Start", "()V", false);
 			// }
 
-			// Execute original method
 			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, p_opcode == Opcodes.INVOKEINTERFACE);
+			//<-- Execute the original method
 			
 //			int constructorIndex = -1;
 //			if(isConstructor){
@@ -520,52 +563,8 @@ public class Utility {
 			mv.visitLdcInsn(p_parentclass.replace("/", ".")); // Load parent class name
 			mv.visitVarInsn(Opcodes.ALOAD, parentMethodIndex); // Load parent method name
 			mv.visitVarInsn(Opcodes.ALOAD, sinksourceIndex); // Load sinksource-ids
-			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
-
-			// Create array to fit all arguments
-			mv.visitLdcInsn(argT.length);
-			mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
-			// Store it after all method params
-			int paramArrayIndex = ++argIndex;
-			mv.visitVarInsn(Opcodes.ASTORE, paramArrayIndex);
-			i = paramStartIndex; // local variable index counter
-			int j = 0; // array entry counter
-			for (Type argType : argT) {
-				mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);
-				mv.visitLdcInsn(j);
-				if (argType.getSort() == Type.OBJECT) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (argType.getSort() == Type.ARRAY) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else {
-					if (argType.getSort() == Type.DOUBLE) {
-						mv.visitVarInsn(Opcodes.DLOAD, i);
-						i++;
-					} else if (argType.getSort() == Type.FLOAT) {
-						mv.visitVarInsn(Opcodes.FLOAD, i);
-					} else if (argType.getSort() == Type.LONG) {
-						mv.visitVarInsn(Opcodes.LLOAD, i);
-						i++;
-					} else if (argType.getSort() == Type.INT) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.CHAR) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.BYTE) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.BOOLEAN) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.SHORT) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					}
-					boxTopStackValue(mv, argType);
-				}
-
-				mv.visitInsn(Opcodes.AASTORE);
-				i++;
-				j++;
-			}
-			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);//Load method params
-
+			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex); // Load choplabel onto the stack
+			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);// Load method params array
 			
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "sourceInvoked",
 					"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Z",

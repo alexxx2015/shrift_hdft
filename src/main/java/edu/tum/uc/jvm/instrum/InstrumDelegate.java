@@ -474,7 +474,7 @@ public class InstrumDelegate {
     	String[] sourceIds = p_source.split("\\|");
     	String calleeObjMemAddr = getAddress(p_ownerobj);
     	String parentObjMemAddr =  getAddress(p_parentobj);
-    	String returnObjMemAddr = getAddress(p_sourceobj);
+    	String sourceObjMemAddr = getAddress(p_sourceobj);
     	String sourceObjectClass = "";
     	if(p_sourceobj != null){
     		sourceObjectClass = p_sourceobj.getClass().getCanonicalName();
@@ -496,7 +496,7 @@ public class InstrumDelegate {
     		eventParams.put("calleeObjectClass", p_ownerclass);
     		eventParams.put("calleeObjectAddress", calleeObjMemAddr);
     		eventParams.put("calleeMethod", p_ownermethod);
-    		eventParams.put("sourceObjectAddress", returnObjMemAddr);
+    		eventParams.put("sourceObjectAddress", sourceObjMemAddr);
     		eventParams.put("sourceObjectClass", sourceObjectClass);
     		eventParams.put("sourceParam", sourceParam);
     		eventParams.put("sourceId", source.getId());

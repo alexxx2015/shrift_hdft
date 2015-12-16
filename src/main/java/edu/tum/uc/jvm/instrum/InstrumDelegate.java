@@ -1,8 +1,13 @@
 package edu.tum.uc.jvm.instrum;
 
+import java.lang.reflect.Field;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +17,14 @@ import java.util.Vector;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import com.restfb.Parameter;
 
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
+import de.tum.in.i22.uc.cm.datatypes.basic.StatusBasic.EStatus;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
+import de.tum.in.i22.uc.cm.datatypes.interfaces.IResponse;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
@@ -480,6 +488,8 @@ public class InstrumDelegate {
     		sourceObjectClass = p_sourceobj.getClass().getCanonicalName();
     	}
     	for(String s : sourceIds){
+    		Object o = UnsafeUtil.objectFromAddress(Long.parseLong(calleeObjMemAddr));
+    		System.out.println("SOURCE "+s+", address "+calleeObjMemAddr+", "+o.getClass());
     		SinkSource source = StaticAnalysis.getSourceById(s);
     		int param = source.getParam();
     		String sourceParam = "";
@@ -500,12 +510,13 @@ public class InstrumDelegate {
     		eventParams.put("sourceObjectClass", sourceObjectClass);
     		eventParams.put("sourceParam", sourceParam);
     		eventParams.put("sourceId", source.getId());
+    		eventParams.put("javaMapIdentifier", source.getId());
     		eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
     		eventParams.put("chopLabel", p_chopLabel);
     		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_paramArgs))));
     		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_paramArgs))));
     		eventParams.put("methodArgValues", JSONArray.toJSONString(Arrays.asList(getValues(p_paramArgs))));
-    		createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
+    		createEvent(JavaEventName.SOURCE_INVOKED, eventParams,false);
     	}
     	return _return;
     }
@@ -723,14 +734,105 @@ public class InstrumDelegate {
      *            The event parameter dictionary.
      */
     private static void createEvent(String eventName, Map<String, String> specificParams) {
+    	createEvent(eventName,specificParams,true);
+    }
+    
+    private static void createEvent(String eventName, Map<String, String> specificParams, boolean isActual) {
 	Map<String, String> allParams = new HashMap<String, String>(specificParams);
 	allParams.put("PEP", "Java");
 	allParams.put("threadId", Utility.getThreadId());
 	allParams.put("processId", Utility.getPID());
-	IEvent event = new EventBasic(eventName, allParams, true);
+	IEvent event = new EventBasic(eventName, allParams, isActual);
 	StatisticsUtil.endEventCreation(eventName);
-	boolean success = ucCom.sendEvent2Pdp(event);
+//	boolean success = ucCom.sendEvent2Pdp(event);
+	IResponse response = ucCom.sendEvent(event, false);
+	boolean success = (response != null && (response.getAuthorizationAction().isStatus(EStatus.ALLOW) || response.getAuthorizationAction().isStatus(EStatus.MODIFY)) ) ? true:false;
 	StatisticsUtil.stopEventTimer(eventName);
+	if(!isActual && success){
+		createEvent(eventName,specificParams,true);
+
+		Map<String,String> modifiedParams = response.getModifiedEvent().getParameters();
+		Map<String,String> originalParams = event.getParameters();
+		try{
+		if(originalParams.containsKey("calleeObjectClass") && originalParams.containsKey("calleeMethod") && originalParams.containsKey("calleeObjectAddress") && originalParams.containsKey("methodArgValues")){
+			String calleeObjectClass = originalParams.get("calleeObjectClass");
+			String calleeMethod = originalParams.get("calleeMethod");
+			String calleeObjectAddress = originalParams.get("calleeObjectAddress");
+			String methodArgValuesStr = originalParams.get("methodArgValues");
+			if(calleeObjectClass.toLowerCase().equals("java.util.map") && calleeMethod.toLowerCase().equals("get")){
+				JSONArray methodArgValuesJSON = (JSONArray) new JSONParser().parse(methodArgValuesStr);
+				String[] methodArgValues = new String[methodArgValuesJSON.size()];
+				methodArgValuesJSON.toArray(methodArgValues);
+				String key = methodArgValues[0];				
+			    Object oldObject = UnsafeUtil.objectFromAddress(Long.parseLong(calleeObjectAddress));
+			    if(oldObject instanceof Map){
+			    	Map<?,?> map = (Map<?,?>)oldObject;
+			    	
+			    	Object o = map.get(key);
+			    	if(o != null && o instanceof ArrayList){
+			    		ArrayList<?> a = (ArrayList<?>)o;
+			    		Iterator<?> ita = a.iterator();
+			    		while(ita.hasNext()){						    	
+		    				Object o2 = ita.next();
+		    				Field[] fields = o2.getClass().getDeclaredFields();
+			    			for(String k : modifiedParams.keySet()){
+			    				for(Field f : fields){
+				    				if(k.toLowerCase().equals(f.getName().toLowerCase())){
+				    					boolean accessible = f.isAccessible();
+				    					f.setAccessible(true);
+				    					if(f.getType().equals(Date.class)){
+				    						SimpleDateFormat sdt = new SimpleDateFormat("YYYY/MM/DD");
+				    						java.util.Date datum = sdt.parse(modifiedParams.get(k));
+				    						Date d = new Date(datum.getTime());
+				    						f.set(o2, d);
+				    					}else{
+				    						f.set(o2, modifiedParams.get(k));
+				    					}
+				    					f.setAccessible(accessible);
+				    				}
+				    			}
+				    		}
+			    		}
+			    	}
+			    }
+			}
+		}
+		}catch(ParseException e){
+			e.printStackTrace();
+		}		
+		catch (IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (java.text.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	else if (!success){
+//		try{
+//		Map<String,String> param = event.getParameters();
+//		if(param.containsKey("calleeObjectClass") && param.containsKey("calleeMethod") && param.containsKey("calleeObjectAddress") && param.containsKey("methodArgValues")){
+//			String calleeObjectClass = param.get("calleeObjectClass");
+//			String calleeMethod = param.get("calleeMethod");
+//			String calleeObjectAddress = param.get("calleeObjectAddress");
+//			String methodArgValuesStr = param.get("methodArgValues");
+//			if(calleeObjectClass.toLowerCase().equals("java.util.map") && calleeMethod.toLowerCase().equals("get")){
+//				JSONArray methodArgValuesJSON = (JSONArray) new JSONParser().parse(methodArgValuesStr);
+//				String[] methodArgValues = new String[methodArgValuesJSON.size()];
+//				methodArgValuesJSON.toArray(methodArgValues);
+//				String key = methodArgValues[0];
+//				System.out.println("\nJAVAPEP: removing key "+key+", from object "+calleeObjectAddress+", "+calleeObjectClass);
+//				
+//			    Object oldObject = UnsafeUtil.objectFromAddress(Long.parseLong(calleeObjectAddress));
+//			    if(oldObject instanceof Map){
+//			    	Map<?, ?> o = (Map<?, ?>)oldObject;
+//			    	o.remove(key);
+//			    }
+//			}
+//		}
+//		}catch(ParseException e){}
+	}
+	
 	// System.out.println(success ? "Event sent successfully" : "Error sending event");
     }
 

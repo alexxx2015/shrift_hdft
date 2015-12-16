@@ -51,7 +51,7 @@ public class Utility {
 
 	private static List<String[]> BLACKLIST;
 	private static List<String[]> WHITELIST;
-
+	
 	public static List<Field> getAllFields(Object obj) {
 		ArrayList<Field> _return = new ArrayList<Field>();
 		Class clazz = obj.getClass();
@@ -728,7 +728,7 @@ public class Utility {
 			mv.visitLdcInsn(p_ownermethod);
 			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);//Load method params
 			mv.visitVarInsn(Opcodes.ALOAD, parentObjIndex);// Load parentObj ref
-			mv.visitLdcInsn(p_parentclass); // Load parent class name
+			mv.visitLdcInsn(p_parentclass.replace("/", ".")); // Load parent class name
 			mv.visitVarInsn(Opcodes.ALOAD, parentMethodIndex); // Load parent method name
 			mv.visitVarInsn(Opcodes.ALOAD, sinksourceIndex); // Load sinksource-ids
 			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);

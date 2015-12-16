@@ -2,9 +2,12 @@ package edu.tum.uc.jvm;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.i22.uc.Controller;
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
@@ -170,10 +173,11 @@ public class UcCommunicator {
 		return sendEvent(event, false);
 	}
 
-	private IResponse sendEvent(IEvent event, boolean forceAsync) {
+	public IResponse sendEvent(IEvent event, boolean forceAsync) {
 		UcCommunicator.getInstance().initPDP();
 		Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
 		synchronized (o) {
+			try{
 			// Synchronous mode
 			if (!this.async && !forceAsync) {
 				if (this.netcom)
@@ -186,6 +190,24 @@ public class UcCommunicator {
 				this.pdpClient.notifyEventAsync(event);
 			else
 				this.pdpController.notifyEventAsync(event);
+			} catch (RuntimeException ttex){
+				this.pdpClient = null;
+				this.pdpController = null;
+				this.initPDP();
+				
+				// Synchronous mode
+				if (!this.async && !forceAsync) {
+					if (this.netcom)
+						return this.pdpClient.notifyEventSync(event);
+					else
+						return this.pdpController.notifyEventSync(event);
+				}
+				// Asynchronous mode
+				if (this.netcom)
+					this.pdpClient.notifyEventAsync(event);
+				else
+					this.pdpController.notifyEventAsync(event);
+			}
 			return new ResponseBasic(new StatusBasic(EStatus.ALLOW), null, null);
 		}
 	}

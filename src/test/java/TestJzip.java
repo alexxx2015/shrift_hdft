@@ -24,6 +24,7 @@ public class TestJzip extends AbstractTest {
 
 	@Before
 	public void init() throws Exception {
+//		this.startPdpServer=true;
 		init("/uc-jzip.config");
 	}
 
@@ -64,7 +65,8 @@ public class TestJzip extends AbstractTest {
 					File f = new File(url.getFile());
 					// File f = new File("/home/alex/xlayerpip.zip");
 					instruction = "zip " + f.getParent()
-							+ "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
+					+ "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
+
 					// instruction = "zip /home/alex/toBeZipped.zip "// + f.getAbsolutePath();
 				}
 

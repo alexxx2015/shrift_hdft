@@ -45,8 +45,8 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 		// Create for all sinks and sources a corresponding object in the event
 		// repository
-//		EventRepository.createEventObjects(ConfigProperties
-//				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
+		EventRepository.createEventObjects(ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 	}
 
 	public MyUcTransformer() {

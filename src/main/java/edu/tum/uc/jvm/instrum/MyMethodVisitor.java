@@ -675,16 +675,15 @@ public class MyMethodVisitor extends MethodVisitor {
 	// get the chop node if there is one at the current bytecode offset
 	Chop chopNode = checkChopNode(this.getCurrentLabel());
 
+
 	boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_name.equals("<init>");
 	boolean isPublicInstanceMethod = p_opcode == Opcodes.INVOKEVIRTUAL;
 	boolean isPrivateInstanceMethod = p_opcode == Opcodes.INVOKESPECIAL && !p_name.equals("<init>");
 	boolean isInterfaceMethod = p_opcode == Opcodes.INVOKEINTERFACE;
 
 	boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod || isPrivateInstanceMethod || isInterfaceMethod;
-
 	// check for the chopnode to be present here and that it has the correct operation
 	if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL) && chopNode.getLabel().contains(p_name)) {
-
 	    StringBuilder desc = new StringBuilder();
 	    // Generate new method signature
 	    Type[] argT = Type.getArgumentTypes(p_desc);

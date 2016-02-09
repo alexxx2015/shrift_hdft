@@ -1,13 +1,13 @@
 package edu.tum.uc.jvm.utility.analysis;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
 import org.objectweb.asm.Label;
 
+import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 
 public class StaticAnalysis {
@@ -17,6 +17,11 @@ public class StaticAnalysis {
 	public static enum NODETYPE {
 		NONE, SOURCE, SINK, BOTH, ERROR, CHOP_NODE;
 	}
+
+//	static {
+//		StaticAnalysis.importXML(
+//				new File(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT)).getAbsolutePath());
+//	}
 
 	// public StaticAnalysis() {
 	// this.reportreader = new ReportReader();
@@ -58,8 +63,7 @@ public class StaticAnalysis {
 		Iterator<SinkSource> it = reportreader.getSinks().iterator();
 		while (it.hasNext()) {
 			SinkSource ss = it.next();
-			if (fullyQualifiedName.equals(ss.getLocation())
-					&& (offset == ss.getOffset())) {
+			if (fullyQualifiedName.equals(ss.getLocation()) && (offset == ss.getOffset())) {
 				_return.add(ss);
 			}
 		}
@@ -67,8 +71,7 @@ public class StaticAnalysis {
 		it = reportreader.getSources().iterator();
 		while (it.hasNext()) {
 			SinkSource ss = it.next();
-			if (fullyQualifiedName.equals(ss.getLocation())
-					&& (offset == ss.getOffset())) {
+			if (fullyQualifiedName.equals(ss.getLocation()) && (offset == ss.getOffset())) {
 				_return.add(ss);
 			}
 		}
@@ -126,29 +129,24 @@ public class StaticAnalysis {
 		return reportreader.getCreationSites();
 	}
 
-	public static List<CreationSite> getCreationSiteByLabel(String location,
-			Label lab) {
+	public static List<CreationSite> getCreationSiteByLabel(String location, Label lab) {
 		List<CreationSite> _return = new LinkedList<CreationSite>();
 		List<CreationSite> allCreationSites = getCreationSite();
 		for (int i = 0; i < allCreationSites.size(); i++) {
 			CreationSite cs = allCreationSites.get(i);
-			if (cs.getOffset() == lab.getOffset()
-					&& cs.getLocation().startsWith(location)) {
+			if (cs.getOffset() == lab.getOffset() && cs.getLocation().startsWith(location)) {
 				_return.add(cs);
 			}
 		}
 		return _return;
 	}
 
-	public static List<CreationSite> getCreationSiteByLocation(String location,
-			int offset, String type) {
+	public static List<CreationSite> getCreationSiteByLocation(String location, int offset, String type) {
 		List<CreationSite> _return = new LinkedList<CreationSite>();
 		List<CreationSite> allCreationSites = getCreationSite();
 		for (int i = 0; i < allCreationSites.size(); i++) {
 			CreationSite cs = allCreationSites.get(i);
-			if (cs.getOffset() <= offset
-					&& cs.getLocation().startsWith(location)
-					&& type.equals(cs.getType())) {
+			if (cs.getOffset() <= offset && cs.getLocation().startsWith(location) && type.equals(cs.getType())) {
 				_return.add(cs);
 			}
 		}

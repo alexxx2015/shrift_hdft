@@ -78,6 +78,13 @@ public class EventTimer extends Timer {
 	return createdTime - startTime;
     }
     
+    public long getCreatedTime(){
+    	return this.createdTime;
+    }
+    public long getStartTime(){
+    	return this.startTime;
+    }
+    
     /**
      * Returns the difference between the creation and the stop timestamps.
      * @return A time interval in nanoseconds.

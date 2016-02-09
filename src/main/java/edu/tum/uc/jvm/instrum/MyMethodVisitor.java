@@ -820,7 +820,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			//Restfb method invocation
 			if (p_owner.replace("/", ".").toLowerCase()
 					.equals("com.restfb.defaultfacebookclient")
-					&& p_name.toLowerCase().equals("fetchobject")) {			
+					&& p_name.toLowerCase().equals("fetchobject")) {		
 				mv.visitFieldInsn(Opcodes.GETSTATIC,
 						SourceSinkName.class.getCanonicalName().replace(".", "/")+"$Type",
 						SourceSinkName.Type.SOURCE.name(),
@@ -861,6 +861,26 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(String.join("|", sourceIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
+			
+
+
+//			--> add timer, add call to start event creation timer
+//			if (isInstanceOrInterfaceMethod || isConstructor) {
+//				mv.visitLdcInsn(JavaEventName.CALL_INSTANCE_METHOD);
+//			} else {
+//				mv.visitLdcInsn(JavaEventName.CALL_STATIC_METHOD);
+//			}
+			mv.visitLdcInsn(JavaEventName.SOURCE_INVOKED);
+			mv.visitLdcInsn(chopNode.getByteCodeIndex());
+			mv.visitLdcInsn(chopNode.getOwnerMethod());
+			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitMethodInsn(
+					Opcodes.INVOKESTATIC,
+					MyUcTransformer.DELEGATECLASS,
+					"startEventTimer",
+					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V",
+					false);
+//			<-- add timer
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className,
 					wrapperDesc[0], wrapperDesc[1], false);// this.className.replace(".",
@@ -892,7 +912,25 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(String.join("|", sinkIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
-
+			
+//			--> add timer, add call to start event creation timer
+//			if (isInstanceOrInterfaceMethod || isConstructor) {
+//				mv.visitLdcInsn(JavaEventName.CALL_INSTANCE_METHOD);
+//			} else {
+//				mv.visitLdcInsn(JavaEventName.CALL_STATIC_METHOD);
+//			}
+			mv.visitLdcInsn(JavaEventName.SINK_INVOKED);
+			mv.visitLdcInsn(chopNode.getByteCodeIndex());
+			mv.visitLdcInsn(chopNode.getOwnerMethod());
+			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitMethodInsn(
+					Opcodes.INVOKESTATIC,
+					MyUcTransformer.DELEGATECLASS,
+					"startEventTimer",
+					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V",
+					false);
+//			<-- add timer
+			
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, this.className,
 					wrapperDesc[0], wrapperDesc[1], false);// this.className.replace(".",
 															// "/")

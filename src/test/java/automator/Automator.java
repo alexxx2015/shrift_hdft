@@ -1,8 +1,10 @@
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.safari.SafariDriver;
+package automator;
 
 import java.util.List;
 import java.util.Vector;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.safari.SafariDriver;
 
 /**
  * Created by Vladi on 28/09/15.

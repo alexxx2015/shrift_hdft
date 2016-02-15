@@ -1,17 +1,9 @@
-import com.google.common.base.Predicate;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.safari.SafariDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
+package automator;
 
 import java.text.DecimalFormat;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
 
 /**
  * Created by Vladi on 27/09/15.

@@ -55,7 +55,6 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 	public MyUcTransformer(boolean p_instrument_webservice) {
 		this.instrument_webservice = p_instrument_webservice;
-		System.out.println("[MyUcTransformer]: Instance created.");
 	}
 
 	// Run instruction: java -javaagent:uc4jvm.jar -Djava.security.manager

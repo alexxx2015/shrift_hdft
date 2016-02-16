@@ -80,15 +80,14 @@ public class UnsafeUtil {
 	public static long getObjectAddress(Object obj) {
 		Object[] array = new Object[] { obj };
 		long baseOffset = getUnsafe().arrayBaseOffset(Object[].class);
-//		 return normalize(getUnsafe().getInt(array, baseOffset));
-		long address = normalize(getUnsafe().getInt(array, baseOffset));
-		long myaddr = getUnsafe().allocateMemory(50L);
-		System.out.println(myaddr+", "+getUnsafe().getAddress(myaddr));
-//		int addressSize = getUnsafe().addressSize();
-//		long address = getUnsafe().getInt(array, baseOffset);
-//		if (addressSize == 8)
-//			address = getUnsafe().getLong(array, baseOffset);
-		return address;
+		return normalize(getUnsafe().getInt(array, baseOffset));
+		// long address = normalize(getUnsafe().getInt(array, baseOffset));
+		// long myaddr = getUnsafe().allocateMemory(50L);
+		// int addressSize = getUnsafe().addressSize();
+		// long address = getUnsafe().getInt(array, baseOffset);
+		// if (addressSize == 8)
+		// address = getUnsafe().getLong(array, baseOffset);
+		// return address;
 	}
 
 	/**

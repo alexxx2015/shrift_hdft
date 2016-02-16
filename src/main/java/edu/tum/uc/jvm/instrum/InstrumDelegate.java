@@ -16,12 +16,9 @@ import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
-import edu.tum.uc.jvm.utility.analysis.Flow;
-import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 import edu.tum.uc.jvm.utility.eval.JavaEventName;
-import edu.tum.uc.jvm.utility.eval.MethodTimer;
 import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
 
 /**
@@ -148,13 +145,6 @@ public class InstrumDelegate {
      */
     public static void readArray(Object array, int index, Object arrayAtIndex, Object parentObject,
 	    String parentMethod, String label) {
-	// System.out.println("Read array!!");
-	// System.out.println("Chopnode Label = " + label);
-	// System.out.println("Parent obj = " + objectToString(parentObject));
-	// System.out.println("Parent Method = " + parentMethod);
-	// System.out.println("Array = " + objectToString(array));
-	// System.out.println("Index = " + index);
-	// System.out.println("Array@Index = " + objectToString(arrayAtIndex));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -634,7 +624,7 @@ public class InstrumDelegate {
      *            The event parameter dictionary.
      */
     private static void createEvent(String eventName, Map<String, String> specificParams) {
-	Map<String, String> allParams = new HashMap<String, String>(specificParams);
+   	Map<String, String> allParams = new HashMap<String, String>(specificParams);
 	allParams.put("PEP", "Java");
 	allParams.put("threadId", Utility.getThreadId());
 	allParams.put("processId", Utility.getPID());

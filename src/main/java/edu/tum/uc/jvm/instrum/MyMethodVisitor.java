@@ -981,8 +981,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, className, wrapperMethodName, desc.toString(), false);
 
 	    // constructor -> throw away the two uninitiaziled instances created before wrapper was called
-	    // System.out.println(className + "." + wrapperMethodName + desc.toString());
-	    // System.out.println(className + "." + methodName + descriptor);
 	    if (isConstructor) {
 		mv.visitInsn(Opcodes.SWAP);
 		mv.visitInsn(Opcodes.POP);

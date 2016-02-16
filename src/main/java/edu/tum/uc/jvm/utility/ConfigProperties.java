@@ -46,13 +46,11 @@ public final class ConfigProperties {
 			if(configFile == null)
 				configFile = "/uc.config";
 			URL ucConfig = ConfigProperties.class.getResource(configFile);
-			////System.out.println(ucConfig);
 			File f = new File(configFile);
 			if(ucConfig != null){
 				f = new File(ucConfig.getFile());
 			}
 //			File f = new File("./uc.config");
-			////System.out.println(""+ f + f.exists());
 			if(f.exists()){
 				try {
 					FileInputStream fis = new FileInputStream(f);
@@ -75,8 +73,6 @@ public final class ConfigProperties {
 				}
 			}
 		}
-		////System.out.println(string);
-		////System.out.println(CONFIGURATION);
 		String _return = CONFIGURATION.getProperty(string.toString());
  		return _return;
 	}	

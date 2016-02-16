@@ -174,7 +174,6 @@ public class UcCommunicator {
 		UcCommunicator.getInstance().initPDP();
 		Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
 		synchronized (o) {
-//			System.out.println("SEND EVENT "+event.toString());//AF added
 			// Synchronous mode
 			if (!this.async && !forceAsync) {
 				if (this.netcom)
@@ -349,7 +348,7 @@ public class UcCommunicator {
 	}
 
 	public void regPxp() {
-		// initPDP();
+		 initPDP();
 		PxpSpec pxpSpec = new PxpSpec(MYPEP_HOST, Integer.parseInt(MYPEP_PORT), "JAVAPXP", "This is a simple Java PXP");
 		boolean b;
 		if (netcom) {

@@ -15,6 +15,14 @@ extern "C" {
 JNIEXPORT void JNICALL Java_edu_tum_uc_jvm_utility_MemoryAddress_sayHello
   (JNIEnv *, jobject);
 
+/*
+ * Class:     edu_tum_uc_jvm_utility_MemoryAddress
+ * Method:    getObjectAddress
+ * Signature: (Ljava/lang/Object;)J
+ */
+JNIEXPORT jlong JNICALL Java_edu_tum_uc_jvm_utility_MemoryAddress_getObjectAddress
+  (JNIEnv *, jobject, jobject);
+
 #ifdef __cplusplus
 }
 #endif

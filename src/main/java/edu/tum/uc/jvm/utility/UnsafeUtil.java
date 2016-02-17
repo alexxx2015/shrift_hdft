@@ -80,6 +80,12 @@ public class UnsafeUtil {
 	public static long getObjectAddress(Object obj) {
 		Object[] array = new Object[] { obj };
 		long baseOffset = getUnsafe().arrayBaseOffset(Object[].class);
+		int size = getUnsafe().addressSize();
+		long address = getUnsafe().getInt(array, baseOffset);
+		if(size == 8) 
+			address = getUnsafe().getLong(array, baseOffset);
+//		System.out.println("Size: "+getUnsafe().addressSize());
+//		System.out.println("ADDR: "+address);
 		return normalize(getUnsafe().getInt(array, baseOffset));
 		// long address = normalize(getUnsafe().getInt(array, baseOffset));
 		// long myaddr = getUnsafe().allocateMemory(50L);
@@ -164,7 +170,7 @@ public class UnsafeUtil {
 	 *            An integer value
 	 * @return The converted long.
 	 */
-	private static long normalize(int value) {
+	public static long normalize(int value) {
 		if (value >= 0)
 			return value;
 		return (~0L >>> 32) & value;

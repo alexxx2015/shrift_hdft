@@ -13,3 +13,10 @@ JNIEXPORT void JNICALL Java_edu_tum_uc_jvm_utility_MemoryAddress_sayHello(JNIEnv
 	printf("Hello World\n");
 	return;
 }
+
+JNIEXPORT jlong JNICALL Java_edu_tum_uc_jvm_utility_MemoryAddress_getObjectAddress
+  (JNIEnv *env, jobject thisObj, jobject targetObj){
+	jlong _return = (jlong)&targetObj;
+
+	return _return;
+}

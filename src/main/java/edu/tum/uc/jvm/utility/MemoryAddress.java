@@ -7,7 +7,13 @@ public class MemoryAddress {
 	
 	private native void sayHello();
 	
+	private native long getObjectAddress(Object o);
+	
 	public static void main(String[] args){
-		new MemoryAddress().sayHello();
+		MemoryAddress m = new MemoryAddress();
+		m.sayHello();
+		long l = m.getObjectAddress(m);
+		long adr = UnsafeUtil.getObjectAddress(m);
+		System.out.println(l+", "+adr+", ");
 	}
 }

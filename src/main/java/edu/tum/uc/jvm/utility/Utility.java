@@ -40,6 +40,7 @@ import de.tum.in.i22.uc.cm.factories.MessageFactoryCreator;
 import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.UcTransformer;
+import edu.tum.uc.jvm.declassification.DeclassifyString;
 import edu.tum.uc.jvm.utility.analysis.Flow;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
@@ -746,8 +747,16 @@ public class Utility {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 			}
 			
+			boolean issink = false;
 			i = paramStartIndex;
 			for (Type t : argT) {
+				//Check if sink parameter must be desclassified
+				for(SinkSource s : p_sinks){
+					if(s.getParam() == i && t.getSort() == Type.OBJECT && t.getClassName().equals(String.class.getName())){
+						issink = true;
+					}
+				}
+				
 				if (t.getSort() == Type.OBJECT) {
 					mv.visitVarInsn(Opcodes.ALOAD, i);
 				} else if (t.getSort() == Type.ARRAY) {
@@ -763,7 +772,12 @@ public class Utility {
 				} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)) {
 					mv.visitVarInsn(Opcodes.ILOAD, i);
 				}
-				i++;
+				
+				if(issink == true){
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, DeclassifyString.class.getName().replace(".", "/"), "declassify", "(Ljava/lang/String;)Ljava/lang/String;", false);
+					issink = false;
+				}
+			i++;
 			}
 			// Timer4: log native method execution
 			// Boolean timer4 = new

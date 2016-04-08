@@ -59,7 +59,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
     
     protected void onMethodEnter(){
     	if (this.methodName.equals("main")){// && !MyUcTransformer.instrument_webservice) {
-    	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASSNAME, "mainMethodInvoked",
+    	    mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "mainMethodInvoked",
     		    "()V", false);
     	}
     }

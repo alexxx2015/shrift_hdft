@@ -65,7 +65,8 @@ public class TestJzip extends AbstractTest {
 					File f = new File(url.getFile());
 					// File f = new File("/home/alex/xlayerpip.zip");
 					instruction = "zip " + f.getParent()
-							+ "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
+					+ "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
+
 					// instruction = "zip /home/alex/toBeZipped.zip "// + f.getAbsolutePath();
 				}
 

@@ -273,9 +273,7 @@ public class StatisticsUtil implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent arg0) {
-	// System.out.println("Writing statistics ...");
 	writeToFile();
-	// System.out.println("Statistics can be found in " +
 	// ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS));
     }
 

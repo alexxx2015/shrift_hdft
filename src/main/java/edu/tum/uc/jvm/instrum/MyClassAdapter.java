@@ -55,9 +55,6 @@ public class MyClassAdapter extends ClassVisitor {
 	// Get chop nodes list from analysis report
 	String k = this.className.replace("/", ".") + "." + p_name + p_desc;
 	List<Chop> chopNodes = StaticAnalysis.getChop(k);
-	if (chopNodes.size() > 0) {
-	    chopNodes.get(0);
-	}
 
 	// Forward the method to next ClassVisitor in chain
 	MethodVisitor mv = cv.visitMethod(p_access, p_name, p_desc, p_signature, p_exceptions);

@@ -82,13 +82,13 @@ public class MyUcTransformer implements ClassFileTransformer {
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
-		//System.out.println("[MyUcTransformer]: Calling tranform ...");
+//		System.out.println("[MyUcTransformer]: Calling tranform ...");
 		if (this.instrument_webservice) {
 			this.setClassLoader(loader);
 			this.setProtectionDomain(protectionDomain);
 		}
 		
-		//System.out.println("[MyUcTransformer]: Trying to instrument class: " + className);
+//		System.out.println("[MyUcTransformer]: Trying to instrument class: " + className);
 		//Only instrument whitelisted classes and they are not allowed to be in the blacklist
 		if(!Utility.isWhitelisted(className)){
 			if (Utility.isBlacklisted(className)) {
@@ -117,8 +117,9 @@ public class MyUcTransformer implements ClassFileTransformer {
 												// ClassWriter.COMPUTE_MAXS |
 												// ClassWriter.COMPUTE_FRAMES);
 		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
+//		System.out.println("D1");
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
-
+//		System.out.println("D2");
 		if (!"".equals(statistic)) {
 			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(),
 					System.nanoTime() - start_instrumentation);

@@ -159,13 +159,6 @@ public class InstrumDelegate {
      */
     public static void readArray(Object array, int index, Object arrayAtIndex, Object parentObject,
 	    String parentMethod, String label) {
-	// System.out.println("Read array!!");
-	// System.out.println("Chopnode Label = " + label);
-	// System.out.println("Parent obj = " + objectToString(parentObject));
-	// System.out.println("Parent Method = " + parentMethod);
-	// System.out.println("Array = " + objectToString(array));
-	// System.out.println("Index = " + index);
-	// System.out.println("Array@Index = " + objectToString(arrayAtIndex));
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("parentObjectAddress", getAddress(parentObject));
@@ -686,6 +679,9 @@ public class InstrumDelegate {
 	createEvent(JavaEventName.RETURN_MAIN_METHOD, eventParams);
 
 	// System.out.println();
+    }
+    public static void mainMethodInvoked() {
+    	UcCommunicator.getInstance().initPDP();
     }
 
     /**

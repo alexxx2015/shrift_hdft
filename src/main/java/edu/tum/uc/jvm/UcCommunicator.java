@@ -85,7 +85,7 @@ public class UcCommunicator {
 	public static UcCommunicator getInstance() {
 		if (UcCommunicator.UC_COM == null) {
 			UcCommunicator.UC_COM = new UcCommunicator();
-//			UcCommunicator.UC_COM.initPDP();
+			// UcCommunicator.UC_COM.initPDP();
 		}
 		return UcCommunicator.UC_COM;
 	}
@@ -98,7 +98,7 @@ public class UcCommunicator {
 		return UcCommunicator.UC_COM2;
 	}
 
-	protected void initPDP() {
+	public void initPDP() {
 		if (this.pdpClient != null || this.pdpController != null)
 			return;
 		boolean netcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));
@@ -177,24 +177,24 @@ public class UcCommunicator {
 		UcCommunicator.getInstance().initPDP();
 		Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
 		synchronized (o) {
-			try{
-			// Synchronous mode
-			if (!this.async && !forceAsync) {
+			try {
+				// Synchronous mode
+				if (!this.async && !forceAsync) {
+					if (this.netcom)
+						return this.pdpClient.notifyEventSync(event);
+					else
+						return this.pdpController.notifyEventSync(event);
+				}
+				// Asynchronous mode
 				if (this.netcom)
-					return this.pdpClient.notifyEventSync(event);
+					this.pdpClient.notifyEventAsync(event);
 				else
-					return this.pdpController.notifyEventSync(event);
-			}
-			// Asynchronous mode
-			if (this.netcom)
-				this.pdpClient.notifyEventAsync(event);
-			else
-				this.pdpController.notifyEventAsync(event);
-			} catch (RuntimeException ttex){
+					this.pdpController.notifyEventAsync(event);
+			} catch (RuntimeException ttex) {
 				this.pdpClient = null;
 				this.pdpController = null;
 				this.initPDP();
-				
+
 				// Synchronous mode
 				if (!this.async && !forceAsync) {
 					if (this.netcom)
@@ -365,7 +365,6 @@ public class UcCommunicator {
 		}
 
 		System.exit(0);
-
 		return false;
 	}
 

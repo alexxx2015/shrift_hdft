@@ -942,6 +942,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			// mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode ==
 			// Opcodes.INVOKEINTERFACE);
+
 		}
 		// check for the chopnode to be present here and that it has the correct
 		// operation

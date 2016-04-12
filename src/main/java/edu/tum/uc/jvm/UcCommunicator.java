@@ -369,16 +369,19 @@ public class UcCommunicator {
 	}
 
 	public void regPxp() {
-		// initPDP();
-		PxpSpec pxpSpec = new PxpSpec(MYPEP_HOST, Integer.parseInt(MYPEP_PORT), "JAVAPXP", "This is a simple Java PXP");
-		boolean b;
-		if (netcom) {
-			b = this.pdpClient.registerPxp(pxpSpec);
-		} else {
-			b = this.pdpController.registerPxp(pxpSpec);
-		}
-		if (b == true) {
-			this.startPxpServer(pxpSpec);
+		if (!"".equals(MYPEP_HOST) && !"".equals(MYPEP_PORT)) {
+			// initPDP();
+			PxpSpec pxpSpec = new PxpSpec(MYPEP_HOST, Integer.parseInt(MYPEP_PORT), "JAVAPXP",
+					"This is a simple Java PXP");
+			boolean b;
+			if (netcom) {
+				b = this.pdpClient.registerPxp(pxpSpec);
+			} else {
+				b = this.pdpController.registerPxp(pxpSpec);
+			}
+			if (b == true) {
+				this.startPxpServer(pxpSpec);
+			}
 		}
 	}
 

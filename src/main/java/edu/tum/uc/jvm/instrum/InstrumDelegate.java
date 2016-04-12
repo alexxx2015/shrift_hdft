@@ -482,7 +482,6 @@ public class InstrumDelegate {
     	}
     	for(String s : sourceIds){
     		Object o = UnsafeUtil.objectFromAddress(Long.parseLong(calleeObjMemAddr));
-    		System.out.println("SOURCE "+s+", address "+calleeObjMemAddr+", "+o.getClass());
     		SinkSource source = StaticAnalysis.getSourceById(s);
     		int param = source.getParam();
     		String sourceParam = "";
@@ -670,15 +669,14 @@ public class InstrumDelegate {
      *            A fully qualified name of the (<code>main</code>) method which has returned.
      */
     public static void mainMethodReturned(String calledMethod) {
-	// System.out.println("Main method returned!!");
-	// System.out.println("Called Method = " + calledMethod);
+//	System.out.println("START: Main method returned!!");
+//	System.out.println("Called Method = " + calledMethod);
 
 	Map<String, String> eventParams = new HashMap<String, String>();
 	eventParams.put("callerClass", getClass(calledMethod));
 	eventParams.put("calledMethod", getMethod(calledMethod));
 	createEvent(JavaEventName.RETURN_MAIN_METHOD, eventParams);
-
-	// System.out.println();
+//	System.out.println("END: Main method returned!!");
     }
     public static void mainMethodInvoked() {
     	UcCommunicator.getInstance().initPDP();

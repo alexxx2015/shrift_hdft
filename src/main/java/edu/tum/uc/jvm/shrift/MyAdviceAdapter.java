@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.asm;
+package edu.tum.uc.jvm.shrift;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;

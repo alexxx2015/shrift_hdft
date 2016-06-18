@@ -19,7 +19,7 @@ import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
  * @author vladi
  *
  */
-public class MyClassAdapter extends ClassVisitor {
+public class MyClassVisitor extends ClassVisitor {
 	private String superName;
     /**
      * The name of the class.
@@ -34,7 +34,7 @@ public class MyClassAdapter extends ClassVisitor {
      */
     private ClassWriter classWriter;
 
-    public MyClassAdapter(int p_api, ClassVisitor p_cv, ClassNode p_cn) {
+    public MyClassVisitor(int p_api, ClassVisitor p_cv, ClassNode p_cn) {
 	super(p_api, p_cv);
 	this.classNode = p_cn;
 	this.className = this.classNode.name;

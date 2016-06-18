@@ -35,6 +35,7 @@ public class ReportReader {
 	private static String ATTR_OWNERMETHOD = "ownerMethod";
 	private static String ATTR_LABEL = "label";
 	private static String ATTR_OPERATION = "operation";
+	private static String ATTR_LOCAL2VN = "local2Vn";
 
 	private SAXHandler reader = null;
 
@@ -118,7 +119,8 @@ public class ReportReader {
 						String om = attributes.getValue(ATTR_OWNERMETHOD);
 						String op = attributes.getValue(ATTR_OPERATION);
 						String lbl = attributes.getValue(ATTR_LABEL);
-						this.currentFlow.addChopNode(bci, om, lbl, op);
+						String local2vn = attributes.getValue(ATTR_LOCAL2VN);
+						this.currentFlow.addChopNode(bci, om, lbl, op, local2vn);
 					}
 				}
 			}
@@ -147,7 +149,7 @@ public class ReportReader {
 			}
 			// RETURN
 			else if (TAG_RETURN.equals(qname)) {
-				this.currentELem.set_return(true);
+				this.currentELem.setReturn(true);
 			}
 			// CONTEXT
 			else if (TAG_CONTEXT.equals(qname)) {

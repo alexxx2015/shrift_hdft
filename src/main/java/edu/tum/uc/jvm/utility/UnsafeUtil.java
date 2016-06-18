@@ -218,7 +218,7 @@ public class UnsafeUtil {
 	 *            The object or array to compute the memory size of.
 	 * @return The memory size of the object or array.
 	 */
-	private static long sizeOf(Object o) {
+	public static long sizeOf(Object o) {
 		if (o.getClass().isArray()) {
 			return sizeOfArray(o);
 		} else {

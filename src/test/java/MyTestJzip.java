@@ -1,23 +1,17 @@
 import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.reflect.Field;
 import java.net.URL;
-import java.security.ProtectionDomain;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.tum.uc.jvm.MyUcTransformer;
-import edu.tum.uc.jvm.UcCommunicator;
-import edu.tum.uc.jvm.UcTransformer;
-import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 
 public class MyTestJzip extends AbstractTest {

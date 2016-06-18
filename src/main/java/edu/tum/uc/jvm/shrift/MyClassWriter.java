@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.asm;
+package edu.tum.uc.jvm.shrift;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;

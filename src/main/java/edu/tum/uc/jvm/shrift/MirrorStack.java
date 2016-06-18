@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.asm;
+package edu.tum.uc.jvm.shrift;
 
 import it.uniroma1.dis.wsngroup.gexf4j.core.EdgeType;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;

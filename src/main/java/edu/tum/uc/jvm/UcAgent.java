@@ -3,17 +3,18 @@ package edu.tum.uc.jvm;
 import java.lang.instrument.*;
 import java.lang.management.ManagementFactory;
 
-import edu.tum.uc.jvm.asm.MirrorStack;
+import edu.tum.uc.jvm.shrift.MirrorStack;
 
 public final class UcAgent {	
+	public static Instrumentation INSTR;
 
-	public static void premain(String p_args, Instrumentation p_instr) throws Exception{
+	public static void premain(String args, Instrumentation instr) throws Exception{
 		//uca4jvm.log.info("Invoke uca4jvm.premain");
 		//uca4jvm.log.info("Loaded Class: "+p_instr.getClass().getName());
 		//for(Class clazz : p_instr.getAllLoadedClasses())
 			//System.out.println(clazz.getName());
-			
-		p_instr.addTransformer(new MyUcTransformer());
+		INSTR = instr;
+		INSTR.addTransformer(new MyUcTransformer());
 		MirrorStack.runnable = true;	
 	}
 

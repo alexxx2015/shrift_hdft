@@ -4,7 +4,7 @@ contains:test.DataMover
 contains:HelloWorld
 contains:eu.demirbas
 contains:jzip
-startswith:myTest.ImplicitFlows
+startswith:myTest
 startswith:restfb.test
 
 contains:test.Declassification

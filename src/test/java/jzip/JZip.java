@@ -38,16 +38,14 @@ public class JZip implements TestIntf{
 	private boolean run;
 	private String[] args;
 	private String commandline = "";
-	
-	public JZip(){		
-	}
 
 	public JZip(String[] args) {
 		this.args = args;
 		if (args != null && args.length > 0) {
 			StringBuilder sb = new StringBuilder();
 			for (String s : args) {
-				sb.append(s);
+				if(!s.trim().equals(""))
+					sb.append(s.trim()).append(" ");
 			}
 			this.commandline = sb.toString();
 		}
@@ -246,48 +244,7 @@ public class JZip implements TestIntf{
 			System.err.println(e.getMessage());
 		}
 	}
-	public void zipIt(String zipFile, String sourceFolder) {
-		this.fileList = new LinkedList<String>();
-		this.generateFileList(new File(sourceFolder), sourceFolder);
 
-		byte[] buffer = new byte[32768];
-
-		try {
-			
-			FileOutputStream fos = new FileOutputStream(zipFile);
-			BufferedOutputStream bos = new BufferedOutputStream(fos, 16384);
-			ZipOutputStream zos = new ZipOutputStream(bos);
-
-			System.out.println("Output to Zip : " + zipFile);
-
-			for (String file : this.fileList) {
-
-				System.out.println("File Added : " + file);
-				ZipEntry ze = new ZipEntry(file);
-				zos.putNextEntry(ze);
-
-				FileInputStream in = new FileInputStream(sourceFolder
-						+ File.separator + file);
-				BufferedInputStream bin = new BufferedInputStream(in, 32768);
-
-				int len;
-				while ((len = bin.read(buffer)) > 0) {//Source9
-					zos.write(buffer, 0, len);//Sink49
-				}
-
-				in.close();
-			}
-
-			zos.closeEntry();
-			// remember close it
-			zos.close();
-
-			System.out.println("Done");
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-	}
-	/*
 	public void zipIt(String zipFile, String sourceFolder) {
 		this.fileList = new LinkedList<String>();
 		this.generateFileList(new File(sourceFolder), sourceFolder);
@@ -329,7 +286,6 @@ public class JZip implements TestIntf{
 			ex.printStackTrace();
 		}
 	}
-	*/
 
 	/**
 	 * Traverse a directory and get all files, and add the file into fileList

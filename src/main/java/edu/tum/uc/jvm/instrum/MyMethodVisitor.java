@@ -108,7 +108,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		}
 
 		// get the chop node if there is one at the current bytecode offset
-		Chop chopNode = checkChopNode(this.getCurrentLabel());
+		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
 
 		// check for the chopnode to be present here and that it has the correct
 		// operation
@@ -491,7 +491,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		// binary
 
 		// get the chop node if there is one at the current bytecode offset
-		Chop chopNode = checkChopNode(this.getCurrentLabel());
+		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
 
 		// check for the chopnode to be present here and that it has the correct
 		// operation
@@ -555,7 +555,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			return;
 		}
 		// get the chop node if there is one at the current bytecode offset
-		Chop chopNode = checkChopNode(this.getCurrentLabel());
+		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
 
 		// check for the chopnode to be present here and that it has the correct
 		// operation
@@ -624,7 +624,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			return;
 		}
 		// get the chop node if there is one at the current bytecode offset
-		Chop chopNode = checkChopNode(this.getCurrentLabel());
+		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
 
 		// check for the chopnode to be present here and that it has the correct
 		// operation
@@ -813,7 +813,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		List<SinkSource> sources = StaticAnalysis.isSource(fqName, ofs);
 		List<SinkSource> sinks = StaticAnalysis.isSinkWithFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
-		Chop chopNode = checkChopNode(this.getCurrentLabel());
+		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
 
 		if (sources != null && sources.size() > 0) {
 			
@@ -844,15 +844,16 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			
 			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "");
+				chopNode = new Flow().new Chop(-1, "", "", "","");
 			
 			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sources) {
 				sourceIds.add(s.getId());
 			}
 
-			String[] wrapperDesc = Utility.createSourceWrapper(p_opcode,p_owner, p_name, p_desc, cv, this.className, sources);
-
+			String[] wrapperDesc = InstrumMethodWrapper.createSourceWrapper(p_opcode,p_owner, p_name, p_desc, cv, this.className, sources);
+			
+			//Load additional helper parameter on the stack, are not part of the original method signature
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			} else {
@@ -895,9 +896,9 @@ public class MyMethodVisitor extends MethodVisitor {
 			// Opcodes.INVOKEINTERFACE);
 		} else if (sinks != null && sinks.size() > 0) {
 			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "");
+				chopNode = new Flow().new Chop(-1, "", "", "","");
 
-			String[] wrapperDesc = Utility.createSinkWrapper(p_opcode, p_owner,
+			String[] wrapperDesc = InstrumMethodWrapper.createSinkWrapper(p_opcode, p_owner,
 					p_name, p_desc, cv, this.className, sinks);
 			List<String> sinkIds = new LinkedList<String>();
 			for (SinkSource s : sinks) {
@@ -1318,10 +1319,10 @@ public class MyMethodVisitor extends MethodVisitor {
 	 *            The label with the bytecode index.
 	 * @return A chopnode if one is found, otherwise null
 	 */
-	private Chop checkChopNode(Label label) {
+	public Chop checkChopNode(Label label, List<Chop> chopNodes) {
 		// iterate through chopnode list and compare bytecode offsets
-		if ((this.chopNodes != null) && (this.chopNodes.size() > 0)) {
-			Iterator<Chop> it = this.chopNodes.iterator();
+		if ((chopNodes != null) && (chopNodes.size() > 0)) {
+			Iterator<Chop> it = chopNodes.iterator();
 			while (it.hasNext()) {
 				Chop c = it.next();
 				int offset = label.getOffset();

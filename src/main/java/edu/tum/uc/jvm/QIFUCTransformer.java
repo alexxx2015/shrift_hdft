@@ -9,29 +9,29 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
+import org.apache.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
-import edu.tum.uc.jvm.instrum.MyClassVisitor;
+import edu.tum.uc.jvm.declassification.qif.QIFClassVisitor;
+import edu.tum.uc.jvm.instrum.InstrumDelegate;
 import edu.tum.uc.jvm.instrum.MyClassReader;
 import edu.tum.uc.jvm.instrum.MyClassWriter;
-import edu.tum.uc.jvm.instrum.InstrumDelegate;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
 
-public class MyUcTransformer implements ClassFileTransformer {
-
+public class QIFUCTransformer implements ClassFileTransformer {
+	
+	private static Logger _logger = Logger.getLogger(QIFUCTransformer.class.getName());
+	
 	private static TomcatClassLoader myClassLoader;
 
 	private static ProtectionDomain myProtDom;
-
-	public static final String DELEGATECLASS = InstrumDelegate.class
-			.getName().replace(".", "/");
 
 	// true if running instrumentation in a webservice
 	private boolean instrument_webservice;
@@ -49,11 +49,11 @@ public class MyUcTransformer implements ClassFileTransformer {
 				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 	}
 
-	public MyUcTransformer() {
+	public QIFUCTransformer() {
 		this(false);
 	}
 
-	public MyUcTransformer(boolean p_instrument_webservice) {
+	public QIFUCTransformer(boolean p_instrument_webservice) {
 		this.instrument_webservice = p_instrument_webservice;
 	}
 
@@ -61,43 +61,33 @@ public class MyUcTransformer implements ClassFileTransformer {
 	// -Djava.security.policy=mypolicy.txt -Xverify:none helloWorld
 
 	private void setClassLoader(ClassLoader p_myClassLoader) {
-		MyUcTransformer.myClassLoader = (TomcatClassLoader) p_myClassLoader;
+		QIFUCTransformer.myClassLoader = (TomcatClassLoader) p_myClassLoader;
 	}
 
 	public static ClassLoader getMyClassLoader() {
-		return MyUcTransformer.myClassLoader;
+		return QIFUCTransformer.myClassLoader;
 	}
 
 	private void setProtectionDomain(ProtectionDomain p_protectionDomain) {
-		MyUcTransformer.myProtDom = p_protectionDomain;
+		QIFUCTransformer.myProtDom = p_protectionDomain;
 	}
-
-	// private static boolean checkClassExist(String p_className){
-	// File f = new File(UcTransformer.MY_REPO+"/"+p_className.replace(".",
-	// "/")+".class");
-	// return f.exists();
-	// }
 
 	@Override
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
-//		System.out.println("[MyUcTransformer]: Calling tranform ...");
+
 		if (this.instrument_webservice) {
 			this.setClassLoader(loader);
 			this.setProtectionDomain(protectionDomain);
 		}
 		
-//		System.out.println("[MyUcTransformer]: Trying to instrument class: " + className);
-//		Only instrument whitelisted classes and they are not allowed to be in the blacklist
 		if(!Utility.isWhitelisted(className)){
 			if (Utility.isBlacklisted(className)) {
 				return classfileBuffer;
 			}
 			return classfileBuffer;
 		}
-		
-//		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
 		String statistic = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
@@ -116,10 +106,8 @@ public class MyUcTransformer implements ClassFileTransformer {
 												// ClassWriter(cr,
 												// ClassWriter.COMPUTE_MAXS |
 												// ClassWriter.COMPUTE_FRAMES);
-		ClassVisitor cv = new MyClassVisitor(Opcodes.ASM5, cw, cn);
-//		System.out.println("D1");
+		ClassVisitor cv = new QIFClassVisitor(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
-//		System.out.println("D2");
 		if (!"".equals(statistic)) {
 			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(),
 					System.nanoTime() - start_instrumentation);
@@ -133,7 +121,6 @@ public class MyUcTransformer implements ClassFileTransformer {
 			try {
 				File f = new File(s + cr.getClassName().replace("/", "_")
 						+ ".class");
-				System.out.println("DUMPED: "+f.getName());
 				if (!f.getParentFile().exists()) {
 				    f.getParentFile().mkdirs();
 				}
@@ -158,30 +145,3 @@ public class MyUcTransformer implements ClassFileTransformer {
 		return cw.toByteArray();
 	}
 }
-
-// try {
-// Method method = ClassLoader.class.getDeclaredMethod(
-// "findLoadedClass", new Class[] { String.class });
-// method.setAccessible(true);
-//
-// ClassLoader cl = ClassLoader.getSystemClassLoader();
-// Object clazz = method.invoke(cl,
-// "edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
-// if (clazz == null) {
-// }
-// } catch (SecurityException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (IllegalArgumentException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (IllegalAccessException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (InvocationTargetException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (NoSuchMethodException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// }

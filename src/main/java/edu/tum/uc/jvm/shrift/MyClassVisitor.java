@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.asm;
+package edu.tum.uc.jvm.shrift;
 
 import java.util.Iterator;
 import java.util.List;
@@ -16,12 +16,12 @@ import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 
-public class MyClassAdapter extends ClassVisitor {
+public class MyClassVisitor extends ClassVisitor {
 	private String className;
 	private ClassNode cn;
 	private ClassWriter classWriter;
 
-	public MyClassAdapter(int p_api, ClassVisitor p_cv, ClassNode p_cn) {
+	public MyClassVisitor(int p_api, ClassVisitor p_cv, ClassNode p_cn) {
 		super(p_api, p_cv);
 		this.cn = p_cn;
 		this.className = this.cn.name;

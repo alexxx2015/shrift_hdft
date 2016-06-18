@@ -15,10 +15,10 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
-import edu.tum.uc.jvm.asm.MirrorStack;
-import edu.tum.uc.jvm.asm.MyClassAdapter;
-import edu.tum.uc.jvm.asm.MyClassReader;
-import edu.tum.uc.jvm.asm.MyClassWriter;
+import edu.tum.uc.jvm.shrift.MirrorStack;
+import edu.tum.uc.jvm.shrift.MyClassReader;
+import edu.tum.uc.jvm.shrift.MyClassVisitor;
+import edu.tum.uc.jvm.shrift.MyClassWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
@@ -105,7 +105,7 @@ public class UcTransformer implements ClassFileTransformer {
 		cr.accept(cn, 0);
 
 		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);// ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
+		ClassVisitor cv = new MyClassVisitor(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
 		
 		if(!"".equals(statistic)){

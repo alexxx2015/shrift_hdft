@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -37,10 +36,7 @@ import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import de.tum.in.i22.uc.cm.factories.IMessageFactory;
 import de.tum.in.i22.uc.cm.factories.MessageFactoryCreator;
-import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.UcCommunicator;
-import edu.tum.uc.jvm.UcTransformer;
-import edu.tum.uc.jvm.declassification.DeclassifyString;
 import edu.tum.uc.jvm.utility.analysis.Flow;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
@@ -55,12 +51,28 @@ public class Utility {
 	
 	public static List<Field> getAllFields(Object obj) {
 		ArrayList<Field> _return = new ArrayList<Field>();
-		Class clazz = obj.getClass();
+		Class<?> clazz = obj.getClass();
 		while (clazz != null && clazz != Object.class) {
 			for (Field f : clazz.getDeclaredFields())
 				_return.add(f);
 			clazz = clazz.getSuperclass();
 		}
+		return _return;
+	}
+	
+	public static boolean hasQtyInfo(String classname, String methodname){
+		boolean _return = false;
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("append"))
+			_return = true;
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("replace"))
+			_return = true;
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("split"))//TODO
+			_return = true;
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("subsequence"))//TODO
+			_return = true;
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("substring"))//TODO
+			_return = true;
+			
 		return _return;
 	}
 
@@ -94,50 +106,8 @@ public class Utility {
 		}
 	}
 
-	public static synchronized boolean checkInvocationOnStack(String p_class, String p_method) {
-		boolean _return = false;
-
-		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-			// System.out.println("STACKTRACE:
-			// "+ste.getClassName()+"/"+ste.getMethodName());
-
-			if (ste.getClassName().toLowerCase().contains(p_class.toLowerCase())
-					&& ste.getMethodName().toLowerCase().contains(p_method.toLowerCase())
-					&& !ste.getClassName().equals(Utility.notSpecified)
-					&& !ste.getMethodName().equals(Utility.notSpecified)) {
-				_return = true;
-				break;
-			} else if (ste.getClassName().toLowerCase().contains(p_class.toLowerCase())
-					&& !ste.getClassName().equals(Utility.notSpecified)) {
-				_return = true;
-				break;
-			} else if (ste.getMethodName().toLowerCase().contains(p_method.toLowerCase())
-					&& !ste.getMethodName().equals(Utility.notSpecified)) {
-				_return = true;
-				break;
-			}
-		}
-
-		return _return;
-	}
-
-	static Map<String, String> METHODS = new HashMap<String, String>();
-
 	public static final String STRDELIM = ":";
 
-	private void printStr2File(String p_str) {
-		try {
-			File f = new File("/Users/ladmin/LOGTRANS.txt");
-			FileWriter fo = new FileWriter(f, true);
-			fo.append(p_str);
-			fo.append(System.getProperty("line.separator"));
-			fo.flush();
-			fo.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Extracts the file descriptor from object parameter obj
@@ -337,706 +307,11 @@ public class Utility {
 		return _return;
 	}
 
-	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
-			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources) {
-	    boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_ownermethod.equals("<init>");
-	    boolean isStatic = p_opcode == Opcodes.INVOKESTATIC;
-	    String[] _return = new String[2];
-		StringBuilder wrapperMethodDesc = new StringBuilder();
-		try {
-			// ==> Preprocessing, create required method description, indizes,
-			// Create method description of the to be invoked methods
-			wrapperMethodDesc.append("(");
-			int argIndex = -1;
-			if(!isConstructor && !isStatic){
-				wrapperMethodDesc.append("L" + p_ownerclass + ";");// append("Ljava/lang/Object;");
-				++argIndex;
-			}			// count the number of parameters the wrapper method has, (0)=object,(1...n-1)=parameters,(n)=source-id
-
-			// Helper variable to store the correct parameter index within the
-			// local variable table
-			int paramStartIndex = 0;
-			Type[] argT = Type.getArgumentTypes(p_descownermethod);
-			if (argT.length > 0) {
-				paramStartIndex = argIndex+1;
-				for (Type t : argT) {
-					wrapperMethodDesc.append(t.getDescriptor());
-					argIndex++;
-					if (Type.DOUBLE == t.getSort() || Type.LONG == t.getSort()) {
-						argIndex++;
-					}
-				}
-			}
-			// Parent-object index
-			wrapperMethodDesc.append("Ljava/lang/Object;");
-			int parentObjIndex = ++argIndex;
-
-			// Parent-method index
-			wrapperMethodDesc.append("Ljava/lang/String;");
-			int parentMethodIndex = ++argIndex;
-
-			// sourceindex
-			wrapperMethodDesc.append("Ljava/lang/String;");
-			int sinksourceIndex = ++argIndex;
-
-			// chopLabel index
-			wrapperMethodDesc.append("Ljava/lang/String;");
-			int chopLabelIndex = ++argIndex;
-
-			wrapperMethodDesc.append(")");
-
-			Type retT = Type.getReturnType(p_descownermethod);
-			if (isConstructor) {
-				wrapperMethodDesc.append("L" + p_ownerclass + ";");
-			} else if(retT != null) {
-				wrapperMethodDesc.append(retT.getDescriptor());
-			}
-
-			// Constructors are renamed
-			String wrapperMethodName = p_ownermethod;
-			if (isConstructor) {
-				wrapperMethodName = p_ownerclass.replace("/", "_") + "_init";
-			}
-			_return[0] = wrapperMethodName;
-			_return[1] = wrapperMethodDesc.toString();
-
-			// Check if method invocation was already wrapped
-			String id = p_parentclass + "." + wrapperMethodName + ":" + wrapperMethodDesc.toString();
-			if (Utility.METHODS.containsKey(id)) {
-				return _return;
-			} else {
-				Utility.METHODS.put(id, id);
-			}
-
-			// ==> Create wrapper method content
-			MethodVisitor mv = cv.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, wrapperMethodName,
-					wrapperMethodDesc.toString(), null, null);
-			mv.visitCode();
-
-			//--> Load all parameters into an array
-			mv.visitLdcInsn(argT.length);
-			mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
-			// Store it after all method params
-			int paramArrayIndex = ++argIndex;
-			mv.visitVarInsn(Opcodes.ASTORE, paramArrayIndex);
-			int i = paramStartIndex; // local variable index counter
-			int j = 0; // array entry counter
-			for (Type argType : argT) {
-				mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);
-				mv.visitLdcInsn(j);
-				if (argType.getSort() == Type.OBJECT) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (argType.getSort() == Type.ARRAY) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else {
-					if (argType.getSort() == Type.DOUBLE) {
-						mv.visitVarInsn(Opcodes.DLOAD, i);
-						i++;
-					} else if (argType.getSort() == Type.FLOAT) {
-						mv.visitVarInsn(Opcodes.FLOAD, i);
-					} else if (argType.getSort() == Type.LONG) {
-						mv.visitVarInsn(Opcodes.LLOAD, i);
-						i++;
-					} else if (argType.getSort() == Type.INT) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.CHAR) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.BYTE) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.BOOLEAN) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.SHORT) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					}
-					boxTopStackValue(mv, argType);
-				}
-				mv.visitInsn(Opcodes.AASTORE);
-				i++;
-				j++;
-			}
-			//<-- Load all parameters into an array
-
-			//--> Execute the original method
-			if(isConstructor){
-			    mv.visitTypeInsn(Opcodes.NEW, p_ownerclass);
-			    mv.visitInsn(Opcodes.DUP);
-			}else if (!isStatic){
-				mv.visitVarInsn(Opcodes.ALOAD, 0);
-			}
-			i = paramStartIndex;
-			for (Type t : argT) {
-				if (t.getSort() == Type.OBJECT) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (t.getSort() == Type.ARRAY) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (t.getSort() == Type.DOUBLE) {
-					mv.visitVarInsn(Opcodes.DLOAD, i);
-					i++;
-				} else if (t.getSort() == Type.FLOAT) {
-					mv.visitVarInsn(Opcodes.FLOAD, i);
-				} else if (t.getSort() == Type.LONG) {
-					mv.visitVarInsn(Opcodes.LLOAD, i);
-					i++;
-				} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)) {
-					mv.visitVarInsn(Opcodes.ILOAD, i);
-				}
-				i++;
-			}
-			// Timer4: log native method execution
-			// Boolean timer4 = new
-			// Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T4));
-			// if (timer4) {
-			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-			// UcTransformer.HOOKMETHOD, "timerT4Start", "()V", false);
-			// }
-
-			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, p_opcode == Opcodes.INVOKEINTERFACE);
-			//<-- Execute the original method
-			
-//			int constructorIndex = -1;
-//			if(isConstructor){
-//				constructorIndex = ++argIndex;
-//			    mv.visitVarInsn(Opcodes.ASTORE, constructorIndex);
-//			}
-			
-			// if (timer4) {
-			// mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length -
-			// // 1);
-			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-			// UcTransformer.HOOKMETHOD, "timerT4Stop",
-			// "(Ljava/lang/String;)V", false);
-			// }
-			
-			//Send event to pdp
-			if(p_sources.size() > 0){
-				for(SinkSource s : p_sources){
-					if(s.is_return()){
-						if (isConstructor) {
-							mv.visitInsn(Opcodes.DUP);
-						} else if (retT.getSort() != Type.VOID){
-							boolean retValueIsBig = retT.getSize() == 2;
-							if (retValueIsBig) {
-								mv.visitInsn(Opcodes.DUP2);
-							} else {
-								mv.visitInsn(Opcodes.DUP);
-							}
-							Utility.boxTopStackValue(mv, retT);
-						}else {
-							mv.visitInsn(Opcodes.ACONST_NULL);
-						}
-					}
-					else{
-						int param = s.getParam();
-						if(param > 0 && retT.getSize() > 0){
-							i = paramStartIndex + param - 1;
-							Type t = argT[param-1];
-							if (t.getSort() == Type.OBJECT) {
-								mv.visitVarInsn(Opcodes.ALOAD, i);
-							} else if (t.getSort() == Type.ARRAY) {
-								mv.visitVarInsn(Opcodes.ALOAD, i);
-							} else if (t.getSort() == Type.DOUBLE) {
-								mv.visitVarInsn(Opcodes.DLOAD, i);
-							} else if (t.getSort() == Type.FLOAT) {
-								mv.visitVarInsn(Opcodes.FLOAD, i);
-							} else if (t.getSort() == Type.LONG) {
-								mv.visitVarInsn(Opcodes.LLOAD, i);
-							} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)) {
-								mv.visitVarInsn(Opcodes.ILOAD, i);
-							}
-							break;
-						} else{
-							mv.visitInsn(Opcodes.ACONST_NULL);
-						}
-					}
-				}
-			} else{
-				mv.visitInsn(Opcodes.ACONST_NULL);
-			}
-
-			if(isConstructor || isStatic)
-				mv.visitInsn(Opcodes.ACONST_NULL);
-			else
-				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject
-			mv.visitLdcInsn(p_ownerclass.replace("/", "."));
-			mv.visitLdcInsn(p_ownermethod);
-			mv.visitVarInsn(Opcodes.ALOAD, parentObjIndex);// Load parentObj ref
-			// mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
-			mv.visitLdcInsn(p_parentclass.replace("/", ".")); // Load parent class name
-			mv.visitVarInsn(Opcodes.ALOAD, parentMethodIndex); // Load parent method name
-			mv.visitVarInsn(Opcodes.ALOAD, sinksourceIndex); // Load sinksource-ids
-			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex); // Load choplabel onto the stack
-			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);// Load method params array
-			
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "sourceInvoked",
-					"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Z",
-					false);
-			mv.visitInsn(Opcodes.POP);
-
-			// Add return
-			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY || isConstructor) {
-				mv.visitInsn(Opcodes.ARETURN);
-			} else if (retT.getSort() == Type.DOUBLE) {
-				mv.visitInsn(Opcodes.DRETURN);
-			} else if (retT.getSort() == Type.FLOAT) {
-				mv.visitInsn(Opcodes.FRETURN);
-			} else if (retT.getSort() == Type.LONG) {
-				mv.visitInsn(Opcodes.LRETURN);
-			} else if (retT.getSort() == Type.INT || retT.getSort() == Type.BOOLEAN) {
-				mv.visitInsn(Opcodes.IRETURN);
-			} else {
-				mv.visitInsn(Opcodes.RETURN);
-			}
-
-			Type[] myArgT = Type.getArgumentTypes(wrapperMethodDesc.toString());
-			mv.visitMaxs(myArgT.length+6, myArgT.length+5);
-			mv.visitEnd();
-//			cv.visitEnd();
-		} catch (Exception e) {
-		}
-		return _return;
-	}
-	
-	public static String[] createSinkWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
-		String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sinks) {
-		String[] _return = new String[2];
-	    boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_ownermethod.equals("<init>");
-	    boolean isStatic = p_opcode == Opcodes.INVOKESTATIC;
-		StringBuilder wrapperMethodDesc = new StringBuilder();
-		try {
-			//Preprocessing, create required method description, indizes, etc
-			// Create method description of the to be invoked methods
-			wrapperMethodDesc.append("(");
-			int argIndex = -1;
-			if(!isConstructor && !isStatic){
-				wrapperMethodDesc.append("L" + p_ownerclass + ";");// append("Ljava/lang/Object;");
-				++argIndex;
-			}
-			// count the number of parameters the wrapper method has,
-
-			// Helper variable to store the correct parameter index within the
-			// local variable table
-			int paramStartIndex = 0;
-			Type[] argT = Type.getArgumentTypes(p_descownermethod);
-			if (argT.length > 0) {
-				paramStartIndex = argIndex+1;
-				for (Type t : argT) {
-					wrapperMethodDesc.append(t.getDescriptor());
-					if (Type.DOUBLE == t.getSort() || Type.LONG == t.getSort()) {
-						argIndex++;
-					}
-					++argIndex;
-				}
-			}
-
-			// Parent-object index
-			wrapperMethodDesc.append("Ljava/lang/Object;");
-			int parentObjIndex = ++argIndex;
-
-			// Parent-method index
-			wrapperMethodDesc.append("Ljava/lang/String;");
-			int parentMethodIndex = ++argIndex;
-
-			// sinksourceindex
-			wrapperMethodDesc.append("Ljava/lang/String;");
-			int sinksourceIndex = ++argIndex;
-
-			// chopLabel index
-			wrapperMethodDesc.append("Ljava/lang/String;");
-			int chopLabelIndex = ++argIndex;
-
-			wrapperMethodDesc.append(")");
-
-			Type retT = Type.getReturnType(p_descownermethod);
-			if (isConstructor) {
-				wrapperMethodDesc.append("L" + p_ownerclass + ";");
-			} else if(retT != null) {
-				wrapperMethodDesc.append(retT.getDescriptor());
-			}
-
-			// Constructors are renamed
-			String wrapperMethodName = p_ownermethod;
-			if (isConstructor) {
-				wrapperMethodName = p_ownerclass.replace("/", "_") + "_init";
-			}
-			_return[0] = wrapperMethodName;
-			_return[1] = wrapperMethodDesc.toString();
-
-			// Check if method invocation was already wrapped
-			String id = p_parentclass + "." + wrapperMethodName + ":" + wrapperMethodDesc.toString();
-			if (Utility.METHODS.containsKey(id)) {
-				return _return;
-			} else {
-				Utility.METHODS.put(id, id);
-			}
-
-			// ==> Create wrapper method content
-			MethodVisitor mv = cv.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, wrapperMethodName,
-					wrapperMethodDesc.toString(), null, null);
-			mv.visitCode();
-
-			// Create array to fit all arguments
-			mv.visitLdcInsn(argT.length);
-			mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
-			// Store it after all method params
-			int paramArrayIndex = ++argIndex;
-			mv.visitVarInsn(Opcodes.ASTORE, paramArrayIndex);
-
-			int i = paramStartIndex; // local variable index counter
-			int j = 0; // array entry counter
-			for (Type argType : argT) {
-				mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);
-				mv.visitLdcInsn(j);
-				if (argType.getSort() == Type.OBJECT) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (argType.getSort() == Type.ARRAY) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else {
-					if (argType.getSort() == Type.DOUBLE) {
-						mv.visitVarInsn(Opcodes.DLOAD, i);
-						i++;
-					} else if (argType.getSort() == Type.FLOAT) {
-						mv.visitVarInsn(Opcodes.FLOAD, i);
-					} else if (argType.getSort() == Type.LONG) {
-						mv.visitVarInsn(Opcodes.LLOAD, i);
-						i++;
-					} else if (argType.getSort() == Type.INT) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.CHAR) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.BYTE) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.BOOLEAN) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					} else if (argType.getSort() == Type.SHORT) {
-						mv.visitVarInsn(Opcodes.ILOAD, i);
-					}
-					boxTopStackValue(mv, argType);
-				}
-
-				mv.visitInsn(Opcodes.AASTORE);
-				i++;
-				j++;
-			}
-
-			// Send an event to the pdp
-			if(isConstructor){
-				mv.visitInsn(Opcodes.ACONST_NULL);
-			}
-			else if(!isStatic){
-				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the ownerobject 
-			}
-			mv.visitLdcInsn(p_ownerclass.replace("/", "."));
-			mv.visitLdcInsn(p_ownermethod);
-			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);//Load method params
-			mv.visitVarInsn(Opcodes.ALOAD, parentObjIndex);// Load parentObj ref
-			mv.visitLdcInsn(p_parentclass.replace("/", ".")); // Load parent class name
-			mv.visitVarInsn(Opcodes.ALOAD, parentMethodIndex); // Load parent method name
-			mv.visitVarInsn(Opcodes.ALOAD, sinksourceIndex); // Load sinksource-ids
-			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
-
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "sinkInvoked",
-					"(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z",
-					false);
-			mv.visitInsn(Opcodes.POP);
-
-			// Preprocessing, to execute the original method
-			if(isConstructor){
-			    mv.visitTypeInsn(Opcodes.NEW, p_ownerclass);
-			    mv.visitInsn(Opcodes.DUP);
-			}else if (!isStatic){
-				mv.visitVarInsn(Opcodes.ALOAD, 0);
-			}
-			
-			boolean issink = false;
-			i = paramStartIndex;
-			for (Type t : argT) {
-				//Check if sink parameter must be desclassified
-				for(SinkSource s : p_sinks){
-					if(s.getParam() == i && t.getSort() == Type.OBJECT && t.getClassName().equals(String.class.getName())){
-						issink = true;
-					}
-				}
-				
-				if (t.getSort() == Type.OBJECT) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (t.getSort() == Type.ARRAY) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (t.getSort() == Type.DOUBLE) {
-					mv.visitVarInsn(Opcodes.DLOAD, i);
-					i++;
-				} else if (t.getSort() == Type.FLOAT) {
-					mv.visitVarInsn(Opcodes.FLOAD, i);
-				} else if (t.getSort() == Type.LONG) {
-					mv.visitVarInsn(Opcodes.LLOAD, i);
-					i++;
-				} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)) {
-					mv.visitVarInsn(Opcodes.ILOAD, i);
-				}
-				
-				if(issink == true){
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, DeclassifyString.class.getName().replace(".", "/"), "declassify", "(Ljava/lang/String;)Ljava/lang/String;", false);
-					issink = false;
-				}
-			i++;
-			}
-			// Timer4: log native method execution
-			// Boolean timer4 = new
-			// Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T4));
-			// if (timer4) {
-			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-			// UcTransformer.HOOKMETHOD, "timerT4Start", "()V", false);
-			// }
-
-			// Execute original method
-			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, p_opcode == Opcodes.INVOKEINTERFACE);
-
-			// if (timer4) {
-			// mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length -
-			// // 1);
-			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-			// UcTransformer.HOOKMETHOD, "timerT4Stop",
-			// "(Ljava/lang/String;)V", false);
-			// }
-
-			// Add return
-			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY || isConstructor) {
-				mv.visitInsn(Opcodes.ARETURN);
-			} else if (retT.getSort() == Type.DOUBLE) {
-				mv.visitInsn(Opcodes.DRETURN);
-			} else if (retT.getSort() == Type.FLOAT) {
-				mv.visitInsn(Opcodes.FRETURN);
-			} else if (retT.getSort() == Type.LONG) {
-				mv.visitInsn(Opcodes.LRETURN);
-			} else if (retT.getSort() == Type.INT || retT.getSort() == Type.BOOLEAN) {
-				mv.visitInsn(Opcodes.IRETURN);
-			} else {
-				mv.visitInsn(Opcodes.RETURN);
-			}
-
-			Type[] myArgT = Type.getArgumentTypes(wrapperMethodDesc.toString());
-			mv.visitMaxs(myArgT.length+5, myArgT.length+5);
-			mv.visitEnd();
-		} catch (Exception e) {
-		}
-
-		return _return;
-	}
-	
 	public static Parameter[] addSinkSourceParam(Parameter[] p_param, SourceSinkName.Type p_sinksource, String p_sinksourceId){
 		Parameter[] _return = new Parameter[p_param.length+1];
 		System.arraycopy(p_param, 0, _return, 0, p_param.length);
 		_return[_return.length-1] = Parameter.with(p_sinksource.name(), p_sinksourceId);
 		return _return;
-	}
-
-	/**
-	 * Creates a dummy method that extracts the method for file descriptor
-	 * 
-	 * @param p_opcode
-	 *            Java Bytecode opcode to invoke instruction
-	 * @param p_owner_classname
-	 *            Owner class where of invoked method p_name
-	 * @param p_owner_methodname
-	 *            Method name of invoked method that has to be replaced
-	 * @param p_desc
-	 *            Java bytecode method signature
-	 * @param cv
-	 *            ClassVisitor
-	 * @param classname
-	 *            The classname where the method is invoked
-	 * @param sors
-	 *            Contains sink or source specification
-	 * @return
-	 */
-	public static String createASMHelperMethod(int p_opcode, String p_owner_classname, String p_owner_methodname,
-			String p_desc, ClassWriter cv, String classname, List<SinkSource> sors) {
-		StringBuilder desc = new StringBuilder();
-		try {
-			// Class<?> clazz = DummyHelperClass.class;
-			// String className = clazz.getName().replace(".",
-			// System.getProperty("file.separator")) + ".class";
-			// InputStream is =
-			// clazz.getClassLoader().getResourceAsStream(className);
-			// byte[] b = IOUtils.toByteArray(is);
-
-			// Generate new method signature
-			Type[] argT = Type.getArgumentTypes(p_desc);
-
-			// Create method description of the to be invoked methods
-			desc.append("(");
-			// desc.append("Ljava/lang/Object;");
-			desc.append("L" + p_owner_classname + ";");
-
-			// Helper variable to store the correct parameter index within the
-			// local variable table
-			int paramIndex = 0;
-			if (argT.length > 0) {
-				for (Type t : argT) {
-					desc.append(t.getDescriptor());
-					paramIndex++;
-					if (Type.DOUBLE == t.getSort() || Type.LONG == t.getSort()) {
-						paramIndex++;
-					}
-				}
-			}
-			desc.append("Ljava/lang/String;");
-			paramIndex++;
-			desc.append(")");
-			Type retT = Type.getReturnType(p_desc);
-			if (retT != null) {
-				desc.append(retT.getDescriptor());
-			}
-			Type[] myArgT = Type.getArgumentTypes(desc.toString());
-
-			if (p_owner_methodname.equals("<init>")) {
-				// p_owner_methodname = "Lpackage_class_init"
-				p_owner_methodname = p_owner_classname.replace("/", "_") + "_init";
-			}
-			String id = classname + "." + p_owner_methodname + ":" + desc.toString();
-			if (Utility.METHODS.containsKey(id)) {
-				return desc.toString();
-			} else {
-				Utility.METHODS.put(id, id);
-			}
-
-			// MyClassReader cr = new MyClassReader(b);
-			// ClassReader cr = new ClassReader(b);
-			// ClassWriter cw = new ClassWriter(cv, ClassWriter.COMPUTE_MAXS |
-			// ClassWriter.COMPUTE_FRAMES);
-
-			// Create a new asm-method instance
-			MethodVisitor mv = cv.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, p_owner_methodname,
-					desc.toString(), null, null);
-			mv.visitCode();
-
-			// Set<Integer> ks = sors.keySet();
-			// Iterator<Integer> ksIt = ks.iterator();
-			// while (ksIt.hasNext()) {
-			// int parameter = ksIt.next();
-			// if (sors.get(parameter).equals(StaticAnalysis.nodeType.SOURCE)) {
-			// if (myArgT[parameter].getSort() == Type.OBJECT) {
-			// mv.visitVarInsn(Opcodes.ALOAD, parameter);
-			// } else if (myArgT[parameter].getSort() == Type.ARRAY) {
-			// mv.visitVarInsn(Opcodes.ALOAD, parameter);
-			// } else if (myArgT[parameter].getSort() == Type.DOUBLE) {
-			// mv.visitVarInsn(Opcodes.DLOAD, parameter);
-			// } else if (myArgT[parameter].getSort() == Type.FLOAT) {
-			// mv.visitVarInsn(Opcodes.FLOAD, parameter);
-			// } else if (myArgT[parameter].getSort() == Type.LONG) {
-			// mv.visitVarInsn(Opcodes.LLOAD, parameter);
-			// } else if (myArgT[parameter].getSort() == Type.INT) {
-			// mv.visitVarInsn(Opcodes.ILOAD, parameter);
-			// }
-			// } else {
-			mv.visitVarInsn(Opcodes.ALOAD, 0);// ALOAD_0 -> the first parameter
-												// is the object reference }
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
-			mv.visitVarInsn(Opcodes.ALOAD, paramIndex);
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "methodInvoked",
-					"(Ljava/lang/Object;Ljava/lang/String;)Z", false);
-			mv.visitInsn(Opcodes.POP);
-			// }
-
-			// mv.visitVarInsn(Opcodes.ALOAD, 0);
-			// mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object",
-			// "getClass", "()Ljava/lang/Class;",false);
-			// mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Class",
-			// "toString", "()Ljava/lang/String;",false);
-			mv.visitVarInsn(Opcodes.ALOAD, 0);
-			int i = 1;
-			for (Type t : argT) {
-				if (t.getSort() == Type.OBJECT) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (t.getSort() == Type.ARRAY) {
-					mv.visitVarInsn(Opcodes.ALOAD, i);
-				} else if (t.getSort() == Type.DOUBLE) {
-					mv.visitVarInsn(Opcodes.DLOAD, i);
-					i++;
-				} else if (t.getSort() == Type.FLOAT) {
-					mv.visitVarInsn(Opcodes.FLOAD, i);
-				} else if (t.getSort() == Type.LONG) {
-					mv.visitVarInsn(Opcodes.LLOAD, i);
-					;
-					i++;
-				} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)) {
-					mv.visitVarInsn(Opcodes.ILOAD, i);
-				}
-				i++;
-			}
-			Boolean timer4 = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T4));
-			if (timer4) {
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "timerT4Start", "()V", false);
-			}
-
-			mv.visitMethodInsn(p_opcode, p_owner_classname, p_owner_methodname, p_desc, false);
-
-			if (timer4) {
-				mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length -
-															// 1);
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, UcTransformer.HOOKMETHOD, "timerT4Stop",
-						"(Ljava/lang/String;)V", false);
-			}
-
-			// mv.visitVarInsn(Opcodes.ALOAD, 0);// ALOAD_0 -> the first
-			// parameter is the object reference
-			// mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object");
-			// mv.visitVarInsn(Opcodes.ALOAD, paramIndex);// myArgT.length - 1);
-			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-			// UcTransformer.HOOKMETHOD,"methodExited",
-			// "(Ljava/lang/Object;Ljava/lang/String;)V",false);
-
-			// Add return
-			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY) {
-				mv.visitInsn(Opcodes.ARETURN);
-			} else if (retT.getSort() == Type.DOUBLE) {
-				mv.visitInsn(Opcodes.DRETURN);
-			} else if (retT.getSort() == Type.FLOAT) {
-				mv.visitInsn(Opcodes.FRETURN);
-			} else if (retT.getSort() == Type.LONG) {
-				mv.visitInsn(Opcodes.LRETURN);
-			} else if (retT.getSort() == Type.INT || retT.getSort() == Type.BOOLEAN) {
-				mv.visitInsn(Opcodes.IRETURN);
-			} else {
-				mv.visitInsn(Opcodes.RETURN);
-			}
-
-			mv.visitMaxs(myArgT.length, myArgT.length);
-			mv.visitEnd();
-			cv.visitEnd();
-
-			// cr.accept(cw, 0);
-			// ClassLoader parent = DummyHelperClass.class.getClassLoader();
-			// DummyHelperClassLoader mcl = new
-			// DummyHelperClassLoader(parent.getParent());
-			// Class<?> myTest2Clazz =
-			// mcl.define("edu.tum.uc.jvm.utility.DummyHelperClass",
-			// cw.toByteArray());
-
-			// Method[] methods = ClassLoader.class.getDeclaredMethods();
-			// for(Method m : methods){
-			// if(m.getName().toLowerCase().equals("defineclass") &&
-			// (m.getParameterTypes().length == 4)){
-			// m.setAccessible(true);
-			// m.invoke(parent,
-			// "edu.tum.uc.jvm.utility.DummyHelperClass",cw.toByteArray(),0,cw.toByteArray().length);
-			// }
-			// }
-			// scl.setAccessible(true);
-			// scl.set(null, mcl);
-			// Object obj = myTest2Clazz.newInstance();
-
-			// File f = new
-			// File("/home/alex/instrumented/DummyHelperClass.class");
-			// if (!f.exists()) {
-			// f.createNewFile();
-			// }
-			// DataOutputStream dos = new DataOutputStream(
-			// new FileOutputStream(f));
-			// dos.write(cw.toByteArray());
-		} catch (Exception e) {
-		}
-
-		return desc.toString();
 	}
 
 	/**
@@ -1071,7 +346,7 @@ public class Utility {
 				// Add offset
 				s.put("offset", source.getOffset());
 
-				if (source.is_return()) {
+				if (source.isReturn()) {
 					s.put("parampos", -1);
 				} else if (source.getParam() != -1000) {
 					s.put("parampos", source.getParam());
@@ -1110,7 +385,7 @@ public class Utility {
 
 				sink.put("offset", sinkSource.getOffset());
 
-				if (sinkSource.is_return()) {
+				if (sinkSource.isReturn()) {
 					sink.put("parampos", -1);
 				} else if (sinkSource.getParam() != -1000) {
 					sink.put("parampos", sinkSource.getParam());
@@ -1364,13 +639,13 @@ public class Utility {
 	 * 
 	 * @param p_mv
 	 *            A method visitor where to add the bytecode instruction.
-	 * @param p_valuetype
+	 * @param valueType
 	 *            The type of the value to be boxed.
 	 */
-	public static void boxTopStackValue(MethodVisitor p_mv, Type p_valuetype) {
-		if (p_valuetype == null)
+	public static void boxTopStackValue(MethodVisitor p_mv, Type valueType) {
+		if (valueType == null)
 			return;
-		int typeType = p_valuetype.getSort();
+		int typeType = valueType.getSort();
 		if (typeType == Type.DOUBLE) {
 			p_mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
 		} else if (typeType == Type.FLOAT) {
@@ -1390,68 +665,109 @@ public class Utility {
 			p_mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
 		}
 	}
+	
+	//Extracts the signature of a string, that is composed of methodname and methodsignature
+	public static String extractMethodSignature(String method){
+		String _return = method;
+		int index = _return.indexOf("(");
+		return _return.substring(index);
+	}
+	
+	/**
+     * returns the levenshtein distance of two strings<br>
+     * Der Levenshtein-Algorithmus (auch Edit-Distanz genannt) errechnet die
+     * Mindestanzahl von Editierungsoperationen, die notwendig sind, um eine
+     * bestimmte Zeichenkette soweit abzudern, um eine andere bestimmte
+     * Zeichenkette zu erhalten.<br>
+     * Die wohl bekannteste Weise die Edit-Distanz zu berechnen erfolgt durch
+     * den sogenannten Dynamic-Programming-Ansatz. Dabei wird eine Matrix
+     * initialisiert, die fr jede (m, N)-Zelle die Levenshtein-Distanz
+     * (levenshtein distance) zwischen dem m-Buchstabenprfix des einen Wortes
+     * und des n-Prfix des anderen Wortes enthlt.<br>
+     * Die Tabelle kann z.B. von der oberen linken Ecke zur untereren rechten
+     * Ecke gefllt werden. Jeder Sprung horizontal oder vertikal entspricht
+     * einer Editieroperation (Einfgen bzw. Lschen eines Zeichens) und
+     * "kostet" einen bestimmte virtuellen Betrag.<br>
+     * Die Kosten werden normalerweise auf 1 fr jede der Editieroperationen
+     * eingestellt. Der diagonale Sprung kostet 1, wenn die zwei Buchstaben in
+     * die Reihe und Spalte nicht bereinstimmen, oder im Falle einer
+     * bereinstimmung 0.<br>
+     * Jede Zelle minimiert jeweils die lokalen Kosten. Daher entspricht die
+     * Zahl in der untereren rechten Ecke dem Levenshtein-Abstand zwischen den
+     * beiden Wrtern.
+     * 
+     * @param s
+     * @param t
+     * @return the levenshtein dinstance
+     */
+    public static int levenshteinDistance(String s, String t) {
+        final int sLen = s.length(), tLen = t.length();
+
+        if (sLen == 0)
+            return tLen;
+        if (tLen == 0)
+            return sLen;
+
+        int[] costsPrev = new int[sLen + 1]; // previous cost array, horiz.
+        int[] costs = new int[sLen + 1];     // cost array, horizontally
+        int[] tmpArr;                        // helper to swap arrays
+        int sIndex, tIndex;                  // current s and t index
+        int cost;                            // current cost value
+        char tIndexChar;                     // char of t at tIndexth pos.
+
+        for (sIndex = 0; sIndex <= sLen; sIndex++)
+            costsPrev[sIndex] = sIndex;
+
+        for (tIndex = 1; tIndex <= tLen; tIndex++) {
+            tIndexChar = t.charAt(tIndex - 1);
+            costs[0] = tIndex;
+
+            for (sIndex = 1; sIndex <= sLen; sIndex++) {
+                cost = (s.charAt(sIndex - 1) == tIndexChar) ? 0 : 1;
+                // minimum of cell to the left+1, to the top+1, to the
+                // diagonally left and to the up +cost
+                costs[sIndex] = Math.min(Math.min(costs[sIndex - 1] + 1,
+                                                  costsPrev[sIndex] + 1),
+                                         costsPrev[sIndex - 1] + cost);
+            }
+
+            // copy current distance counts to 'previous row' distance counts
+            tmpArr = costsPrev;
+            costsPrev = costs;
+            costs = tmpArr;
+        }
+
+        // we just switched costArr and prevCostArr, so prevCostArr now actually
+        // has the most recent cost counts
+        return costsPrev[sLen];
+    }
 }
 
 /*
- * public static final String PREFIX = "my/";
- * 
- * private static String myrep(String p_replaceable) { if (p_replaceable !=
- * null) { if (!p_replaceable.contains(";")) { if
- * (!p_replaceable.contains("java/lang/Object") &&
- * !p_replaceable.contains("java/lang/Class") &&
- * !p_replaceable.contains("sun/misc/Unsafe")) { if
- * (p_replaceable.startsWith("apple/")) { p_replaceable =
- * p_replaceable.replaceFirst("apple/", UcTransformer.PREFIX + "apple/"); } else
- * if (p_replaceable.startsWith("com/")) { p_replaceable =
- * p_replaceable.replaceFirst("com/", UcTransformer.PREFIX + "com/"); } else if
- * (p_replaceable.startsWith("java/")) { p_replaceable =
- * p_replaceable.replaceFirst("java/", UcTransformer.PREFIX + "java/"); } else
- * if (p_replaceable.startsWith("javax/")) { p_replaceable =
- * p_replaceable.replaceFirst("javax/", UcTransformer.PREFIX + "javax/"); } else
- * if (p_replaceable.startsWith("org/")) { p_replaceable =
- * p_replaceable.replaceFirst("org/", UcTransformer.PREFIX + "org/"); } else if
- * (p_replaceable.startsWith("sun/")) { p_replaceable =
- * p_replaceable.replaceFirst("sun/", UcTransformer.PREFIX + "sun/"); } else if
- * (p_replaceable.startsWith("sunw/")) { p_replaceable =
- * p_replaceable.replaceFirst("sunw/", UcTransformer.PREFIX + "sunw/"); } else
- * if (p_replaceable.startsWith("oracle/")) { p_replaceable =
- * p_replaceable.replaceFirst("sunw/", UcTransformer.PREFIX + "oracle/"); } } }
- * else { String[] str = p_replaceable.split(";"); StringBuilder sb = new
- * StringBuilder(); Map<String, Integer> occurence = new HashMap<String,
- * Integer>(); for (int i = 0; i < str.length; i++) { if
- * (!str[i].contains("java/lang/Object") && !str[i].contains("java/lang/Class")
- * && !str[i].contains("sun/misc/Unsafe")) { String minString = ""; int minInt =
- * 100000000; if ((str[i].lastIndexOf("apple/") < minInt) &&
- * (str[i].lastIndexOf("apple/") != -1)) { minString = "apple/"; minInt =
- * str[i].lastIndexOf("apple/"); }
- * 
- * if ((str[i].lastIndexOf("com/") < minInt) && (str[i].lastIndexOf("com/") !=
- * -1)) { minString = "com/"; minInt = str[i].lastIndexOf("com/"); }
- * 
- * if ((str[i].lastIndexOf("java/") < minInt) && (str[i].lastIndexOf("java/") !=
- * -1)) { minString = "java/"; minInt = str[i].lastIndexOf("java/"); }
- * 
- * if ((str[i].lastIndexOf("javax/") < minInt) && (str[i].lastIndexOf("javax/")
- * != -1)) { minString = "javax/"; minInt = str[i].lastIndexOf("javax/"); }
- * 
- * if ((str[i].lastIndexOf("org/") < minInt) && (str[i].lastIndexOf("org/") !=
- * -1)) { minString = "org/"; minInt = str[i].lastIndexOf("org/"); }
- * 
- * if ((str[i].lastIndexOf("sun/") < minInt) && (str[i].lastIndexOf("sun/") !=
- * -1)) { minString = "sun/"; minInt = str[i].lastIndexOf("sun/"); }
- * 
- * if ((str[i].lastIndexOf("sunw/") < minInt) && (str[i].lastIndexOf("sunw/") !=
- * -1)) { minString = "sunw/"; minInt = str[i].lastIndexOf("sunw/"); }
- * 
- * if ((str[i].lastIndexOf("oracle/") < minInt) &&
- * (str[i].lastIndexOf("oracle/") != -1)) { minString = "oracle/"; minInt =
- * str[i].lastIndexOf("oracle/"); }
- * 
- * if (!minString.equals("")) { str[i] = str[i].replaceFirst(minString,
- * UcTransformer.PREFIX + minString); } }
- * 
- * sb.append(str[i]); if (str[i].contains("L" + UcTransformer.PREFIX) ||
- * str[i].contains("java/lang/Object") || str[i].contains("java/lang/Class") ||
- * str[i].contains("sun/misc/Unsafe")) { sb.append(";"); } } p_replaceable =
- * sb.toString(); } } return p_replaceable; }
- */
+public static synchronized boolean checkInvocationOnStack(String p_class, String p_method) {
+	boolean _return = false;
+
+	for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+		// System.out.println("STACKTRACE:
+		// "+ste.getClassName()+"/"+ste.getMethodName());
+
+		if (ste.getClassName().toLowerCase().contains(p_class.toLowerCase())
+				&& ste.getMethodName().toLowerCase().contains(p_method.toLowerCase())
+				&& !ste.getClassName().equals(Utility.notSpecified)
+				&& !ste.getMethodName().equals(Utility.notSpecified)) {
+			_return = true;
+			break;
+		} else if (ste.getClassName().toLowerCase().contains(p_class.toLowerCase())
+				&& !ste.getClassName().equals(Utility.notSpecified)) {
+			_return = true;
+			break;
+		} else if (ste.getMethodName().toLowerCase().contains(p_method.toLowerCase())
+				&& !ste.getMethodName().equals(Utility.notSpecified)) {
+			_return = true;
+			break;
+		}
+	}
+
+	return _return;
+}
+*/

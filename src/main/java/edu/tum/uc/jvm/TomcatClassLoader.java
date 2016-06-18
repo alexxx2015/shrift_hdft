@@ -2,7 +2,7 @@ package edu.tum.uc.jvm;
 import java.security.AccessControlException;
 import org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader;
 
-import edu.tum.uc.jvm.asm.MirrorStack;
+import edu.tum.uc.jvm.shrift.MirrorStack;
 
 
 

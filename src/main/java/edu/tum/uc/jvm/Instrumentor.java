@@ -9,28 +9,29 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.reflect.Field;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
-import edu.tum.uc.jvm.instrum.MyClassAdapter;
+import edu.tum.uc.jvm.declassification.qif.QIFClassVisitor;
 import edu.tum.uc.jvm.instrum.MyClassReader;
 import edu.tum.uc.jvm.instrum.MyClassWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
-
+//JVM property to format loggin output: -Djava.util.logging.SimpleFormatter.format='%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %2$s %5$s%6$s%n'
 public class Instrumentor {
-	
+
+	private static Logger _logger = Logger.getLogger(Instrumentor.class.getName());
+
 	//arg[0] = Source-Directory of to be instrumented files
 	//arg[1] = Destination-Directory of instrumented files
 	//arg[2] = uc.config 
 	public static void main(String[] arg) throws IOException, IllegalClassFormatException {
-		// TODO Auto-generated method stub
 //		arg = new String[]{"/home/osn/ws_securibench/JavaFTP/bin","/home/osn/instrumented","/home/osn/uc-reports/uc-jftp.config"};
 //		arg = new String[]{"/home/alex/instrumented/bin","/home/alex/instrumented","/home/alex/git_repos/uc4java/src/test/resources/uc-config/uc-implicitflows.config"};
 		if(arg.length != 3)
@@ -44,15 +45,17 @@ public class Instrumentor {
 			throw new FileNotFoundException("File "+ucConfig.getName()+" does not exist or cannot be found");
 		}
 		if(!sourceDir.exists()){
-			System.out.println("Creating source dir "+sourceDir.getName());
+			_logger.info("Creating source dir "+sourceDir.getName());
 			sourceDir.mkdirs();
 		}
 		if(!destDir.exists()){
-			System.out.println("Creating destination dir "+destDir.getName());
+			_logger.info("Creating destination dir "+destDir.getName());
 			destDir.mkdirs();
-		}
+		}		
+		_logger.info("Reading configuration file: "+ucConfig.getAbsolutePath());
 		ConfigProperties.setConfigFile(ucConfig.getAbsolutePath());
 		
+		_logger.info("Search for classfiles in "+sourceDir);
 		traverseDir(sourceDir,destDir, sourceDir, ucConfig);
 	}
 	
@@ -63,6 +66,10 @@ public class Instrumentor {
 				traverseDir(sourceDir, destDir, f, ucConfig);
 				continue;
 			}
+			if(!f.getName().endsWith(".class")){
+				continue;
+			}
+
 			InputStream is = new FileInputStream(f);
 			byte[] raw_bytecode = IOUtils.toByteArray(is);
 			byte[] instrumentedClass = transform(raw_bytecode);
@@ -105,19 +112,14 @@ public class Instrumentor {
 			return classfileBuffer;
 		}
 		
-		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
-
+//		_logger.info("Start instrumenting " + className);
 		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS
-				| ClassWriter.COMPUTE_FRAMES);// ClassWriter cw = new
-												// ClassWriter(cr,
-												// ClassWriter.COMPUTE_MAXS |
-												// ClassWriter.COMPUTE_FRAMES);
-		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
-		System.out.println("D1");
+				| ClassWriter.COMPUTE_FRAMES);
+
+		//		ClassVisitor cv = new MyClassAdapter(Opcodes.ASM5, cw, cn);
+		ClassVisitor cv = new QIFClassVisitor(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
-		System.out.println("D2");
-		
-		// return the instrumented class
+//		_logger.info("Done instrumenting " + className);
 		return cw.toByteArray();
 	}
 	

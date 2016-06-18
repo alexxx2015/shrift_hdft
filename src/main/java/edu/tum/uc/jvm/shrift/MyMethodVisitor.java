@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.asm;
+package edu.tum.uc.jvm.shrift;
 
 import java.util.Iterator;
 import java.util.List;
@@ -541,7 +541,7 @@ public class MyMethodVisitor extends MethodVisitor {
 				+ sinkSource.getId() + delim + sinkSource.getContextAsString();
 
 		if (p_opcode != Opcodes.INVOKESTATIC) {
-			String d_desc = Utility.createASMHelperMethod(p_opcode, p_owner, p_name, p_desc, cv, this.className, sors);
+			String d_desc = ShriftMethodWrapper.createASMHelperMethod(p_opcode, p_owner, p_name, p_desc, cv, this.className, sors);
 			Boolean timer2 = new Boolean(
 					ConfigProperties
 							.getProperty(ConfigProperties.PROPERTIES.TIMER_T2));

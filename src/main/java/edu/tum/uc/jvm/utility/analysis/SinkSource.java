@@ -62,11 +62,11 @@ public class SinkSource {
 		this.possibleSignatures = possibleSignatures;
 	}
 
-	public boolean is_return() {
+	public boolean isReturn() {
 		return _return;
 	}
 
-	public void set_return(boolean _return) {
+	public void setReturn(boolean _return) {
 		this._return = _return;
 	}
 

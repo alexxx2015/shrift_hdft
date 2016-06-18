@@ -104,7 +104,8 @@ public class StaticAnalysis {
 		}
 		return _return;
 	}
-
+	
+	//Returns a sink/source specified by id and type
 	public static SinkSource getSinkSourceById(String id, NODETYPE type) {
 		SinkSource _return = null;
 		Iterator<SinkSource> it;
@@ -130,7 +131,7 @@ public class StaticAnalysis {
 		return _return;
 	}
 
-	// TODO: chop not implemented and used yet
+	//Returns a list of chop-nodes that have the ownerMethod as parent method
 	public static List<Chop> getChop(String ownerMethod) {
 		if (ownerMethod == null)
 			return null;
@@ -185,7 +186,7 @@ public class StaticAnalysis {
 		List<SinkSource> _return = new LinkedList<SinkSource>();
 		for(SinkSource s : contains(parentMethodFQN, bytecodeOffset, getSources())){
 			int param = s.getParam();
-			if(s.is_return())
+			if(s.isReturn())
 				_return.add(s);
 			else if(param > 0)
 				_return.add(s);
@@ -219,6 +220,41 @@ public class StaticAnalysis {
 		    	_return.add(sinksource);
 		    }
 		}
+		return _return;
+	}
+	
+	//Returns a list of sources that a sink depends on according to the report
+	public static List<SinkSource> getDepSources(SinkSource sink){
+		List<SinkSource> _return = new LinkedList<SinkSource>();
+		for(Flow f : getFlows()){
+			if(f.getSink().equals(sink.getId())){
+				for(String source : f.getSource())
+					_return.add(getSourceById(source));
+			}
+		}
+		return _return;
+	}
+	
+	//Returns a list of flows that that contain the chopNode on its path
+	public static List<Flow> getFlowsByChopNode(Chop chopNode){
+		List<Flow> _return = new LinkedList<Flow>();
+
+		List<Flow> flows = reportreader.getFlows();
+		Iterator<Flow> flowIt = flows.iterator();
+		while (flowIt.hasNext()) {
+			Flow f = flowIt.next();
+			if (f.getChopNodes() != null) {
+				Iterator<Chop> chopIt = f.getChopNodes().iterator();
+				while (chopIt.hasNext()) {
+					Chop c = chopIt.next();
+					if (chopNode.getOwnerMethod().equals(c.getOwnerMethod()) && chopNode.getByteCodeIndex() == c.getByteCodeIndex()){
+						_return.add(f);
+						break;
+					}
+				}
+			}
+		}
+
 		return _return;
 	}
 }

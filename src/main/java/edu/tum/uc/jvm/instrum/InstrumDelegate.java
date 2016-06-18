@@ -485,7 +485,7 @@ public class InstrumDelegate {
     		SinkSource source = StaticAnalysis.getSourceById(s);
     		int param = source.getParam();
     		String sourceParam = "";
-    		if(source.is_return()) {
+    		if(source.isReturn()) {
     			sourceParam = "ret";
     		} else if (param > 0){
     			sourceParam = String.valueOf(param);
@@ -523,7 +523,7 @@ public class InstrumDelegate {
     		SinkSource sink = StaticAnalysis.getSinkById(s);
     		int param = sink.getParam();
     		String sinkParam = "";
-    		if(sink.is_return()) {
+    		if(sink.isReturn()) {
     			sinkParam = "ret";
     		} else {
     			sinkParam = String.valueOf(param);
@@ -994,7 +994,7 @@ public class InstrumDelegate {
 		Map<String, String> sourceIdAndDate = new HashMap<>();
 		sourceIdAndDate.put("sourceId", source.getId());
 		sourceIdAndDate.put("timeStamp", String.valueOf(System.currentTimeMillis()));
-		if (source.is_return()) {
+		if (source.isReturn()) {
 		    sources.put("ret", sourceIdAndDate);
 		} else {
 		    if (source.getParam() == 0) {

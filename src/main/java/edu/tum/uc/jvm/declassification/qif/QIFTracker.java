@@ -1,10 +1,9 @@
 package edu.tum.uc.jvm.declassification.qif;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.objectweb.asm.Type;
 
 import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
@@ -64,33 +63,67 @@ public class QIFTracker {
 		qif.put(sourceId, new Qif((double) size, sourceId));
 	}
 
-	public static void decAbsQty(String sourceId, double amount) {
+	// public static void decAbsQty(double amount, String sourceId) {
+	public static void decSubSequQty(String shortenStr, String origStr, String sourceId) {
 		Qif actualAmount = qif.get(sourceId);
-		actualAmount.setActQty(actualAmount.getActQty() - amount);
-		// qif.put(sourceId, actualAmount);
+		double amount = (double) shortenStr.length() / origStr.length();
+		double aQif = actualAmount.getActQty() * amount;
+		actualAmount.setActQty(aQif);
+	}
+
+	public static void decSplitQty(String[] splitStr, String sourceId) {
+		Qif actualAmount = qif.get(sourceId);
+		int totalLength = Arrays.toString(splitStr).length() - 2;
+		double amount = -1;
+		for (String s : splitStr) {
+			s = s.trim();
+			amount = Math.max(amount, (double) s.length() / totalLength);
+		}
+		double aQif = actualAmount.getActQty() * (amount);
+		actualAmount.setActQty(aQif);
 	}
 
 	public static void decArithQty(Object o1, Object o2, String sourceId, int opcode) {
 		double diff = 0;
-		// compute the diff between the two values and then the ratio between
-		// diff and the total number of possible values
-		if (o1 instanceof Integer && o2 instanceof Integer)
-			diff = Math.abs(((Integer) o1).intValue() - ((Integer) o2).intValue()) / (double) Integer.MAX_VALUE;
-		else if (o1 instanceof Long && o2 instanceof Long)
-			diff = Math.abs(((Long) o1).intValue() - ((Long) o2).intValue()) / (double) Integer.MAX_VALUE;
-		else if (o1 instanceof Float && o2 instanceof Float)
-			diff = Math.abs(((Float) o1).intValue() - ((Float) o2).intValue()) / (double) Integer.MAX_VALUE;
-		else if (o1 instanceof Double && o2 instanceof Double)
-			diff = Math.abs(((Double) o1).intValue() - ((Double) o2).intValue()) / (double) Integer.MAX_VALUE;
+		String o1str, o2str;
 
-		// compute the diff as the ratio between the number of shifted bits and
-		// the number of total possible shifts which is 2^5
-		// as java only considers the last five bits of a word for the number of
+		// Compute the difference between two numeric values as the number of
+		// flipped bits between the result and each operand
+		if (o1 instanceof Integer && o2 instanceof Integer) {
+			o1str = Integer.toBinaryString((Integer) o1);
+			o2str = Integer.toBinaryString((Integer) o2);
+			int distance = Utility.levenshteinDistance(o1str, o2str);
+			int maxLength = Math.max(o1str.length(), o2str.length());// Integer.toBinaryString(Integer.MAX_VALUE).length()+1;
+			diff = (double) distance / maxLength;
+		} else if (o1 instanceof Long && o2 instanceof Long) {
+			o1str = Long.toBinaryString((Long) o1);
+			o2str = Long.toBinaryString((Long) o2);
+			int distance = Utility.levenshteinDistance(o1str, o2str);
+			int maxLength = Math.max(o1str.length(), o2str.length());
+			diff = (double) distance / maxLength;
+		} else if (o1 instanceof Float && o2 instanceof Float) {
+			o1str = Long.toBinaryString(Float.floatToRawIntBits((Float) o1));
+			o2str = Long.toBinaryString(Float.floatToRawIntBits((Float) o2));
+			int distance = Utility.levenshteinDistance(o1str, o2str);
+			int maxLength = Math.max(o1str.length(), o2str.length());
+			diff = (double) distance / maxLength;
+		} else if (o1 instanceof Double && o2 instanceof Double) {
+			o1str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o1));
+			o2str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o2));
+			int distance = Utility.levenshteinDistance(o1str, o2str);
+			int maxLength = Math.max(o1str.length(), o2str.length());
+			diff = (double) distance / maxLength;
+		}
+
+		// Bit-Op: compute the difference as the ratio between the number of
+		// shifted bits and
+		// the number of total possible shifts which is 2^5 as java only
+		// considers the last five bits of a word for the number of
 		// shift positions.
 		if (opcode == Opcodes.ISHL || opcode == Opcodes.ISHR || opcode == Opcodes.IUSHR) {
 			diff = ((Integer) o2).intValue() / Math.pow(2, 5);
 		} else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
-			diff = ((Long) o2).intValue() / Math.pow(2, 5);
+			diff = ((Long) o2).intValue() / Math.pow(2, 6);
 		}
 
 		Qif actualAmount = qif.get(sourceId);
@@ -98,6 +131,8 @@ public class QIFTracker {
 			return;
 
 		double aQif = actualAmount.getActQty() * (1 - diff);
+		System.out.println("... Reduced: " + diff + " , " + actualAmount.getActQty() + " , " + aQif + " , "
+				+ Mnemonic.OPCODE[opcode]);
 		actualAmount.setActQty(aQif);
 	}
 
@@ -176,14 +211,17 @@ public class QIFTracker {
 		if (!o1.contains(o2) && !o2.contains(o1)) {
 			int d = Utility.levenshteinDistance(o1.trim(), o2.trim());
 			Qif actualAmount = qif.get(sourceId);
-			if(actualAmount != null){
+			if (actualAmount != null) {
 				int length = Math.max(o1.trim().length(), o2.trim().length());
-				double aQif = actualAmount.getActQty() * (1-((double)d/length));
+				double aQif = actualAmount.getActQty() * (1 - ((double) d / length));
+				// System.out.println("-- "+sourceId+" reduced from "+
+				// actualAmount.getActQty()+" to "+aQif);
 				actualAmount.setActQty(aQif);
 			}
 		}
 	}
-
+	
+//	Check if a specific sink was reached
 	public static void check(String sinkId, String... sources) {
 		for (String s : sources)
 			System.out.println("-- Reached sink " + sinkId + " with qty " + qif.get(s).getActQty() + " from " + s

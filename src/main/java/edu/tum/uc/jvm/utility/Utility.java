@@ -66,11 +66,11 @@ public class Utility {
 			_return = true;
 		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("replace"))
 			_return = true;
-		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("split"))//TODO
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("split"))
 			_return = true;
-		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("subsequence"))//TODO
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("subsequence"))
 			_return = true;
-		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("substring"))//TODO
+		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("substring"))
 			_return = true;
 			
 		return _return;
@@ -490,6 +490,10 @@ public class Utility {
 			while (it.hasNext()) {
 				String[] cmp = it.next();
 				switch (cmp[0]) {
+				case "equals": 
+					if (classname.toLowerCase().equals(cmp[1].toLowerCase()))
+						_return = true;
+					break;
 				case "contains":
 					if (classname.toLowerCase().contains(cmp[1].toLowerCase()))
 						_return = true;
@@ -543,6 +547,10 @@ public class Utility {
 			while (it.hasNext()) {
 				String[] cmp = it.next();
 				switch (cmp[0]) {
+				case "equals": 
+					if (classname.toLowerCase().equals(cmp[1].toLowerCase()))
+						_return = true;
+					break;
 				case "contains":
 					if (classname.toLowerCase().contains(cmp[1].toLowerCase()))
 						_return = true;
@@ -740,6 +748,15 @@ public class Utility {
         // we just switched costArr and prevCostArr, so prevCostArr now actually
         // has the most recent cost counts
         return costsPrev[sLen];
+    }
+    
+    public static String str2bin(String str){
+    	byte[] bs = str.getBytes();
+    	String _return = "";
+    	for(byte b : bs){
+    		_return += Integer.toBinaryString(b);
+    	}
+    	return _return;
     }
 }
 

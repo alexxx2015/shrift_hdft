@@ -6,5 +6,6 @@ contains:eu.demirbas
 contains:jzip
 startswith:myTest
 startswith:restfb.test
+startswith:sap.UserAuth
 
 contains:test.Declassification

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.tum.uc.jvm.SimpleAgent;
 import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
@@ -220,8 +221,8 @@ public class QIFTracker {
 			}
 		}
 	}
-	
-//	Check if a specific sink was reached
+
+	// Check if a specific sink was reached
 	public static void check(String sinkId, String... sources) {
 		for (String s : sources)
 			System.out.println("-- Reached sink " + sinkId + " with qty " + qif.get(s).getActQty() + " from " + s
@@ -250,14 +251,14 @@ public class QIFTracker {
 			size = ((String) o).length();
 		else if (o.getClass().isArray()) {
 			size = (long) getNumElements(o);
-		} else
+		} else {
 			size = UnsafeUtil.sizeOf(o);
+		}
+
+//		System.out.println("UsafeUtil-Size " + size + ", " + o.getClass().getName());
+//		System.out.println("SimpleAgent-Size " + SimpleAgent.getObjectSize(o) + ", " + o.getClass().getName());
 
 		return size;
-		// System.out.println("UsafeUtil-Size "+size+",
-		// "+o.getClass().getName());
-		// System.out.println("SimpleAgent-Size
-		// "+SimpleAgent.getObjectSize(o)+", "+o.getClass().getName());
 	}
 
 	// Computes the number of elements in a multi-dimensional array

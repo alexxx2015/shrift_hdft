@@ -145,8 +145,6 @@ public class MirrorStack {
 		} else {
 			lastNode = n;
 		}
-
-		// System.out.println("LOG: " + chop);
 	}
 
 	public static void timerT1Start() {

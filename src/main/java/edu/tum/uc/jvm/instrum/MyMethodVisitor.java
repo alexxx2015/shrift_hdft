@@ -12,7 +12,9 @@ import org.objectweb.asm.Type;
 
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.MyUcTransformer;
+import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.utility.ConfigProperties;
+import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.Flow;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
@@ -106,9 +108,19 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitInsn(p_opcode);
 			return;
 		}
+		
+		if(p_opcode == Opcodes.RETURN && "main".equals(this.methodName) && ((this.accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC)){
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+					ChopNodeDumper.class.getName().replace(".", "/"), "addEndNode", "()V", false);
+		}
 
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[p_opcode]+"|| -- visitInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
 
 		// check for the chopnode to be present here and that it has the correct
 		// operation
@@ -469,6 +481,41 @@ public class MyMethodVisitor extends MethodVisitor {
 		// insert original bytecode operation
 		mv.visitInsn(p_opcode);
 	}
+	
+	@Override
+	public void visitIntInsn(int p_opcode, int p_operand){
+		// get the chop node if there is one at the current bytecode offset
+		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_operand+"| -- visitIntInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
+		
+		mv.visitIntInsn(p_opcode, p_operand);		
+	}
+	
+	@Override
+	public void visitJumpInsn(int p_opcode, Label p_label){
+		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_label.toString()+"| -- visitJumpInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
+		mv.visitJumpInsn(p_opcode, p_label);
+	}
+	
+	@Override
+	public void visitLdcInsn(Object cst){
+		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[18]+"|"+cst.toString()+"| -- visitLdcInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
+		mv.visitLdcInsn(cst);
+	}
 
 	/**
 	 * Visits an IINC instruction and instruments it with a BinaryAssign
@@ -487,11 +534,13 @@ public class MyMethodVisitor extends MethodVisitor {
 			return;
 		}
 
-		// opcode is IINC
-		// binary
-
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[132]+"|"+p_inc+"| -- visitIincInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
 
 		// check for the chopnode to be present here and that it has the correct
 		// operation
@@ -538,70 +587,6 @@ public class MyMethodVisitor extends MethodVisitor {
 	}
 
 	/**
-	 * Visits a type instruction (one that takes an internal name of a class as
-	 * parameter). The only instruction falling in this category and occuring in
-	 * chopnode operations is CHECKCAST, being instrumented with a UnaryAssign
-	 * delegate call.
-	 * 
-	 * 
-	 * @param p_opcode
-	 *            The the opcode of the type instruction to be visited.
-	 * @param p_type
-	 *            An internal name of an object or array class.
-	 */
-	public void visitTypeInsn(int p_opcode, String p_type) {
-		if (!this.ift) {
-			mv.visitTypeInsn(p_opcode, p_type);
-			return;
-		}
-		// get the chop node if there is one at the current bytecode offset
-		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
-
-		// check for the chopnode to be present here and that it has the correct
-		// operation
-		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_ASSIGN)) {
-			if (p_opcode == Opcodes.CHECKCAST) {
-				// unary
-
-				// add call to start event creation timer
-				mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
-				mv.visitLdcInsn(chopNode.getByteCodeIndex());
-				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabel());
-				mv.visitMethodInsn(
-						Opcodes.INVOKESTATIC,
-						MyUcTransformer.DELEGATECLASS,
-						"startEventTimer",
-						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V",
-						false);
-
-				// Create a copy of the opcode argument (already reference type)
-				mv.visitInsn(Opcodes.DUP);
-
-				// Load parent object (or null if parent method is static)
-				if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
-					mv.visitInsn(Opcodes.ACONST_NULL);
-				} else {
-					mv.visitVarInsn(Opcodes.ALOAD, 0);
-				}
-
-				// Load parent method name, chopnode label and invoke delegate
-				// method
-				mv.visitLdcInsn(fqName);
-				mv.visitLdcInsn(chopNode.getLabel());
-				mv.visitMethodInsn(
-						Opcodes.INVOKESTATIC,
-						MyUcTransformer.DELEGATECLASS,
-						"unaryAssign",
-						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
-						false);
-			}
-		}
-		// insert original bytecode operation
-		mv.visitTypeInsn(p_opcode, p_type);
-	}
-
-	/**
 	 * Visits a field instruction (one that loads or stores the content of a
 	 * field). Instructions reading a field are instrumented with a ReadField
 	 * delegate call while the ones writing into a field make a WriteField call
@@ -617,6 +602,12 @@ public class MyMethodVisitor extends MethodVisitor {
 	 * @param p_desc
 	 *            The descriptor of the field.
 	 */
+	
+	private void addChopNodeLogger(MethodVisitor mv, String ldcInsn){
+		mv.visitLdcInsn(ldcInsn);
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+				ChopNodeDumper.class.getName().replace(".", "/"), "add2Queue", "(Ljava/lang/String;)V", false);
+	}
 	public void visitFieldInsn(int p_opcode, String p_owner, String p_name,
 			String p_desc) {
 		if (!this.ift) {
@@ -625,6 +616,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		}
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_owner + "." + p_name + ":" + p_desc+"| -- visitFieldInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
 
 		// check for the chopnode to be present here and that it has the correct
 		// operation
@@ -814,6 +810,11 @@ public class MyMethodVisitor extends MethodVisitor {
 		List<SinkSource> sinks = StaticAnalysis.isSinkWithFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_owner + "." + p_name + ":" + p_desc+"|-- visitMethodInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
 
 		if (sources != null && sources.size() > 0) {
 			
@@ -1297,6 +1298,98 @@ public class MyMethodVisitor extends MethodVisitor {
 					p_opcode == Opcodes.INVOKEINTERFACE);
 		}
 	}
+	
+	@Override
+	public void visitMultiANewArrayInsn(String desc, int dims){
+		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[197]+"|Desc: "+desc+" -Dim: "+dims+"| -- visitMultiANewArrayInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
+		
+		mv.visitMultiANewArrayInsn(desc, dims);
+	}
+
+	/**
+	 * Visits a type instruction (one that takes an internal name of a class as
+	 * parameter). The only instruction falling in this category and occuring in
+	 * chopnode operations is CHECKCAST, being instrumented with a UnaryAssign
+	 * delegate call.
+	 * 
+	 * 
+	 * @param p_opcode
+	 *            The the opcode of the type instruction to be visited.
+	 * @param p_type
+	 *            An internal name of an object or array class.
+	 */
+	public void visitTypeInsn(int p_opcode, String p_type) {
+		if (!this.ift) {
+			mv.visitTypeInsn(p_opcode, p_type);
+			return;
+		}
+		// get the chop node if there is one at the current bytecode offset
+		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[p_opcode]+"|"+p_type+"| -- visitTypeInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
+		
+		// check for the chopnode to be present here and that it has the correct
+		// operation
+		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_ASSIGN)) {
+			if (p_opcode == Opcodes.CHECKCAST) {
+				// unary
+
+				// add call to start event creation timer
+				mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
+				mv.visitLdcInsn(chopNode.getByteCodeIndex());
+				mv.visitLdcInsn(chopNode.getOwnerMethod());
+				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitMethodInsn(
+						Opcodes.INVOKESTATIC,
+						MyUcTransformer.DELEGATECLASS,
+						"startEventTimer",
+						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V",
+						false);
+
+				// Create a copy of the opcode argument (already reference type)
+				mv.visitInsn(Opcodes.DUP);
+
+				// Load parent object (or null if parent method is static)
+				if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+					mv.visitInsn(Opcodes.ACONST_NULL);
+				} else {
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+				}
+
+				// Load parent method name, chopnode label and invoke delegate
+				// method
+				mv.visitLdcInsn(fqName);
+				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitMethodInsn(
+						Opcodes.INVOKESTATIC,
+						MyUcTransformer.DELEGATECLASS,
+						"unaryAssign",
+						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+						false);
+			}
+		}
+		// insert original bytecode operation
+		mv.visitTypeInsn(p_opcode, p_type);
+	}
+	
+	@Override
+	public void visitVarInsn(int opcode, int var){
+		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		if(chopNode != null && logChopNode){
+			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[opcode]+"|"+var+"| -- visitVarInsn";
+			addChopNodeLogger(mv, ldcInsn);
+		}
+		mv.visitVarInsn(opcode, var);
+	}
 
 	/**
 	 * Visits the maximum stack size and the maximum number of local variables
@@ -1424,18 +1517,5 @@ public class MyMethodVisitor extends MethodVisitor {
 	private void visitSwap15(MethodVisitor mv) {
 		mv.visitInsn(Opcodes.DUP_X2);
 		mv.visitInsn(Opcodes.POP);
-	}
-
-	public static void main() {
-		ClassWriter cw = new ClassWriter(0);
-	}
-
-	public static void t() {
-		SourceSinkName.Type t = SourceSinkName.Type.SOURCE, t1;
-		t1(t,"");
-	}
-
-	public static void t1(SourceSinkName.Type t, String s) {
-		SourceSinkName.Type t1 = t;
 	}
 }

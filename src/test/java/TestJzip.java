@@ -1,36 +1,35 @@
 import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.reflect.Field;
 import java.net.URL;
-import java.security.ProtectionDomain;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.tum.uc.jvm.MyUcTransformer;
-import edu.tum.uc.jvm.UcCommunicator;
-import edu.tum.uc.jvm.UcTransformer;
-import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 
 public class TestJzip extends AbstractTest {
+	
+	private boolean runCode = true;
 
 	@Before
 	public void init() throws Exception {
 //		this.startPdpServer=true;
+//		init("/uc-config/uc-myjzip.config");
 		init("/uc-config/uc-jzip.config");
+//		runCode = false;
 	}
 
 	@Test
 	public void testInstrumentation() {
 		try {
+			Logger.getRootLogger().setLevel(Level.OFF);
 			//Load and instrument JZip's bytecode
 			Class<?> clazz = jzip.JZip.class;
 			String className = clazz.getName().replace(".",
@@ -44,13 +43,11 @@ public class TestJzip extends AbstractTest {
 			byte[] instrumented_bytecode = u.transform(null, className, null,
 					null, raw_bytecode);
 			
-			FileOutputStream fos = new FileOutputStream("target/test-classes/jzip/JZipInstrd.class");
-			fos.write(instrumented_bytecode);
-
+//			do not run the instrumented version
+			if(!runCode) return;
+			
 			ClassLoader parent = this.getClass().getClassLoader();
 			MyClassLoader mcl = new MyClassLoader(parent);
-			
-			
 			
 			//Reload instrumented JZip class and execute test run: zip a bunch of file in the resource folder 'toBeZippedFiles'
 			Class<?> reloadClass = mcl.define("jzip.JZip",
@@ -63,11 +60,9 @@ public class TestJzip extends AbstractTest {
 				URL url = this.getClass().getResource("/toBeZippedFilesSmall");
 				if (url != null) {
 					File f = new File(url.getFile());
-					// File f = new File("/home/alex/xlayerpip.zip");
-					instruction = "zip " + f.getParent()
-					+ "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
-
+					instruction = "zip " + f.getParent() + "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
 					// instruction = "zip /home/alex/toBeZipped.zip "// + f.getAbsolutePath();
+					// File f = new File("/home/alex/xlayerpip.zip");
 				}
 
 				//instruction += "\n exit";

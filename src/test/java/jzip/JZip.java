@@ -38,6 +38,8 @@ public class JZip implements TestIntf{
 	private boolean run;
 	private String[] args;
 	private String commandline = "";
+	
+	public JZip(){}
 
 	public JZip(String[] args) {
 		this.args = args;

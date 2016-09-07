@@ -28,8 +28,7 @@ public abstract class AbstractTest {
 		if (url != null) {
 			File input = new File(url.getFile());
 			File output = new File(input.getParent() + "/../uc.config");
-			System.out.println("COPY " + input.getAbsolutePath() + " to "
-					+ output.getAbsolutePath());
+			System.out.println("COPY " + input.getAbsolutePath() + " to " + output.getAbsolutePath());
 
 			FileInputStream fis = new FileInputStream(input);
 			FileOutputStream fos = new FileOutputStream(output);
@@ -52,32 +51,27 @@ public abstract class AbstractTest {
 	protected void init(String filename) throws Exception {
 		copyConfigFile(filename);
 
-		int pdpServerPort = Integer.valueOf((String) config.get("PDP_PORT"));
-		int pipServerPort = Integer.valueOf((String) config.get("PIP_PORT"));
-		int pmpServerPort = Integer.valueOf((String) config.get("PMP_PORT"));
-
-		String[] args = {
-				"--" + CommandLineOptions.OPTION_LOCAL_PDP_LISTENER_PORT_LONG,
-				Integer.toString(pdpServerPort),
-				"--" + CommandLineOptions.OPTION_LOCAL_PIP_LISTENER_PORT_LONG,
-				Integer.toString(pipServerPort),
-				"--" + CommandLineOptions.OPTION_LOCAL_PMP_LISTENER_PORT_LONG,
-				Integer.toString(pmpServerPort),
-				"--" + CommandLineOptions.OPTION_LOCAL_ANY_LISTENER_PORT_LONG,
-				Integer.toString(ANY_SERVER_PORT) };
-
 		if (startPdpServer) {
-			box = new Controller(args);
-			box.start();			
+			int pdpServerPort = Integer.valueOf((String) config.get("PDP_PORT"));
+			int pipServerPort = Integer.valueOf((String) config.get("PIP_PORT"));
+			int pmpServerPort = Integer.valueOf((String) config.get("PMP_PORT"));
 
-			// In case of using the pdp via LocFuncCall set internal pdpController in UcCommunicator.
-			boolean netcom = new Boolean(ConfigProperties
-					.getProperty(ConfigProperties.PROPERTIES.NETCOM));
+			String[] args = { "--" + CommandLineOptions.OPTION_LOCAL_PDP_LISTENER_PORT_LONG,
+					Integer.toString(pdpServerPort), "--" + CommandLineOptions.OPTION_LOCAL_PIP_LISTENER_PORT_LONG,
+					Integer.toString(pipServerPort), "--" + CommandLineOptions.OPTION_LOCAL_PMP_LISTENER_PORT_LONG,
+					Integer.toString(pmpServerPort), "--" + CommandLineOptions.OPTION_LOCAL_ANY_LISTENER_PORT_LONG,
+					Integer.toString(ANY_SERVER_PORT) };
+
+			box = new Controller(args);
+			box.start();
+
+			// In case of using the pdp via LocFuncCall set internal
+			// pdpController in UcCommunicator.
+			boolean netcom = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.NETCOM));
 			if (!netcom) {
 				Class<?> ucCom = UcCommunicator.class;
 				for (Field f : ucCom.getDeclaredFields()) {
-					if (f.getName().toLowerCase().trim()
-							.equals("pdpcontroller")) {
+					if (f.getName().toLowerCase().trim().equals("pdpcontroller")) {
 						f.setAccessible(true);
 						f.set(UcCommunicator.getInstance(), this.box);
 						f.setAccessible(false);

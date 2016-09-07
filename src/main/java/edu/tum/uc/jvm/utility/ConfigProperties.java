@@ -29,10 +29,14 @@ public final class ConfigProperties {
 		, TIMER_T5
 		, NETCOM
 		, UC_PROPERTIES
-		, PDP_ASYNCOM
-		, UC4WIN_AUTOSTART
+		, PDP_ASYNCOM //asynchronous communication with the pdp
+		, UC4WIN_AUTOSTART //true if uc4win should be started
 		, IFT
 		, TIMERMETHODS
+		, LOGCHOPNODES //If true then chopnodes are dumped into a file
+		, CHOPNODES_FILE //File name where logged chop nodes should be dumped
+		, APPID //Unique identifer for the instrumented application, added by instrumentation phase
+		, UCWEBMGMURL //uc webmanagement url, where the chop nodes are send for rendering, if not set chop nodes are logged into a file
 	}
 	
 	private static Properties CONFIGURATION = null;	

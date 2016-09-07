@@ -44,7 +44,6 @@ public class EventRepository {
 						signature = s1;
 						break;
 					}
-					;
 				}
 				if (s.getContext() != null) {
 					for (int i : s.getContext()) {

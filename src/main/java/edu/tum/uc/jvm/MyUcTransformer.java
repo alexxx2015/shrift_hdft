@@ -37,7 +37,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 	private boolean instrument_webservice;
 
 	{
-		// Initialize pdp communication
+//		Initialize pdp communication
 //		UcCommunicator.getInstance().initPDP();
 
 		// Populate PIP
@@ -117,9 +117,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 												// ClassWriter.COMPUTE_MAXS |
 												// ClassWriter.COMPUTE_FRAMES);
 		ClassVisitor cv = new MyClassVisitor(Opcodes.ASM5, cw, cn);
-//		System.out.println("D1");
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
-//		System.out.println("D2");
 		if (!"".equals(statistic)) {
 			StatisticsWriter.logInstrumentation(cn, cw.toByteArray(),
 					System.nanoTime() - start_instrumentation);
@@ -129,11 +127,10 @@ public class MyUcTransformer implements ClassFileTransformer {
 		// configuration file
 		String s = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTED_CLASS_PATH);
-		if ((s != null) && !s.equals("")) {			
+		if ((s != null) && !s.equals("")) {
 			try {
 				File f = new File(s + cr.getClassName().replace("/", "_")
 						+ ".class");
-				System.out.println("DUMPED: "+f.getName());
 				if (!f.getParentFile().exists()) {
 				    f.getParentFile().mkdirs();
 				}
@@ -158,30 +155,3 @@ public class MyUcTransformer implements ClassFileTransformer {
 		return cw.toByteArray();
 	}
 }
-
-// try {
-// Method method = ClassLoader.class.getDeclaredMethod(
-// "findLoadedClass", new Class[] { String.class });
-// method.setAccessible(true);
-//
-// ClassLoader cl = ClassLoader.getSystemClassLoader();
-// Object clazz = method.invoke(cl,
-// "edu.tum.uc.jvm.utility.analysis.StaticAnalysis");
-// if (clazz == null) {
-// }
-// } catch (SecurityException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (IllegalArgumentException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (IllegalAccessException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (InvocationTargetException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// } catch (NoSuchMethodException e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// }

@@ -80,7 +80,6 @@ public abstract class AbstractTest {
 				}
 			}
 		}
-
 	}
 
 	@After

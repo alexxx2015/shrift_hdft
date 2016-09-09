@@ -82,7 +82,9 @@ public class MyClassVisitor extends ClassVisitor {
 				MyAdviceAdapter myAa = new MyAdviceAdapter(Opcodes.ASM4, timeAa, p_access, p_name, p_desc, p_signature,
 						this.className);
 				// actual instrumentation for tracking events
-				mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
+//				mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
+//						chopNodes, this.classWriter, this.superName);
+				mv = new MyMethodVisitorSAP(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
 						chopNodes, this.classWriter, this.superName);
 			} else {
 				// only timers for methods, no other additional bytecode

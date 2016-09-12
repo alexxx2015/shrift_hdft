@@ -26,7 +26,6 @@ public class Flow {
 		if(this.chopNodes == null) 
 			chopNodes = new LinkedList<Chop>();
 		this.chopNodes.add(new Chop(p_byteCodeIndex, p_ownerMethod, p_label, p_operation, p_local2vn, this.currentSource));
-		
 	}
 	
 	public List<Chop> getChopNodes(){
@@ -46,8 +45,6 @@ public class Flow {
 	}
 	
 	public class Chop {
-		
-		
 		private int byteCodeIndex;
 		private String ownerMethod;
 		private String label;

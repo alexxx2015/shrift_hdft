@@ -109,14 +109,15 @@ public class MyMethodVisitor extends MethodVisitor {
 			return;
 		}
 		
-		if(p_opcode == Opcodes.RETURN && "main".equals(this.methodName) && ((this.accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC)){
+		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
+		
+		if(logChopNode && p_opcode == Opcodes.RETURN && "main".equals(this.methodName) && ((this.accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC)){
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 					ChopNodeDumper.class.getName().replace(".", "/"), "addEndNode", "()V", false);
 		}
 
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel(),this.chopNodes);
-		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
 		if(chopNode != null && logChopNode){
 			String ldcInsn = this.fqName+"|"+chopNode.getByteCodeIndex()+"|"+Mnemonic.OPCODE[p_opcode]+"|| -- visitInsn";
 			addChopNodeLogger(mv, ldcInsn);
@@ -804,10 +805,10 @@ public class MyMethodVisitor extends MethodVisitor {
 
 		boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod
 				|| isPrivateInstanceMethod || isInterfaceMethod;
-
+		
 		//Get method invocation offset label
 		int ofs = this.getCurrentLabel().getOffset();
-		List<SinkSource> sources = StaticAnalysis.isSource(fqName, ofs);
+		List<SinkSource> sources = StaticAnalysis.isSourceWithFlow(fqName, ofs);
 		List<SinkSource> sinks = StaticAnalysis.isSinkWithFlow(fqName, ofs);
 		// get the chop node if there is one at the current bytecode offset
 		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);

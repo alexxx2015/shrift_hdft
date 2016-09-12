@@ -754,18 +754,19 @@ public class MyMethodVisitorSAP extends MethodVisitor {
 					+ p_owner + "." + p_name + ":" + p_desc + "|-- visitMethodInsn";
 			addChopNodeLogger(mv, ldcInsn);
 		}
-		
-//		query database to figure out method labels
+
+		// query database to figure out method labels
 		List<MethodLabel> methodLabel = null;
 		try {
 			methodLabel = MethodLabelSecLevel.getSecLevel(p_owner, p_name, p_desc);
-//			if (methodLabel.size() > 0) {
-//				for (MethodLabel m : methodLabel) {
-//					System.out.println("FF: " + m.clazz + ", " + m.methodSignature + ", " + m.secLevel + ", " + m.source
-//							+ ", " + m.sink+", "+m.declass+", "+m.idText);
-//				}
-//				System.out.println("---");
-//			}
+			// if (methodLabel.size() > 0) {
+			// for (MethodLabel m : methodLabel) {
+			// System.out.println("FF: " + m.clazz + ", " + m.methodSignature +
+			// ", " + m.secLevel + ", " + m.source
+			// + ", " + m.sink+", "+m.declass+", "+m.idText);
+			// }
+			// System.out.println("---");
+			// }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1025,7 +1026,7 @@ public class MyMethodVisitorSAP extends MethodVisitor {
 				mv.visitLdcInsn(p_owner.replace("/", ".") + "|" + p_name + p_desc);
 				mv.visitVarInsn(Opcodes.ALOAD, arrayIndex);
 				mv.visitVarInsn(Opcodes.ALOAD, parentObjectIndex);
-				
+
 				// Invoke delegate method
 				if (isInstanceOrInterfaceMethod || isConstructor) {
 					// load caller object (if its there, it came after chop
@@ -1035,25 +1036,25 @@ public class MyMethodVisitorSAP extends MethodVisitor {
 					} else {
 						mv.visitInsn(Opcodes.ACONST_NULL);
 					}
-					
-//					add method label from database
+
+					// add method label from database
 					String label = "";
 					if (methodLabel != null && methodLabel.size() > 0) {
 						label = methodLabel.get(0).idText;
 					}
 					mv.visitLdcInsn(label);
-					
+
 					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "instanceMethodInvoked",
 							"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V",
 							false);
 				} else {
-//					add method label from database
+					// add method label from database
 					String label = "";
 					if (methodLabel != null && methodLabel.size() > 0) {
 						label = methodLabel.get(0).idText;
 					}
 					mv.visitLdcInsn(label);
-					
+
 					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "staticMethodInvoked",
 							"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V",
 							false);

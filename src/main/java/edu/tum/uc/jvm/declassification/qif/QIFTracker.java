@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.tum.uc.jvm.SimpleAgent;
 import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;

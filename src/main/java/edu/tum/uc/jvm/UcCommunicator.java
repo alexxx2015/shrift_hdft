@@ -176,7 +176,6 @@ public class UcCommunicator {
 	public IResponse sendEvent(IEvent event, boolean forceAsync) {
 		UcCommunicator.getInstance().initPDP();
 		Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
-		System.out.println("UCOMM send event: "+event.getName()+", "+event.getParameterValue("sourceId")+", "+event.getParameterValue("sinkId"));
 		synchronized (o) {
 			try {
 				// Synchronous mode

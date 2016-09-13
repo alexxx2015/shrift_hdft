@@ -676,8 +676,6 @@ public class InstrumDelegate {
 				String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
 		createEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
-
-		// System.out.println();
 	}
 
 	/**

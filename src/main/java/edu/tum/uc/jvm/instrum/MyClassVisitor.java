@@ -8,6 +8,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
+import edu.tum.uc.jvm.instrum.opt.MyMethodVisitorOptimized;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
@@ -82,8 +83,10 @@ public class MyClassVisitor extends ClassVisitor {
 				MyAdviceAdapter myAa = new MyAdviceAdapter(Opcodes.ASM4, timeAa, p_access, p_name, p_desc, p_signature,
 						this.className);
 				// actual instrumentation for tracking events
-				mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
+				mv = new MyMethodVisitorOptimized(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
 						chopNodes, this.classWriter, this.superName);
+//				mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
+//						chopNodes, this.classWriter, this.superName);
 //				mv = new MyMethodVisitorSAP(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
 //						chopNodes, this.classWriter, this.superName);
 			} else {

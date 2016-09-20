@@ -57,12 +57,16 @@ public class TestJzip extends AbstractTest {
 
 			for (int i = 0; i < 1; i++) {
 				String instruction = "";
-				URL url = this.getClass().getResource("/toBeZippedFilesSmall");
+				URL url = null;//this.getClass().getResource("/toBeZippedFilesSmall");
 				if (url != null) {
 					File f = new File(url.getFile());
 					instruction = "zip " + f.getParent() + "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
 					// instruction = "zip /home/alex/toBeZipped.zip "// + f.getAbsolutePath();
 					// File f = new File("/home/alex/xlayerpip.zip");
+				}
+				else{
+					File f = new File("/home/alex/tmp");
+					instruction = "zip " + f.getParent() + "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
 				}
 
 				//instruction += "\n exit";

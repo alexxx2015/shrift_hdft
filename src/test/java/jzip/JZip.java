@@ -39,8 +39,9 @@ public class JZip implements TestIntf{
 	private String[] args;
 	private String commandline = "";
 	
-	public JZip(){}
-
+	public JZip(){
+		
+	}
 	public JZip(String[] args) {
 		this.args = args;
 		if (args != null && args.length > 0) {
@@ -251,7 +252,7 @@ public class JZip implements TestIntf{
 		this.fileList = new LinkedList<String>();
 		this.generateFileList(new File(sourceFolder), sourceFolder);
 
-		byte[] buffer = new byte[1024];
+		byte[] buffer = new byte[1024];//131072];
 
 		try {
 			
@@ -433,11 +434,9 @@ public class JZip implements TestIntf{
 			}
 		}
 	}
-
 	@Override
 	public void runtest() {
 		// TODO Auto-generated method stub
-
-		main(new String[] {});		
+		main(new String[]{});
 	}
 }

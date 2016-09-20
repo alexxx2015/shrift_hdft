@@ -15,10 +15,11 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
-import edu.tum.uc.jvm.instrum.MyClassVisitor;
-import edu.tum.uc.jvm.instrum.MyClassReader;
-import edu.tum.uc.jvm.instrum.MyClassWriter;
 import edu.tum.uc.jvm.instrum.InstrumDelegate;
+import edu.tum.uc.jvm.instrum.MyClassReader;
+import edu.tum.uc.jvm.instrum.MyClassVisitor;
+import edu.tum.uc.jvm.instrum.MyClassWriter;
+import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
@@ -30,8 +31,10 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 	private static ProtectionDomain myProtDom;
 
-	public static final String DELEGATECLASS = InstrumDelegate.class
+	public static final String DELEGATECLASS = InstrumDelegateOpt.class
 			.getName().replace(".", "/");
+//	public static final String DELEGATECLASS = InstrumDelegate.class
+//			.getName().replace(".", "/");
 
 	// true if running instrumentation in a webservice
 	private boolean instrument_webservice;

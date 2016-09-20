@@ -1,4 +1,4 @@
-package edu.tum.uc.jvm.instrum;
+package edu.tum.uc.jvm.instrum.opt;
 
 import java.lang.reflect.Field;
 import java.sql.Date;
@@ -24,8 +24,11 @@ import com.restfb.Parameter;
 import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.basic.StatusBasic.EStatus;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
+import de.tum.in.i22.uc.cm.datatypes.interfaces.IName;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IResponse;
+import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
+import de.tum.in.i22.uc.cm.factories.JavaNameFactory;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
@@ -43,7 +46,7 @@ import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
  * @author vladi
  *
  */
-public class InstrumDelegate {
+public class InstrumDelegateOpt {
 
 	/**
 	 * The singleton instance of UcCommunicator.
@@ -66,11 +69,63 @@ public class InstrumDelegate {
 	 * A list of all sinks AND sources from the used JOANA report.
 	 */
 	private static List<SinkSource> sinksAndSources = new Vector<SinkSource>();
+	private static Map<String, MyEventBasic> sendEventRepo = new HashMap<String, MyEventBasic>();
+	// this map stores all initially populated events
+	private static Map<String, MyEventBasic> eventBasicRepo = new HashMap<String, MyEventBasic>();
+	// event parameter map, stores all parameters for each event
+	private static Map<String, String> eventParamMap = new HashMap<String, String>();
 	private static boolean EVENTTIMER = false;
 	static {
 		sinksAndSources.addAll(StaticAnalysis.getSources());
 		sinksAndSources.addAll(StaticAnalysis.getSinks());
 		EVENTTIMER = Boolean.parseBoolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.EVENTTIMER));
+	}
+
+	private static void populateMyEventBasic() {
+		boolean isActual = false;
+		sendEventRepo = new HashMap<String, MyEventBasic>();
+		eventParamMap = new HashMap<String, String>();
+		IEvent event = new MyEventBasic(JavaEventName.READ_ARRAY, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.READ_ARRAY, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.WRITE_ARRAY, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.WRITE_ARRAY, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.READ_FIELD, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.READ_FIELD, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.WRITE_FIELD, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.WRITE_FIELD, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.UNARY_ASSIGN, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.UNARY_ASSIGN, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.BINARY_ASSIGN, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.BINARY_ASSIGN, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.CALL_INSTANCE_METHOD, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.CALL_INSTANCE_METHOD, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.CALL_STATIC_METHOD, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.CALL_STATIC_METHOD, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.RETURN_INSTANCE_METHOD, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.RETURN_INSTANCE_METHOD, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.RETURN_STATIC_METHOD, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.RETURN_STATIC_METHOD, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.RETURN_MAIN_METHOD, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.RETURN_MAIN_METHOD, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.PREPARE_METHOD_RETURN, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.PREPARE_METHOD_RETURN, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.SOURCE_INVOKED, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.SOURCE_INVOKED, (MyEventBasic) event);
+
+		event = new MyEventBasic(JavaEventName.SINK_INVOKED, eventParamMap, isActual);
+		eventBasicRepo.put(JavaEventName.SINK_INVOKED, (MyEventBasic) event);
 	}
 
 	/**
@@ -435,6 +490,7 @@ public class InstrumDelegate {
 			Object parentObject, Object caller) {
 		instanceMethodInvoked(parentMethod, label, calledMethod, args, parentObject, caller, null);
 	}
+
 	public static void instanceMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args,
 			Object parentObject, Object callee, String p_label) {
 		// System.out.println("Instance method invoked!!");
@@ -446,7 +502,9 @@ public class InstrumDelegate {
 		// System.out.println("Arguments = " +
 		// JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
 
-		Map<String, String> eventParams = new HashMap<String, String>();
+		Map<String, String> eventParams = eventParamMap;// new HashMap<String,
+														// String>();
+		eventParams.clear();
 		eventParams.put("parentObjectAddress", getAddress(parentObject));
 		eventParams.put("parentClass", getClass(parentObject, parentMethod));
 		eventParams.put("parentMethod", getMethod(parentMethod));
@@ -458,7 +516,8 @@ public class InstrumDelegate {
 		eventParams.put("calleeObjectIsInstrumented",
 				String.valueOf(classIsInstrumented(getClass(callee, calledMethod))));
 		eventParams.put("chopLabel", label);
-		if(p_label != null) eventParams.put("methodLabel", p_label);
+		if (p_label != null)
+			eventParams.put("methodLabel", p_label);
 		createEvent(JavaEventName.CALL_INSTANCE_METHOD, eventParams);
 	}
 
@@ -484,6 +543,7 @@ public class InstrumDelegate {
 			Object parentObject) {
 		staticMethodInvoked(parentMethod, label, calledMethod, args, parentObject, null);
 	}
+
 	public static void staticMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args,
 			Object parentObject, String p_label) {
 
@@ -504,7 +564,8 @@ public class InstrumDelegate {
 		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
 		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 		eventParams.put("chopLabel", label);
-		if(p_label != null) eventParams.put("methodLabel", p_label);
+		if (p_label != null)
+			eventParams.put("methodLabel", p_label);
 		createEvent(JavaEventName.CALL_STATIC_METHOD, eventParams);
 
 		// System.out.println();
@@ -602,8 +663,8 @@ public class InstrumDelegate {
 			eventParams.put("parentObjectAddress", parentObjMemAddr);
 			eventParams.put("parentClass", p_parentClass);
 			eventParams.put("parentMethod", p_parentmethodname);
-			eventParams.put("calledObjectClass", p_ownerclass);
-			eventParams.put("calledObjectAddress", calleeObjMemAddr);
+			eventParams.put("calleeObjectClass", p_ownerclass);
+			eventParams.put("calleeObjectAddress", calleeObjMemAddr);
 			eventParams.put("calledMethod", p_ownermethod);
 			eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
 			eventParams.put("chopLabel", p_chopLabel);
@@ -649,11 +710,11 @@ public class InstrumDelegate {
 	 * @param parentObject
 	 *            The object where the <code>parentMethod</code> is called on.
 	 *            Should be null if <code>parentMethod</code> is static.
-	 * @param callee
+	 * @param caller
 	 *            The object on which <code>calledMethod</code> was called.
 	 */
 	public static void instanceMethodReturned(Object returnValue, int argsCount, int bytecodeOffset,
-			String parentMethod, String label, String calledMethod, Object parentObject, Object callee) {
+			String parentMethod, String label, String calledMethod, Object parentObject, Object caller) {
 
 		// System.out.println("Instance method returned!!");
 		// System.out.println("Chopnode Label = " + label);
@@ -664,19 +725,21 @@ public class InstrumDelegate {
 		// System.out.println("Return value = " + objectToString(returnValue));
 		// System.out.println("Arguments count = " + argsCount);
 
-		Map<String, String> eventParams = new HashMap<String, String>();
+		Map<String, String> eventParams = eventParamMap;// new HashMap<String,
+														// String>();
+		eventParams.clear();
 		eventParams.put("parentObjectAddress", getAddress(parentObject));
 		eventParams.put("parentClass", getClass(parentObject, parentMethod));
 		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("calleeObjectAddress", getAddress(callee));
-		eventParams.put("calleeObjectClass", getClass(callee, calledMethod));
+		eventParams.put("calleeObjectAddress", getAddress(caller));
+		eventParams.put("calleeObjectClass", getClass(caller, calledMethod));
 		eventParams.put("calledMethod", getMethod(calledMethod));
 		eventParams.put("returnValueClass", getClass(returnValue));
 		eventParams.put("returnValueAddress", getAddress(returnValue));
 		eventParams.put("argsCount", String.valueOf(argsCount));
 		eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 		eventParams.put("calleeObjectIsInstrumented",
-				String.valueOf(classIsInstrumented(getClass(callee, calledMethod))));
+				String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
 		eventParams.put("chopLabel", label);
 		createEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
 	}
@@ -753,7 +816,9 @@ public class InstrumDelegate {
 	}
 
 	public static void mainMethodInvoked() {
-		if(true) return;//AF-added
+		InstrumDelegateOpt.populateMyEventBasic();
+		if (true)
+			return;// AF-added
 		UcCommunicator.getInstance().initPDP();
 	}
 
@@ -810,23 +875,75 @@ public class InstrumDelegate {
 		createEvent(eventName, specificParams, true);
 	}
 
+	private static String createEventId(String eventName, Map<String, String> param) {
+		StringBuilder _return = new StringBuilder();
+		String DLM = JavaName.DLM;
+		String pid = param.containsKey("processId") ? param.get("processId") : "";
+		String threadId = param.containsKey("threadId") ? param.get("threadId") : "";
+		String parentClass = param.containsKey("parentClass") ? param.get("parentClass") : "";
+		String parentMethod = param.containsKey("parentMethod") ? param.get("parentMethod") : "";
+		String parentObjectAddress = param.containsKey("parentObjectAddress") ? param.get("parentObjectAddress") : "";
+		String calleeObjectAddress = param.containsKey("calleeObjectAddress") ? param.get("calleeObjectAddress") : "";
+		String calleeObjectClass = param.containsKey("calleeObjectClass") ? param.get("calleeObjectClass") : "";
+		String calledMethod = param.containsKey("calledMethod") ? param.get("calledMethod") : "";
+		String chopLabel = param.containsKey("chopLabel") ? param.get("chopLabel") : "";
+		String sourceId = param.containsKey("sourceId") ? param.get("sourceId") : "";
+		String sinkId = param.containsKey("sinkId") ? param.get("sinkId") : "";
+		String sourceObjectAddress = param.containsKey("sourceObjectAddress") ? param.get("sourceObjectAddress") : "";
+
+		if (eventName.equals(JavaEventName.CALL_INSTANCE_METHOD)) {
+			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM)
+					.append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(chopLabel);
+		}
+		else if (eventName.equals(JavaEventName.SOURCE_INVOKED)){
+//			_return = _return.append(sourceId).append(DLM).append(calleeObjectClass).append(DLM).append(calleeObjectAddress).append(DLM).append(sourceObjectAddress);
+			_return = _return.append(sourceId).append(DLM).append(sourceObjectAddress);
+		}
+		else if(eventName.equals(JavaEventName.SINK_INVOKED)){
+			_return = _return.append(sinkId).append(DLM).append(calleeObjectClass).append(DLM).append(calleeObjectAddress);
+		}
+		return _return.toString();
+	}
+
 	private static void createEvent(String eventName, Map<String, String> specificParams, boolean isActual) {
-		Map<String, String> allParams = new HashMap<String, String>(specificParams);
-		allParams.put("PEP", "Java");
-		allParams.put("threadId", Utility.getThreadId());
-		allParams.put("processId", Utility.getPID());
-		IEvent event = new EventBasic(eventName, allParams, isActual);
+		// Map<String, String> allParams = new HashMap<String,
+		// String>(specificParams);
+		specificParams.put("PEP", "Java");
+		specificParams.put("threadId", Utility.getThreadId());
+		specificParams.put("processId", Utility.getPID());
+
+		String eventId = createEventId(eventName, specificParams);
+		if (sendEventRepo.containsKey(eventId)){
+			if(EVENTTIMER){
+				 StatisticsUtil.endEventCreation(eventName);//Do not understand what
+					StatisticsUtil.stopEventTimer(eventName);
+			}
+			return;
+		}
+		else{
+			sendEventRepo.put(eventId, null);
+		}
+		// IEvent event = new EventBasic(eventName, specificParams, isActual);
+		IEvent event = InstrumDelegateOpt.eventBasicRepo.get(eventName);
+		((MyEventBasic) event).setMapParameters(specificParams);
+		((MyEventBasic) event).setBoolIsActual(false);
+
+		sendEventRepo.put(eventId, (MyEventBasic) event);
+		
 		if(EVENTTIMER)
-		StatisticsUtil.endEventCreation(eventName);
+		 StatisticsUtil.endEventCreation(eventName);//Do not understand what
+		// this method does
 		// boolean success = ucCom.sendEvent2Pdp(event);
 		IResponse response = ucCom.sendEvent(event, false); // send event to
 															// PDP/PIP
 		boolean success = (response != null && (response.getAuthorizationAction().isStatus(EStatus.ALLOW)
 				|| response.getAuthorizationAction().isStatus(EStatus.MODIFY))) ? true : false;
-		if(EVENTTIMER)
+		if (EVENTTIMER)
 			StatisticsUtil.stopEventTimer(eventName);
 		if (!isActual && success) {
-			createEvent(eventName, specificParams, true);
+			// createEvent(eventName, specificParams, true);
+			((MyEventBasic) event).setBoolIsActual(true);
+			response = ucCom.sendEvent(event, false);
 
 			IEvent modifiedEvent = response.getModifiedEvent();
 			if (modifiedEvent != null) {

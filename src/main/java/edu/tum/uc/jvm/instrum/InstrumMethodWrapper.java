@@ -217,7 +217,7 @@ public class InstrumMethodWrapper {
 						}
 					} else {
 						int param = s.getParam();
-						if (param > 0 && retT.getSize() > 0) {
+						if (param > 0) {
 							i = paramStartIndex + param - 1;
 							Type t = argT[param - 1];
 							if (t.getSort() == Type.OBJECT) {

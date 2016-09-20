@@ -37,6 +37,7 @@ public final class ConfigProperties {
 		, CHOPNODES_FILE //File name where logged chop nodes should be dumped
 		, APPID //Unique identifer for the instrumented application, added by instrumentation phase
 		, UCWEBMGMURL //uc webmanagement url, where the chop nodes are send for rendering, if not set chop nodes are logged into a file
+		, EVENTTIMER //if true then for each event a timer is added
 	}
 	
 	private static Properties CONFIGURATION = null;	

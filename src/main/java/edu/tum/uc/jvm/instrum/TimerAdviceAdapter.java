@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import edu.tum.uc.jvm.MyUcTransformer;
+import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 
 /**
@@ -64,6 +65,7 @@ public class TimerAdviceAdapter extends AdviceAdapter {
 	 */
 	protected void onMethodEnter() {
 		if (shouldAddTimer()) {
+			mv.visitMethodInsn(Opcodes.INVOKESTATIC, InstrumDelegateOpt.class.getName().replace(".", "/"), "populateMyEventBasic", "()V",false);
 			mv.visitLdcInsn(fqName);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startMethodTimer",
 					"(Ljava/lang/String;)V", false);

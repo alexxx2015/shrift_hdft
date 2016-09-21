@@ -81,7 +81,7 @@ public class InstrumDelegateOpt {
 		EVENTTIMER = Boolean.parseBoolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.EVENTTIMER));
 	}
 
-	private static void populateMyEventBasic() {
+	public static void populateMyEventBasic() {
 		boolean isActual = false;
 		sendEventRepo = new HashMap<String, MyEventBasic>();
 		eventParamMap = new HashMap<String, String>();
@@ -816,7 +816,6 @@ public class InstrumDelegateOpt {
 	}
 
 	public static void mainMethodInvoked() {
-		InstrumDelegateOpt.populateMyEventBasic();
 		if (true)
 			return;// AF-added
 		UcCommunicator.getInstance().initPDP();

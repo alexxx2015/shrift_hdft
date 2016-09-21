@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,14 +22,11 @@ import org.json.simple.parser.ParseException;
 
 import com.restfb.Parameter;
 
-import de.tum.in.i22.uc.cm.datatypes.basic.EventBasic;
 import de.tum.in.i22.uc.cm.datatypes.basic.StatusBasic.EStatus;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
-import de.tum.in.i22.uc.cm.datatypes.interfaces.IName;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IResponse;
 import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
-import de.tum.in.i22.uc.cm.factories.JavaNameFactory;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.UnsafeUtil;

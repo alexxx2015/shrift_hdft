@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -39,6 +41,8 @@ public class MyUcTransformer implements ClassFileTransformer {
 	// true if running instrumentation in a webservice
 	private boolean instrument_webservice;
 
+	private static Map<String,Boolean> instrumentedClasses = new HashMap<String,Boolean>();
+	
 	{
 //		Initialize pdp communication
 //		UcCommunicator.getInstance().initPDP();
@@ -86,6 +90,10 @@ public class MyUcTransformer implements ClassFileTransformer {
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
 //		System.out.println("[MyUcTransformer]: Calling tranform ...");
+		
+		if(instrumentedClasses.containsKey(className))
+			return classfileBuffer;
+		
 		if (this.instrument_webservice) {
 			this.setClassLoader(loader);
 			this.setProtectionDomain(protectionDomain);
@@ -100,7 +108,9 @@ public class MyUcTransformer implements ClassFileTransformer {
 			return classfileBuffer;
 		}
 		
-//		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
+		instrumentedClasses.put(className, true);
+		
+		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
 		String statistic = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);

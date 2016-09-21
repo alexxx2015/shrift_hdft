@@ -110,7 +110,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 		
 		instrumentedClasses.put(className, true);
 		
-		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
+//		System.out.println("[MyUcTransformer]: Will instrument class: " + className);
 
 		String statistic = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);

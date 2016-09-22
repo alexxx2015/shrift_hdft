@@ -67,7 +67,7 @@ public class InstrumDelegateOpt {
 	 * A list of all sinks AND sources from the used JOANA report.
 	 */
 	private static List<SinkSource> sinksAndSources = new Vector<SinkSource>();
-	private static Map<String, MyEventBasic> sendEventRepo = new HashMap<String, MyEventBasic>();
+	private static Map<String, Integer> sendEventRepo = new HashMap<String, Integer>();
 	// this map stores all initially populated events
 	private static Map<String, MyEventBasic> eventBasicRepo = new HashMap<String, MyEventBasic>();
 	// event parameter map, stores all parameters for each event
@@ -81,7 +81,7 @@ public class InstrumDelegateOpt {
 
 	public static void populateMyEventBasic() {
 		boolean isActual = false;
-		sendEventRepo = new HashMap<String, MyEventBasic>();
+		sendEventRepo = new HashMap<String, Integer>();
 		eventParamMap = new HashMap<String, String>();
 		IEvent event = new MyEventBasic(JavaEventName.READ_ARRAY, eventParamMap, isActual);
 		eventBasicRepo.put(JavaEventName.READ_ARRAY, (MyEventBasic) event);
@@ -154,6 +154,7 @@ public class InstrumDelegateOpt {
 	 *            The fully qualified name of the given method.
 	 */
 	public static void startMethodTimer(String methodFQName) {
+		sendEventRepo.clear();
 		StatisticsUtil.startMethodTimer(methodFQName);
 	}
 
@@ -910,22 +911,22 @@ public class InstrumDelegateOpt {
 		specificParams.put("processId", Utility.getPID());
 
 		String eventId = createEventId(eventName, specificParams);
-		if (sendEventRepo.containsKey(eventId)){
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) > 2)){
 			if(EVENTTIMER){
 				 StatisticsUtil.endEventCreation(eventName);//Do not understand what
 					StatisticsUtil.stopEventTimer(eventName);
 			}
 			return;
 		}
-		else{
-			sendEventRepo.put(eventId, null);
+		else if(!sendEventRepo.containsKey(eventId)){
+			sendEventRepo.put(eventId, 0);
 		}
 		// IEvent event = new EventBasic(eventName, specificParams, isActual);
 		IEvent event = InstrumDelegateOpt.eventBasicRepo.get(eventName);
 		((MyEventBasic) event).setMapParameters(specificParams);
 		((MyEventBasic) event).setBoolIsActual(false);
 
-		sendEventRepo.put(eventId, (MyEventBasic) event);
+		sendEventRepo.put(eventId, sendEventRepo.get(eventId)+1);
 		
 		if(EVENTTIMER)
 		 StatisticsUtil.endEventCreation(eventName);//Do not understand what

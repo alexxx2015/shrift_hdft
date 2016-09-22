@@ -154,7 +154,6 @@ public class InstrumDelegateOpt {
 	 *            The fully qualified name of the given method.
 	 */
 	public static void startMethodTimer(String methodFQName) {
-		sendEventRepo.clear();
 		StatisticsUtil.startMethodTimer(methodFQName);
 	}
 
@@ -911,7 +910,7 @@ public class InstrumDelegateOpt {
 		specificParams.put("processId", Utility.getPID());
 
 		String eventId = createEventId(eventName, specificParams);
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) > 2)){
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)){
 			if(EVENTTIMER){
 				 StatisticsUtil.endEventCreation(eventName);//Do not understand what
 					StatisticsUtil.stopEventTimer(eventName);
@@ -927,7 +926,6 @@ public class InstrumDelegateOpt {
 		((MyEventBasic) event).setBoolIsActual(false);
 
 		sendEventRepo.put(eventId, sendEventRepo.get(eventId)+1);
-		
 		if(EVENTTIMER)
 		 StatisticsUtil.endEventCreation(eventName);//Do not understand what
 		// this method does

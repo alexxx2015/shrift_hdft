@@ -12,6 +12,7 @@ import org.objectweb.asm.Type;
 import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.declassification.DeclassifyString;
 import edu.tum.uc.jvm.sap.MethodLabelSecLevel.MethodLabel;
+import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 
@@ -446,13 +447,13 @@ public class InstrumMethodWrapper {
 			mv.visitVarInsn(Opcodes.ALOAD, sinksourceIndex); // Load
 																// sinksource-ids
 			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
-			
+
 			String label = "";
 			if (methodLabel != null && methodLabel.size() > 0) {
 				label = methodLabel.get(0).idText;
 			}
 			mv.visitLdcInsn(label);
-			
+
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "sinkInvoked",
 					"(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z",
 					false);
@@ -494,8 +495,12 @@ public class InstrumMethodWrapper {
 				}
 
 				if (issink == true) {
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, DeclassifyString.class.getName().replace(".", "/"),
-							"declassify", "(Ljava/lang/String;)Ljava/lang/String;", false);
+					boolean declassify = Boolean
+							.valueOf(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.DECLSSIFY));
+					if (declassify) {
+						mv.visitMethodInsn(Opcodes.INVOKESTATIC, DeclassifyString.class.getName().replace(".", "/"),
+								"declassify", "(Ljava/lang/String;)Ljava/lang/String;", false);
+					}
 					issink = false;
 				}
 				i++;

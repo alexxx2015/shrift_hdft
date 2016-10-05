@@ -6,7 +6,6 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -16,6 +15,7 @@ import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,9 +30,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import com.restfb.Parameter;
+import com.sun.jersey.api.client.ClientResponse;
 
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
-import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import de.tum.in.i22.uc.cm.factories.IMessageFactory;
 import de.tum.in.i22.uc.cm.factories.MessageFactoryCreator;
@@ -41,6 +41,8 @@ import edu.tum.uc.jvm.utility.analysis.Flow;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis.NODETYPE;
+
+import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
 public class Utility {
 
@@ -307,6 +309,37 @@ public class Utility {
 		return _return;
 	}
 
+	
+	public static Map<String,String> extractJerseyInformation(Object o){
+		Map<String,String> _return = new HashMap<String,String>();
+		if(o instanceof ClientResponse){
+			try {
+				Field f = o.getClass().getDeclaredField("uc");
+				f.setAccessible(true);
+				HttpURLConnection uri = (HttpURLConnection)f.get(o);
+				_return.put("url-protocol", uri.getURL().getProtocol());
+				_return.put("url-host", uri.getURL().getHost());
+				_return.put("url-port", String.valueOf(uri.getURL().getPort()));
+				_return.put("url-path", uri.getURL().getPath());
+				_return.put("url-query", uri.getURL().getQuery());
+				f.setAccessible(false);
+			} catch (NoSuchFieldException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return _return;
+	}
+	
 	public static Parameter[] addSinkSourceParam(Parameter[] p_param, SourceSinkName.Type p_sinksource, String p_sinksourceId){
 		Parameter[] _return = new Parameter[p_param.length+1];
 		System.arraycopy(p_param, 0, _return, 0, p_param.length);

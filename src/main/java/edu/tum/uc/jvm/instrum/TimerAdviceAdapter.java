@@ -47,7 +47,7 @@ public class TimerAdviceAdapter extends AdviceAdapter {
 	 */
 	private String superClassName;
 
-	protected TimerAdviceAdapter(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc,
+	public TimerAdviceAdapter(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc,
 			String p_signature, String p_className, String p_superClassName) {
 		super(p_api, p_mv, p_access, p_name, p_desc);
 
@@ -65,10 +65,21 @@ public class TimerAdviceAdapter extends AdviceAdapter {
 	 */
 	protected void onMethodEnter() {
 		if (shouldAddTimer()) {
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, InstrumDelegateOpt.class.getName().replace(".", "/"), "populateMyEventBasic", "()V",false);
+			if (!InstrumDelegateOpt.eventBasicRepoAdded) {
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, InstrumDelegateOpt.class.getName().replace(".", "/"),
+						"populateMyEventBasic", "()V", false);
+				InstrumDelegateOpt.eventBasicRepoAdded = true;
+			}
 			mv.visitLdcInsn(fqName);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startMethodTimer",
 					"(Ljava/lang/String;)V", false);
+		} else if (((this.methodAccess & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC)
+				&& this.methodName.toLowerCase().equals("main")) {
+			if (!InstrumDelegateOpt.eventBasicRepoAdded) {
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, InstrumDelegateOpt.class.getName().replace(".", "/"),
+						"populateMyEventBasic", "()V", false);
+				InstrumDelegateOpt.eventBasicRepoAdded = true;
+			}
 		}
 	}
 

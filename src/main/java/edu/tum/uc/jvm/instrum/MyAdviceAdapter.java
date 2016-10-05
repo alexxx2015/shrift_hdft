@@ -32,7 +32,7 @@ public class MyAdviceAdapter extends AdviceAdapter {
      */
     private String fqName;
 
-    protected MyAdviceAdapter(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc,
+    public MyAdviceAdapter(int p_api, MethodVisitor p_mv, int p_access, String p_name, String p_desc,
 	    String p_signature, String p_className) {
 	super(p_api, p_mv, p_access, p_name, p_desc);
 

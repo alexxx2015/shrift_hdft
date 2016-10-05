@@ -34,6 +34,7 @@ import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.Flow;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
+import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.eval.JavaEventName;
 import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
 
@@ -70,9 +71,11 @@ public class InstrumDelegateOpt {
 	private static Map<String, Integer> sendEventRepo = new HashMap<String, Integer>();
 	// this map stores all initially populated events
 	private static Map<String, MyEventBasic> eventBasicRepo = new HashMap<String, MyEventBasic>();
+	public static boolean eventBasicRepoAdded = false;
 	// event parameter map, stores all parameters for each event
 	private static Map<String, String> eventParamMap = new HashMap<String, String>();
 	private static boolean EVENTTIMER = false;
+	private static Set<String> ActivatedSources = new HashSet<String>();
 	static {
 		sinksAndSources.addAll(StaticAnalysis.getSources());
 		sinksAndSources.addAll(StaticAnalysis.getSinks());
@@ -80,7 +83,7 @@ public class InstrumDelegateOpt {
 	}
 
 	public static void populateMyEventBasic() {
-		boolean isActual = false;
+		boolean isActual = true;
 		sendEventRepo = new HashMap<String, Integer>();
 		eventParamMap = new HashMap<String, String>();
 		IEvent event = new MyEventBasic(JavaEventName.READ_ARRAY, eventParamMap, isActual);
@@ -223,20 +226,21 @@ public class InstrumDelegateOpt {
 	 */
 	public static void readArray(Object array, int index, Object arrayAtIndex, Object parentObject, String parentMethod,
 			String label) {
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("arrayClass", getClass(array));
-		eventParams.put("arrayAddress", getAddress(array));
-		eventParams.put("index", String.valueOf(index));
-		eventParams.put("elementClass", getClass(arrayAtIndex));
-		eventParams.put("elementAddress", getAddress(arrayAtIndex));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.READ_ARRAY, eventParams);
-
-		// System.out.println();
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("arrayClass", getClass(array));
+			eventParams.put("arrayAddress", getAddress(array));
+			eventParams.put("index", String.valueOf(index));
+			eventParams.put("elementClass", getClass(arrayAtIndex));
+			eventParams.put("elementAddress", getAddress(arrayAtIndex));
+			eventParams.put("chopLabel", label);
+			createEvent(JavaEventName.READ_ARRAY, eventParams);
+		}
 	}
 
 	/**
@@ -263,27 +267,21 @@ public class InstrumDelegateOpt {
 	 */
 	public static void writeArray(Object array, int index, Object value, Object parentObject, String parentMethod,
 			String label) {
-		// System.out.println("Write array!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Array = " + objectToString(array));
-		// System.out.println("Index = " + index);
-		// System.out.println("Value to insert = " + objectToString(value));
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("arrayClass", getClass(array));
-		eventParams.put("arrayAddress", getAddress(array));
-		eventParams.put("index", String.valueOf(index));
-		eventParams.put("valueClass", getClass(value));
-		eventParams.put("valueAddress", getAddress(value));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.WRITE_ARRAY, eventParams);
-
-		// System.out.println();
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("arrayClass", getClass(array));
+			eventParams.put("arrayAddress", getAddress(array));
+			eventParams.put("index", String.valueOf(index));
+			eventParams.put("valueClass", getClass(value));
+			eventParams.put("valueAddress", getAddress(value));
+			eventParams.put("chopLabel", label);
+			createEvent(JavaEventName.WRITE_ARRAY, eventParams);
+		}
 	}
 
 	/**
@@ -311,29 +309,21 @@ public class InstrumDelegateOpt {
 	 */
 	public static void readField(Object fieldOwnerObject, Object fieldValue, String fieldOwnerClass, String fieldName,
 			Object parentObject, String parentMethod, String label) {
-		// System.out.println("Read field!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Field owner object = " +
-		// objectToString(fieldOwnerObject));
-		// System.out.println("Field owner class = " + fieldOwnerClass);
-		// System.out.println("Field name = " + fieldName);
-		// System.out.println("Field value = " + objectToString(fieldValue));
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("fieldOwnerClass", fieldOwnerObject != null ? getClass(fieldOwnerObject) : fieldOwnerClass);
-		eventParams.put("fieldOwnerAddress", getAddress(fieldOwnerObject));
-		eventParams.put("fieldName", fieldName);
-		eventParams.put("fieldValueClass", getClass(fieldValue));
-		eventParams.put("fieldValueAddress", getAddress(fieldValue));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.READ_FIELD, eventParams);
-
-		// System.out.println();
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("fieldOwnerClass", fieldOwnerObject != null ? getClass(fieldOwnerObject) : fieldOwnerClass);
+			eventParams.put("fieldOwnerAddress", getAddress(fieldOwnerObject));
+			eventParams.put("fieldName", fieldName);
+			eventParams.put("fieldValueClass", getClass(fieldValue));
+			eventParams.put("fieldValueAddress", getAddress(fieldValue));
+			eventParams.put("chopLabel", label);
+			createEvent(JavaEventName.READ_FIELD, eventParams);
+		}
 	}
 
 	/**
@@ -361,32 +351,23 @@ public class InstrumDelegateOpt {
 	 */
 	public static void writeField(Object fieldOwnerObject, Object assignee, String fieldOwnerClass, String fieldName,
 			Object parentObject, String parentMethod, String label) {
-
-		// System.out.println("Write field!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Field owner object = " +
-		// objectToString(fieldOwnerObject));
-		// System.out.println("Field owner class = " + fieldOwnerClass);
-		// System.out.println("Field name = " + fieldName);
-		// System.out.println("Assignee = " + objectToString(assignee));
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("fieldOwnerClass", fieldOwnerObject != null ? getClass(fieldOwnerObject) : fieldOwnerClass);
-		eventParams.put("fieldOwnerClassIsInstrumented",
-				String.valueOf(classIsInstrumented(getClass(fieldOwnerObject, fieldOwnerClass))));
-		eventParams.put("fieldOwnerAddress", getAddress(fieldOwnerObject));
-		eventParams.put("fieldName", fieldName);
-		eventParams.put("assigneeClass", getClass(assignee));
-		eventParams.put("assigneeAddress", getAddress(assignee));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.WRITE_FIELD, eventParams);
-
-		// System.out.println();
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("fieldOwnerClass", fieldOwnerObject != null ? getClass(fieldOwnerObject) : fieldOwnerClass);
+			eventParams.put("fieldOwnerClassIsInstrumented",
+					String.valueOf(classIsInstrumented(getClass(fieldOwnerObject, fieldOwnerClass))));
+			eventParams.put("fieldOwnerAddress", getAddress(fieldOwnerObject));
+			eventParams.put("fieldName", fieldName);
+			eventParams.put("assigneeClass", getClass(assignee));
+			eventParams.put("assigneeAddress", getAddress(assignee));
+			eventParams.put("chopLabel", label);
+			createEvent(JavaEventName.WRITE_FIELD, eventParams);
+		}
 	}
 
 	/**
@@ -406,23 +387,18 @@ public class InstrumDelegateOpt {
 	 *            operation.
 	 */
 	public static void unaryAssign(Object arg, Object parentObject, String parentMethod, String label) {
-
-		// System.out.println("Unary assign operation!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Arguments = " + objectToString(arg));
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("argumentClass", getClass(arg));
-		eventParams.put("argumentAddress", getAddress(arg));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.UNARY_ASSIGN, eventParams);
-
-		// System.out.println();
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("argumentClass", getClass(arg));
+			eventParams.put("argumentAddress", getAddress(arg));
+			eventParams.put("chopLabel", label);
+			createEvent(JavaEventName.UNARY_ASSIGN, eventParams);
+		}
 	}
 
 	/**
@@ -444,14 +420,6 @@ public class InstrumDelegateOpt {
 	 *            operation.
 	 */
 	public static void binaryAssign(Object arg1, Object arg2, Object parentObject, String parentMethod, String label) {
-
-		// System.out.println("Binary assign operation!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Argument 1 = " + objectToString(arg1));
-		// System.out.println("Argument 2 = " + objectToString(arg2));
-
 		Map<String, String> eventParams = new HashMap<String, String>();
 		eventParams.put("parentObjectAddress", getAddress(parentObject));
 		eventParams.put("parentClass", getClass(parentObject, parentMethod));
@@ -460,8 +428,6 @@ public class InstrumDelegateOpt {
 		eventParams.put("argument2", objectToString(arg2));
 		eventParams.put("chopLabel", label);
 		createEvent(JavaEventName.BINARY_ASSIGN, eventParams);
-
-		// System.out.println();
 	}
 
 	/**
@@ -491,32 +457,34 @@ public class InstrumDelegateOpt {
 
 	public static void instanceMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args,
 			Object parentObject, Object callee, String p_label) {
-		// System.out.println("Instance method invoked!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("callee obj = " + objectToString(caller));
-		// System.out.println("Called Method = " + calledMethod);
-		// System.out.println("Arguments = " +
-		// JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
 
-		Map<String, String> eventParams = eventParamMap;// new HashMap<String,
-														// String>();
-		eventParams.clear();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("calleeObjectAddress", getAddress(callee));
-		eventParams.put("calleeObjectClass", getClass(callee, calledMethod));
-		eventParams.put("calledMethod", getMethod(calledMethod));
-		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
-		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
-		eventParams.put("calleeObjectIsInstrumented",
-				String.valueOf(classIsInstrumented(getClass(callee, calledMethod))));
-		eventParams.put("chopLabel", label);
-		if (p_label != null)
-			eventParams.put("methodLabel", p_label);
-		createEvent(JavaEventName.CALL_INSTANCE_METHOD, eventParams);
+			Map<String, String> eventParams = eventParamMap;// new
+															// HashMap<String,
+															// String>();
+			eventParams.clear();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("calleeObjectAddress", getAddress(callee));
+			eventParams.put("calleeObjectClass", getClass(callee, calledMethod));
+			eventParams.put("calledMethod", getMethod(calledMethod));
+			eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
+			eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
+			eventParams.put("calleeObjectIsInstrumented",
+					String.valueOf(classIsInstrumented(getClass(callee, calledMethod))));
+			
+			if (l.length >= 1)
+				eventParams.put("chopLabel", l[0]);
+			if (l.length >= 2)
+				eventParams.put("SRCDEP", l[1]);
+
+			if (p_label != null)
+				eventParams.put("methodLabel", p_label);
+			createEvent(JavaEventName.CALL_INSTANCE_METHOD, eventParams);
+		}
 	}
 
 	/**
@@ -544,29 +512,22 @@ public class InstrumDelegateOpt {
 
 	public static void staticMethodInvoked(String parentMethod, String label, String calledMethod, Object[] args,
 			Object parentObject, String p_label) {
-
-		// System.out.println("Static method invoked!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Called Method = " + calledMethod);
-		// System.out.println("Arguments = " +
-		// JSONArray.toJSONString(Arrays.asList(objectsToStrings(args))));
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("calleeClass", getClass(calledMethod));
-		eventParams.put("calledMethod", getMethod(calledMethod));
-		eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
-		eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
-		eventParams.put("chopLabel", label);
-		if (p_label != null)
-			eventParams.put("methodLabel", p_label);
-		createEvent(JavaEventName.CALL_STATIC_METHOD, eventParams);
-
-		// System.out.println();
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("calleeClass", getClass(calledMethod));
+			eventParams.put("calledMethod", getMethod(calledMethod));
+			eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
+			eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
+			eventParams.put("chopLabel", label);
+			if (p_label != null)
+				eventParams.put("methodLabel", p_label);
+			createEvent(JavaEventName.CALL_STATIC_METHOD, eventParams);
+		}
 	}
 
 	public static boolean sourceInvoked(Object p_sourceobj, Object p_ownerobj, String p_ownerclass,
@@ -581,7 +542,11 @@ public class InstrumDelegateOpt {
 			String p_chopLabel, Object[] p_paramArgs, String p_label) {
 		boolean _return = true;
 		Map<String, String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
+		Map<String, String> jerseyInformation = Utility.extractJerseyInformation(p_sourceobj);
 		String[] sourceIds = p_source.split("\\|");
+		for (String s : sourceIds) {
+			InstrumDelegateOpt.ActivatedSources.add(s.trim());
+		}
 		String calleeObjMemAddr = getAddress(p_ownerobj);
 		String parentObjMemAddr = getAddress(p_parentobj);
 		String sourceObjMemAddr = getAddress(p_sourceobj);
@@ -614,6 +579,7 @@ public class InstrumDelegateOpt {
 			eventParams.put("sourceId", source.getId());
 			eventParams.put("javaMapIdentifier", source.getId());
 			eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
+			eventParams.put("jerseyInformation", JSONObject.toJSONString(jerseyInformation));
 			eventParams.put("chopLabel", p_chopLabel);
 			eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_paramArgs))));
 			eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_paramArgs))));
@@ -634,48 +600,54 @@ public class InstrumDelegateOpt {
 
 	public static boolean sinkInvoked(Object p_ownerobj, String p_ownerclass, String p_ownermethod,
 			Object[] p_ownermethodparams, Object p_parentobj, String p_parentClass, String p_parentmethodname,
-			String p_source, String p_chopLabel, String p_label) {
+			String p_source, String label, String p_label) {
 		boolean _return = true;
-		Map<String, String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
-		String[] sinkIds = p_source.split("\\|");
-		String calleeObjMemAddr = getAddress(p_ownerobj);
-		String parentObjMemAddr = getAddress(p_parentobj);
-		List<String> dependsOnSources = new LinkedList<String>();
-		for (String s : sinkIds) {
-			SinkSource sink = StaticAnalysis.getSinkById(s);
-			int param = sink.getParam();
-			String sinkParam = "";
-			if (sink.isReturn()) {
-				sinkParam = "ret";
-			} else {
-				sinkParam = String.valueOf(param);
-			}
-			for (Flow f : StaticAnalysis.getFlows()) {
-				if (f.getSink().equals(sink.getId())) {
-					dependsOnSources = f.getSource();
-					break;
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
+			Map<String, String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
+			String[] sinkIds = p_source.split("\\|");
+			String calleeObjMemAddr = getAddress(p_ownerobj);
+			String parentObjMemAddr = getAddress(p_parentobj);
+			List<String> dependsOnSources = new LinkedList<String>();
+			for (String s : sinkIds) {
+				SinkSource sink = StaticAnalysis.getSinkById(s);
+				int param = sink.getParam();
+				String sinkParam = "";
+				if (sink.isReturn()) {
+					sinkParam = "ret";
+				} else {
+					sinkParam = String.valueOf(param);
 				}
-			}
+				for (Flow f : StaticAnalysis.getFlows()) {
+					if (f.getSink().equals(sink.getId())) {
+						dependsOnSources = f.getSource();
+						break;
+					}
+				}
 
-			Map<String, String> eventParams = new HashMap<String, String>();
-			eventParams.put("parentObjectAddress", parentObjMemAddr);
-			eventParams.put("parentClass", p_parentClass);
-			eventParams.put("parentMethod", p_parentmethodname);
-			eventParams.put("calleeObjectClass", p_ownerclass);
-			eventParams.put("calleeObjectAddress", calleeObjMemAddr);
-			eventParams.put("calledMethod", p_ownermethod);
-			eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
-			eventParams.put("chopLabel", p_chopLabel);
-			eventParams.put("sinkParam", sinkParam);
-			eventParams.put("sinkId", sink.getId());
-			eventParams.put("dependsOnSources", JSONArray.toJSONString(dependsOnSources));
-			eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_ownermethodparams))));
-			eventParams.put("methodArgAddresses",
-					JSONArray.toJSONString(Arrays.asList(getAddresses(p_ownermethodparams))));
-			eventParams.put("methodArgValues", JSONArray.toJSONString(Arrays.asList(getValues(p_ownermethodparams))));
-			if (p_label != null)
-				eventParams.put("methodLabel", p_label);
-			createEvent(JavaEventName.SINK_INVOKED, eventParams);
+				Map<String, String> eventParams = new HashMap<String, String>();
+				eventParams.put("parentObjectAddress", parentObjMemAddr);
+				eventParams.put("parentClass", p_parentClass);
+				eventParams.put("parentMethod", p_parentmethodname);
+				eventParams.put("calleeObjectClass", p_ownerclass);
+				eventParams.put("calleeObjectAddress", calleeObjMemAddr);
+				eventParams.put("calledMethod", p_ownermethod);
+				eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
+				eventParams.put("chopLabel", label);
+				eventParams.put("sinkParam", sinkParam);
+				eventParams.put("sinkId", sink.getId());
+				eventParams.put("dependsOnSources", JSONArray.toJSONString(dependsOnSources));
+				eventParams.put("methodArgTypes",
+						JSONArray.toJSONString(Arrays.asList(getClasses(p_ownermethodparams))));
+				eventParams.put("methodArgAddresses",
+						JSONArray.toJSONString(Arrays.asList(getAddresses(p_ownermethodparams))));
+				eventParams.put("methodArgValues",
+						JSONArray.toJSONString(Arrays.asList(getValues(p_ownermethodparams))));
+				if (p_label != null)
+					eventParams.put("methodLabel", p_label);
+				createEvent(JavaEventName.SINK_INVOKED, eventParams);
+			}
 		}
 		return _return;
 	}
@@ -713,33 +685,28 @@ public class InstrumDelegateOpt {
 	 */
 	public static void instanceMethodReturned(Object returnValue, int argsCount, int bytecodeOffset,
 			String parentMethod, String label, String calledMethod, Object parentObject, Object caller) {
-
-		// System.out.println("Instance method returned!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("callee obj = " + objectToString(caller));
-		// System.out.println("Called Method = " + calledMethod);
-		// System.out.println("Return value = " + objectToString(returnValue));
-		// System.out.println("Arguments count = " + argsCount);
-
-		Map<String, String> eventParams = eventParamMap;// new HashMap<String,
-														// String>();
-		eventParams.clear();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("calleeObjectAddress", getAddress(caller));
-		eventParams.put("calleeObjectClass", getClass(caller, calledMethod));
-		eventParams.put("calledMethod", getMethod(calledMethod));
-		eventParams.put("returnValueClass", getClass(returnValue));
-		eventParams.put("returnValueAddress", getAddress(returnValue));
-		eventParams.put("argsCount", String.valueOf(argsCount));
-		eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
-		eventParams.put("calleeObjectIsInstrumented",
-				String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
+			Map<String, String> eventParams = eventParamMap;// new
+															// HashMap<String,
+															// String>();
+			eventParams.clear();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("calleeObjectAddress", getAddress(caller));
+			eventParams.put("calleeObjectClass", getClass(caller, calledMethod));
+			eventParams.put("calledMethod", getMethod(calledMethod));
+			eventParams.put("returnValueClass", getClass(returnValue));
+			eventParams.put("returnValueAddress", getAddress(returnValue));
+			eventParams.put("argsCount", String.valueOf(argsCount));
+			eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
+			eventParams.put("calleeObjectIsInstrumented",
+					String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
+			eventParams.put("chopLabel", label);
+			createEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
+		}
 	}
 
 	/**
@@ -768,30 +735,23 @@ public class InstrumDelegateOpt {
 	 */
 	public static void staticMethodReturned(Object returnValue, int argsCount, int bytecodeOffset, String parentMethod,
 			String label, String calledMethod, Object parentObject) {
-
-		// System.out.println("Static method returned!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Called Method = " + calledMethod);
-		// System.out.println("Return value = " + objectToString(returnValue));
-		// System.out.println("Arguments count = " + argsCount);
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("calleeClass", getClass(calledMethod));
-		eventParams.put("calledMethod", getMethod(calledMethod));
-		eventParams.put("returnValueClass", getClass(returnValue));
-		eventParams.put("returnValueAddress", getAddress(returnValue));
-		eventParams.put("argsCount", String.valueOf(argsCount));
-		eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
-		eventParams.put("calleeClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod))));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.RETURN_STATIC_METHOD, eventParams);
-
-		// System.out.println();
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("calleeClass", getClass(calledMethod));
+			eventParams.put("calledMethod", getMethod(calledMethod));
+			eventParams.put("returnValueClass", getClass(returnValue));
+			eventParams.put("returnValueAddress", getAddress(returnValue));
+			eventParams.put("argsCount", String.valueOf(argsCount));
+			eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
+			eventParams.put("calleeClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod))));
+			eventParams.put("chopLabel", label);
+			createEvent(JavaEventName.RETURN_STATIC_METHOD, eventParams);
+		}
 	}
 
 	/**
@@ -803,14 +763,10 @@ public class InstrumDelegateOpt {
 	 *            has returned.
 	 */
 	public static void mainMethodReturned(String calledMethod) {
-		// System.out.println("START: Main method returned!!");
-		// System.out.println("Called Method = " + calledMethod);
-
 		Map<String, String> eventParams = new HashMap<String, String>();
 		eventParams.put("calleeClass", getClass(calledMethod));
 		eventParams.put("calledMethod", getMethod(calledMethod));
 		createEvent(JavaEventName.RETURN_MAIN_METHOD, eventParams);
-		// System.out.println("END: Main method returned!!");
 	}
 
 	public static void mainMethodInvoked() {
@@ -836,23 +792,19 @@ public class InstrumDelegateOpt {
 	 *            operation.
 	 */
 	public static void prepareMethodReturn(Object returnValue, Object parentObject, String parentMethod, String label) {
+		// send chop node only if its corresponding source was already triggered
+		String[] l = label.split(Chop.LABEL_SPLIT);
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
+			Map<String, String> eventParams = new HashMap<String, String>();
+			eventParams.put("parentObjectAddress", getAddress(parentObject));
+			eventParams.put("parentClass", getClass(parentObject, parentMethod));
+			eventParams.put("parentMethod", getMethod(parentMethod));
+			eventParams.put("returnValueClass", getClass(returnValue));
+			eventParams.put("returnValueAddress", getAddress(returnValue));
+			eventParams.put("chopLabel", label);
 
-		// System.out.println("Prepare method return!!");
-		// System.out.println("Chopnode Label = " + label);
-		// System.out.println("Parent obj = " + objectToString(parentObject));
-		// System.out.println("Parent Method = " + parentMethod);
-		// System.out.println("Return value = " + objectToString(returnValue));
-
-		Map<String, String> eventParams = new HashMap<String, String>();
-		eventParams.put("parentObjectAddress", getAddress(parentObject));
-		eventParams.put("parentClass", getClass(parentObject, parentMethod));
-		eventParams.put("parentMethod", getMethod(parentMethod));
-		eventParams.put("returnValueClass", getClass(returnValue));
-		eventParams.put("returnValueAddress", getAddress(returnValue));
-		eventParams.put("chopLabel", label);
-		createEvent(JavaEventName.PREPARE_METHOD_RETURN, eventParams);
-
-		// System.out.println();
+			createEvent(JavaEventName.PREPARE_METHOD_RETURN, eventParams);
+		}
 	}
 
 	/**
@@ -891,13 +843,13 @@ public class InstrumDelegateOpt {
 		if (eventName.equals(JavaEventName.CALL_INSTANCE_METHOD)) {
 			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM)
 					.append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(chopLabel);
-		}
-		else if (eventName.equals(JavaEventName.SOURCE_INVOKED)){
-//			_return = _return.append(sourceId).append(DLM).append(calleeObjectClass).append(DLM).append(calleeObjectAddress).append(DLM).append(sourceObjectAddress);
+		} else if (eventName.equals(JavaEventName.SOURCE_INVOKED)) {
+			// _return =
+			// _return.append(sourceId).append(DLM).append(calleeObjectClass).append(DLM).append(calleeObjectAddress).append(DLM).append(sourceObjectAddress);
 			_return = _return.append(sourceId).append(DLM).append(sourceObjectAddress);
-		}
-		else if(eventName.equals(JavaEventName.SINK_INVOKED)){
-			_return = _return.append(sinkId).append(DLM).append(calleeObjectClass).append(DLM).append(calleeObjectAddress);
+		} else if (eventName.equals(JavaEventName.SINK_INVOKED)) {
+			_return = _return.append(sinkId).append(DLM).append(calleeObjectClass).append(DLM)
+					.append(calleeObjectAddress);
 		}
 		return _return.toString();
 	}
@@ -910,24 +862,26 @@ public class InstrumDelegateOpt {
 		specificParams.put("processId", Utility.getPID());
 
 		String eventId = createEventId(eventName, specificParams);
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)){
-			if(EVENTTIMER){
-				 StatisticsUtil.endEventCreation(eventName);//Do not understand what
-					StatisticsUtil.stopEventTimer(eventName);
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)) {
+			if (EVENTTIMER) {
+				StatisticsUtil.endEventCreation(eventName);// Do not understand
+															// what
+				StatisticsUtil.stopEventTimer(eventName);
 			}
 			return;
-		}
-		else if(!sendEventRepo.containsKey(eventId)){
+		} else if (!sendEventRepo.containsKey(eventId)) {
 			sendEventRepo.put(eventId, 0);
 		}
+
 		// IEvent event = new EventBasic(eventName, specificParams, isActual);
 		IEvent event = InstrumDelegateOpt.eventBasicRepo.get(eventName);
 		((MyEventBasic) event).setMapParameters(specificParams);
-		((MyEventBasic) event).setBoolIsActual(false);
+		((MyEventBasic) event).setBoolIsActual(isActual);
 
-		sendEventRepo.put(eventId, sendEventRepo.get(eventId)+1);
-		if(EVENTTIMER)
-		 StatisticsUtil.endEventCreation(eventName);//Do not understand what
+		sendEventRepo.put(eventId, sendEventRepo.get(eventId) + 1);
+
+		if (EVENTTIMER)
+			StatisticsUtil.endEventCreation(eventName);// Do not understand what
 		// this method does
 		// boolean success = ucCom.sendEvent2Pdp(event);
 		IResponse response = ucCom.sendEvent(event, false); // send event to

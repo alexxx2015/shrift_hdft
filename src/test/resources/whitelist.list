@@ -7,5 +7,8 @@ contains:jzip
 startswith:myTest
 startswith:restfb.test
 startswith:sap.UserAuth
+startswith:sap.ExampleApp
+startswith:sap.PPLClient
+startswith:types.Utility
 
 contains:test.Declassification

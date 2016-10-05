@@ -142,7 +142,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
 				mv.visitLdcInsn(chopNode.getByteCodeIndex());
 				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
@@ -193,7 +193,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// Load parent method name, chopnode label and invoke delegate
 				// method
 				mv.visitLdcInsn(fqName);
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "unaryAssign",
 						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 
@@ -208,7 +208,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
 				mv.visitLdcInsn(chopNode.getByteCodeIndex());
 				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
@@ -288,7 +288,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// Load parent method name, chopnode label and invoke delegate
 				// method
 				mv.visitLdcInsn(fqName);
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "binaryAssign",
 						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
 						false);
@@ -301,7 +301,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitLdcInsn(JavaEventName.READ_ARRAY);
 				mv.visitLdcInsn(chopNode.getByteCodeIndex());
 				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
@@ -344,7 +344,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// Load parent method name, chopnode label and invoke delegate
 				// method
 				mv.visitLdcInsn(fqName);
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "readArray",
 						"(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
 						false);
@@ -357,7 +357,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitLdcInsn(JavaEventName.WRITE_ARRAY);
 				mv.visitLdcInsn(chopNode.getByteCodeIndex());
 				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
@@ -401,7 +401,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// Load parent method name, chopnode label and invoke delegate
 				// method
 				mv.visitLdcInsn(fqName);
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "writeArray",
 						"(Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
 						false);
@@ -417,7 +417,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitLdcInsn(JavaEventName.PREPARE_METHOD_RETURN);
 				mv.visitLdcInsn(chopNode.getByteCodeIndex());
 				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
@@ -441,7 +441,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// Load parent method name, chopnode label and invoke delegate
 				// method
 				mv.visitLdcInsn(fqName);
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "prepareMethodReturn",
 						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 			}
@@ -522,7 +522,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
@@ -542,7 +542,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// Load parent method name, chopnode label and invoke delegate
 			// method
 			mv.visitLdcInsn(fqName);
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "binaryAssign",
 					"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
 					false);
@@ -597,7 +597,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			mv.visitLdcInsn(JavaEventName.READ_FIELD);
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
@@ -637,7 +637,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// Load parent method name, chopnode label and invoke delegate
 			// method
 			mv.visitLdcInsn(fqName);
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "readField",
 					"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
 							+ "Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
@@ -649,7 +649,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			mv.visitLdcInsn(JavaEventName.WRITE_FIELD);
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
@@ -696,7 +696,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// Load parent method name, chopnode label and invoke delegate
 			// method
 			mv.visitLdcInsn(fqName);
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "writeField",
 					"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;"
 							+ "Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
@@ -805,9 +805,10 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
-			mv.visitLdcInsn(this.methodName);// load parent method name
+//			p_owner.replace("/", ".") + "|" + p_name + p_desc
+			mv.visitLdcInsn(this.methodName+this.descriptor);// load parent method name
 			mv.visitLdcInsn(String.join("|", sourceIds));// Load sinksourceIds
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 
 			// --> add timer, add call to start event creation timer
 			// if (isInstanceOrInterfaceMethod || isConstructor) {
@@ -819,7 +820,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			mv.visitLdcInsn(JavaEventName.SOURCE_INVOKED);
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
@@ -853,7 +854,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(String.join("|", sinkIds));// Load sinksourceIds
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 
 			// --> add timer, add call to start event creation timer
 			// if (isInstanceOrInterfaceMethod || isConstructor) {
@@ -865,7 +866,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			mv.visitLdcInsn(JavaEventName.SINK_INVOKED);
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
@@ -1079,7 +1080,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 					}
 					mv.visitLdcInsn(chopNode.getByteCodeIndex());
 					mv.visitLdcInsn(chopNode.getOwnerMethod());
-					mv.visitLdcInsn(chopNode.getLabel());
+					mv.visitLdcInsn(chopNode.getLabelWithSource());
 					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 					}
@@ -1171,12 +1172,12 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			}
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
 			// Load chopnode label
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			// Load parent object (or null if parent method is static)
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
@@ -1260,7 +1261,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
 				mv.visitLdcInsn(chopNode.getByteCodeIndex());
 				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
 						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
@@ -1277,7 +1278,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// Load parent method name, chopnode label and invoke delegate
 				// method
 				mv.visitLdcInsn(fqName);
-				mv.visitLdcInsn(chopNode.getLabel());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "unaryAssign",
 						"(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false);
 			}

@@ -928,9 +928,9 @@ public class InstrumDelegateOpt {
 		specificParams.put("processId", Utility.getPID());
 		
 		String eventId = createEventId(eventName, specificParams);
-		boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
-				|| eventName.equals(JavaEventName.SINK_INVOKED);
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2) && !isSourceSink) {
+//		boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
+//				|| eventName.equals(JavaEventName.SINK_INVOKED);
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)){// && isSourceSink) {
 			if (EVENTTIMER) {
 //				Stop timer event creation
 				StatisticsUtil.endEventCreation(eventName);

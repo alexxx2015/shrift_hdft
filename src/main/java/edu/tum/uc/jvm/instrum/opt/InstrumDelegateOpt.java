@@ -5,7 +5,6 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,13 +27,17 @@ import de.tum.in.i22.uc.cm.datatypes.interfaces.IResponse;
 import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.UcCommunicator;
+import edu.tum.uc.jvm.declassification.Declassifier;
+import edu.tum.uc.jvm.extractor.FileDescriptorExtractor;
+import edu.tum.uc.jvm.extractor.IExtractor;
+import edu.tum.uc.jvm.extractor.JerseyUrlExtractor;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.Flow;
+import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
-import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.eval.JavaEventName;
 import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
 
@@ -76,11 +79,17 @@ public class InstrumDelegateOpt {
 	private static Map<String, String> eventParamMap = new HashMap<String, String>();
 	private static boolean EVENTTIMER = false;
 	private static Set<String> ActivatedSources = new HashSet<String>();
+	// stores parameter values for each activated source
+	private static Map<String, Map<String, String>> SOURCEPARAMS = new HashMap<String, Map<String, String>>();
 	static {
 		sinksAndSources.addAll(StaticAnalysis.getSources());
 		sinksAndSources.addAll(StaticAnalysis.getSinks());
 		EVENTTIMER = Boolean.parseBoolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.EVENTTIMER));
 	}
+	private static IResponse LASTRESPONSE;
+	
+	private static IExtractor FileExt = new FileDescriptorExtractor();
+	private static IExtractor JerseyUrlExt = new JerseyUrlExtractor();
 
 	public static void populateMyEventBasic() {
 		boolean isActual = true;
@@ -475,7 +484,7 @@ public class InstrumDelegateOpt {
 			eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 			eventParams.put("calleeObjectIsInstrumented",
 					String.valueOf(classIsInstrumented(getClass(callee, calledMethod))));
-			
+
 			if (l.length >= 1)
 				eventParams.put("chopLabel", l[0]);
 			if (l.length >= 2)
@@ -541,8 +550,10 @@ public class InstrumDelegateOpt {
 			String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source,
 			String p_chopLabel, Object[] p_paramArgs, String p_label) {
 		boolean _return = true;
-		Map<String, String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
-		Map<String, String> jerseyInformation = Utility.extractJerseyInformation(p_sourceobj);
+//		add handler for extracting context information
+		Map<String, String> ctxInfo = (Map<String, String>) FileExt.extract(p_ownerobj);
+		ctxInfo.putAll((Map<String, String>) JerseyUrlExt.extract(p_sourceobj));
+
 		String[] sourceIds = p_source.split("\\|");
 		for (String s : sourceIds) {
 			InstrumDelegateOpt.ActivatedSources.add(s.trim());
@@ -552,7 +563,7 @@ public class InstrumDelegateOpt {
 		String sourceObjMemAddr = getAddress(p_sourceobj);
 		String sourceObjectClass = "";
 		if (p_sourceobj != null) {
-			sourceObjectClass = p_sourceobj.getClass().getCanonicalName();
+			sourceObjectClass = p_sourceobj.getClass().getName();
 		}
 		for (String s : sourceIds) {
 			// Object o =
@@ -578,15 +589,16 @@ public class InstrumDelegateOpt {
 			eventParams.put("sourceParam", sourceParam);
 			eventParams.put("sourceId", source.getId());
 			eventParams.put("javaMapIdentifier", source.getId());
-			eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
-			eventParams.put("jerseyInformation", JSONObject.toJSONString(jerseyInformation));
+			eventParams.put("ctxInfo", JSONObject.toJSONString(ctxInfo));
 			eventParams.put("chopLabel", p_chopLabel);
 			eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(p_paramArgs))));
 			eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(p_paramArgs))));
 			eventParams.put("methodArgValues", JSONArray.toJSONString(Arrays.asList(getValues(p_paramArgs))));
 			if (p_label != null)
 				eventParams.put("methodLabel", p_label);
-			createEvent(JavaEventName.SOURCE_INVOKED, eventParams, false);
+			// store source params temporarily, for later sink event handlers
+			SOURCEPARAMS.put(s, eventParams);
+			createEvent(JavaEventName.SOURCE_INVOKED, eventParams);
 		}
 		return _return;
 	}
@@ -600,16 +612,19 @@ public class InstrumDelegateOpt {
 
 	public static boolean sinkInvoked(Object p_ownerobj, String p_ownerclass, String p_ownermethod,
 			Object[] p_ownermethodparams, Object p_parentobj, String p_parentClass, String p_parentmethodname,
-			String p_source, String label, String p_label) {
+			String p_sink, String label, String p_label) {
 		boolean _return = true;
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
 		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
-			Map<String, String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
-			String[] sinkIds = p_source.split("\\|");
+			Map<String, String> contextInformation = (Map<String, String>) FileExt.extract(p_ownerobj);
+			String[] sinkIds = p_sink.split("\\|");
 			String calleeObjMemAddr = getAddress(p_ownerobj);
 			String parentObjMemAddr = getAddress(p_parentobj);
 			List<String> dependsOnSources = new LinkedList<String>();
+			Map<String, Map<String, String>> dependSourceParams = new HashMap<String, Map<String, String>>();// Jersey
+			String restSource = "";// Jersey
+
 			for (String s : sinkIds) {
 				SinkSource sink = StaticAnalysis.getSinkById(s);
 				int param = sink.getParam();
@@ -622,6 +637,22 @@ public class InstrumDelegateOpt {
 				for (Flow f : StaticAnalysis.getFlows()) {
 					if (f.getSink().equals(sink.getId())) {
 						dependsOnSources = f.getSource();
+						for (String src : f.getSource()) {
+							if (SOURCEPARAMS.containsKey(src)) {
+								dependSourceParams.put(src, SOURCEPARAMS.get(src));
+								Map<String, String> eventParam = SOURCEPARAMS.get(src);
+								if (eventParam.containsKey("restInfo")) {
+									try {
+										JSONObject jrestInfo = (JSONObject) new JSONParser()
+												.parse(eventParam.get("restInfo"));
+										restSource = jrestInfo.get("url-protocol").toString() + "://"
+												+ jrestInfo.get("url-host") + ":" + jrestInfo.get("url-port")
+												+ jrestInfo.get("url-path");
+									} catch (Exception e) {
+									}
+								}
+							}
+						}
 						break;
 					}
 				}
@@ -638,6 +669,7 @@ public class InstrumDelegateOpt {
 				eventParams.put("sinkParam", sinkParam);
 				eventParams.put("sinkId", sink.getId());
 				eventParams.put("dependsOnSources", JSONArray.toJSONString(dependsOnSources));
+				eventParams.put("dependSourceParams", JSONObject.toJSONString(dependSourceParams));
 				eventParams.put("methodArgTypes",
 						JSONArray.toJSONString(Arrays.asList(getClasses(p_ownermethodparams))));
 				eventParams.put("methodArgAddresses",
@@ -646,7 +678,24 @@ public class InstrumDelegateOpt {
 						JSONArray.toJSONString(Arrays.asList(getValues(p_ownermethodparams))));
 				if (p_label != null)
 					eventParams.put("methodLabel", p_label);
-				createEvent(JavaEventName.SINK_INVOKED, eventParams);
+				eventParams.put("Source", restSource);// JERSEY
+				_return = createEvent(JavaEventName.SINK_INVOKED, eventParams, false);
+
+				// modify sink parameters in case response was a modification
+				if (_return && LASTRESPONSE != null && LASTRESPONSE.getAuthorizationAction().isStatus(EStatus.MODIFY)) {
+					if (!sink.isReturn() && p_ownermethodparams.length >= param && param > 0) {
+						Map<String, String> modifyParam = LASTRESPONSE.getModifiedEvent().getParameters();
+						Object o = p_ownermethodparams[param - 1];
+						Declassifier.declassify(o, modifyParam);
+					}
+				} else if (!_return && LASTRESPONSE != null
+						&& LASTRESPONSE.getAuthorizationAction().isStatus(EStatus.INHIBIT)) {
+					if (!sink.isReturn() && p_ownermethodparams.length >= param && param > 0) {
+						Object o = p_ownermethodparams[param - 1];
+						Declassifier.declassify(o);
+					}
+				}
+				LASTRESPONSE = null;
 			}
 		}
 		return _return;
@@ -704,7 +753,11 @@ public class InstrumDelegateOpt {
 			eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 			eventParams.put("calleeObjectIsInstrumented",
 					String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
-			eventParams.put("chopLabel", label);
+//			eventParams.put("chopLabel", label);
+			if (l.length >= 1)
+				eventParams.put("chopLabel", l[0]);
+			if (l.length >= 2)
+				eventParams.put("SRCDEP", l[1]);
 			createEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
 		}
 	}
@@ -839,11 +892,24 @@ public class InstrumDelegateOpt {
 		String sourceId = param.containsKey("sourceId") ? param.get("sourceId") : "";
 		String sinkId = param.containsKey("sinkId") ? param.get("sinkId") : "";
 		String sourceObjectAddress = param.containsKey("sourceObjectAddress") ? param.get("sourceObjectAddress") : "";
+		String argumentAddress = param.containsKey("argumentAddress") ? param.get("argumentAddress") : "";
+		String returnValueAddress = param.containsKey("returnValueAddress") ? param.get("returnValueAddress") : "";
 
 		if (eventName.equals(JavaEventName.CALL_INSTANCE_METHOD)) {
 			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM)
-					.append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(chopLabel);
-		} else if (eventName.equals(JavaEventName.SOURCE_INVOKED)) {
+					.append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(chopLabel).append(DLM).append(JavaEventName.CALL_INSTANCE_METHOD);
+		}
+		else if (eventName.equals(JavaEventName.RETURN_INSTANCE_METHOD)){
+			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM)
+					.append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(chopLabel).append(DLM).append(JavaEventName.RETURN_INSTANCE_METHOD);
+		}
+		else if (eventName.equals(JavaEventName.UNARY_ASSIGN)){
+			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM).append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(argumentAddress).append(DLM).append(JavaEventName.UNARY_ASSIGN);
+		}
+		else if (eventName.equals(JavaEventName.PREPARE_METHOD_RETURN)){
+			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM).append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(returnValueAddress).append(DLM).append(JavaEventName.PREPARE_METHOD_RETURN);
+		}
+		else if (eventName.equals(JavaEventName.SOURCE_INVOKED)) {
 			// _return =
 			// _return.append(sourceId).append(DLM).append(calleeObjectClass).append(DLM).append(calleeObjectAddress).append(DLM).append(sourceObjectAddress);
 			_return = _return.append(sourceId).append(DLM).append(sourceObjectAddress);
@@ -854,21 +920,23 @@ public class InstrumDelegateOpt {
 		return _return.toString();
 	}
 
-	private static void createEvent(String eventName, Map<String, String> specificParams, boolean isActual) {
+	private static boolean createEvent(String eventName, Map<String, String> specificParams, boolean isActual) {
 		// Map<String, String> allParams = new HashMap<String,
 		// String>(specificParams);
 		specificParams.put("PEP", "Java");
 		specificParams.put("threadId", Utility.getThreadId());
 		specificParams.put("processId", Utility.getPID());
-
+		
 		String eventId = createEventId(eventName, specificParams);
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)) {
+		boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
+				|| eventName.equals(JavaEventName.SINK_INVOKED);
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2) && !isSourceSink) {
 			if (EVENTTIMER) {
-				StatisticsUtil.endEventCreation(eventName);// Do not understand
-															// what
+//				Stop timer event creation
+				StatisticsUtil.endEventCreation(eventName);
 				StatisticsUtil.stopEventTimer(eventName);
 			}
-			return;
+			return true;
 		} else if (!sendEventRepo.containsKey(eventId)) {
 			sendEventRepo.put(eventId, 0);
 		}
@@ -881,11 +949,10 @@ public class InstrumDelegateOpt {
 		sendEventRepo.put(eventId, sendEventRepo.get(eventId) + 1);
 
 		if (EVENTTIMER)
-			StatisticsUtil.endEventCreation(eventName);// Do not understand what
-		// this method does
-		// boolean success = ucCom.sendEvent2Pdp(event);
-		IResponse response = ucCom.sendEvent(event, false); // send event to
-															// PDP/PIP
+			StatisticsUtil.endEventCreation(eventName);
+		// send event to pdp
+		IResponse response = ucCom.sendEvent(event, false);
+		LASTRESPONSE = response;
 		boolean success = (response != null && (response.getAuthorizationAction().isStatus(EStatus.ALLOW)
 				|| response.getAuthorizationAction().isStatus(EStatus.MODIFY))) ? true : false;
 		if (EVENTTIMER)
@@ -956,7 +1023,8 @@ public class InstrumDelegateOpt {
 					e.printStackTrace();
 				}
 			}
-		} else if (!success) {
+		} else if (!isActual && !success) {
+			return false;
 			// try{
 			// Map<String,String> param = event.getParameters();
 			// if(param.containsKey("calleeObjectClass") &&
@@ -988,9 +1056,7 @@ public class InstrumDelegateOpt {
 			// }
 			// }catch(ParseException e){}
 		}
-
-		// System.out.println(success ? "Event sent successfully" : "Error
-		// sending event");
+		return true;
 	}
 
 	/**

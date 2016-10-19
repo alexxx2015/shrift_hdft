@@ -27,6 +27,8 @@ import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IResponse;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.UcCommunicator;
+import edu.tum.uc.jvm.extractor.FileDescriptorExtractor;
+import edu.tum.uc.jvm.extractor.IExtractor;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
@@ -71,7 +73,9 @@ public class InstrumDelegate {
 		sinksAndSources.addAll(StaticAnalysis.getSources());
 		sinksAndSources.addAll(StaticAnalysis.getSinks());
 		EVENTTIMER = Boolean.parseBoolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.EVENTTIMER));
-	}
+	}	
+	private static IExtractor FileExt = new FileDescriptorExtractor();
+
 
 	/**
 	 * Returns true if the class with the given name is instrumented.
@@ -521,7 +525,7 @@ public class InstrumDelegate {
 			String p_ownermethod, Object p_parentobj, String p_parentClass, String p_parentmethodname, String p_source,
 			String p_chopLabel, Object[] p_paramArgs, String p_label) {
 		boolean _return = true;
-		Map<String, String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
+		Map<String, String> contextInformation = (Map<String, String>) FileExt.extract(p_ownerobj);
 		String[] sourceIds = p_source.split("\\|");
 		String calleeObjMemAddr = getAddress(p_ownerobj);
 		String parentObjMemAddr = getAddress(p_parentobj);
@@ -577,7 +581,7 @@ public class InstrumDelegate {
 			Object[] p_ownermethodparams, Object p_parentobj, String p_parentClass, String p_parentmethodname,
 			String p_source, String p_chopLabel, String p_label) {
 		boolean _return = true;
-		Map<String, String> contextInformation = Utility.extractFileDescriptor(p_ownerobj);
+		Map<String, String> contextInformation = (Map<String, String>) FileExt.extract(p_ownerobj);
 		String[] sinkIds = p_source.split("\\|");
 		String calleeObjMemAddr = getAddress(p_ownerobj);
 		String parentObjMemAddr = getAddress(p_parentobj);

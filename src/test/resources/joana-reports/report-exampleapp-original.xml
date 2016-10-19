@@ -355,6 +355,7 @@
         <chopNode byteCodeIndex="57" label="v28 = v26.toString()" local2Vn="3:1,9:2,13:3" operation="call" ownerMethod="sap.ExampleApp.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="60" label="v14.println(v28)" local2Vn="3:1,9:2,13:3" operation="call" ownerMethod="sap.ExampleApp.main([Ljava/lang/String;)V"/>
         <chopNode byteCodeIndex="65" label="v3.doMaliciousStuff(v13)" local2Vn="3:1,9:2,13:3" operation="call" ownerMethod="sap.ExampleApp.main([Ljava/lang/String;)V"/>
+
         <chopNode byteCodeIndex="0" label="v44 = catch &lt;exc&gt;" local2Vn="4:3,5:5,14:2,26:4,43:3,44:6" operation="assign" ownerMethod="sap.PPLClient.getPii(Ltypes/DelegateRequest;)Ljava/io/File;"/>
         <chopNode byteCodeIndex="94" label="v42 = v39.get(v40)" local2Vn="4:3,5:5,14:2,26:4,43:3,44:6" operation="call" ownerMethod="sap.PPLClient.getPii(Ltypes/DelegateRequest;)Ljava/io/File;"/>
         <chopNode byteCodeIndex="97" label="v43 = CHECKCAST v42 exc 108" local2Vn="4:3,5:5,14:2,26:4,43:3,44:6" operation="assign" ownerMethod="sap.PPLClient.getPii(Ltypes/DelegateRequest;)Ljava/io/File;"/>

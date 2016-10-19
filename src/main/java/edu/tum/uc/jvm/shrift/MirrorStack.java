@@ -1,20 +1,5 @@
 package edu.tum.uc.jvm.shrift;
 
-import it.uniroma1.dis.wsngroup.gexf4j.core.EdgeType;
-import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
-import it.uniroma1.dis.wsngroup.gexf4j.core.Graph;
-import it.uniroma1.dis.wsngroup.gexf4j.core.Mode;
-import it.uniroma1.dis.wsngroup.gexf4j.core.Node;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.Attribute;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeClass;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeList;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeType;
-import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
-import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
-import it.uniroma1.dis.wsngroup.gexf4j.core.impl.data.AttributeListImpl;
-import it.uniroma1.dis.wsngroup.gexf4j.core.impl.viz.ColorImpl;
-import it.uniroma1.dis.wsngroup.gexf4j.core.viz.Color;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -41,6 +26,7 @@ import edu.tum.uc.jvm.deprecated.container.Container;
 import edu.tum.uc.jvm.deprecated.container.Field;
 import edu.tum.uc.jvm.deprecated.container.LocalVariable;
 import edu.tum.uc.jvm.deprecated.container.ObjectReference;
+import edu.tum.uc.jvm.extractor.FileDescriptorExtractor;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.MethEvent;
@@ -48,6 +34,19 @@ import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.CreationSite;
+import it.uniroma1.dis.wsngroup.gexf4j.core.EdgeType;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Graph;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Mode;
+import it.uniroma1.dis.wsngroup.gexf4j.core.Node;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.Attribute;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeClass;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeList;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeType;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.data.AttributeListImpl;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.viz.ColorImpl;
 
 public class MirrorStack {
 	// private static Logger _logger =
@@ -694,7 +693,8 @@ public class MirrorStack {
 
 		boolean _return;
 
-		Map<String,String> fileDescriptor = Utility.extractFileDescriptor(o);
+		FileDescriptorExtractor fdExt = new FileDescriptorExtractor();
+		Map<String,String> fileDescriptor = (Map<String, String>) fdExt.extract(o);
 		event.getParameters().put("fileDescriptor", fileDescriptor.get("fd"));
 
 		Boolean timer3 = new Boolean(
@@ -808,16 +808,17 @@ public class MirrorStack {
 		Boolean timer3 = new Boolean(
 				ConfigProperties
 						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3));
+		FileDescriptorExtractor fdExt = new FileDescriptorExtractor();
 		if (timer3) {
 			long start = System.nanoTime();
-			Map<String,String> fileDescriptor = Utility.extractFileDescriptor(o);
+			Map<String,String> fileDescriptor = (Map<String, String>) fdExt.extract(o);
 			p_methName += Utility.STRDELIM + fileDescriptor.get("fd");
 			// System.out.println("MIRROR STACK " + p_methName);
 			methodExited(p_methName);
 			StatisticsWriter.logExecutionTimerT3(p_methName, System.nanoTime()
 					- start);
 		} else {
-			Map<String,String> fileDescriptor = Utility.extractFileDescriptor(o);
+			Map<String,String> fileDescriptor = (Map<String, String>) fdExt.extract(o);
 			p_methName += Utility.STRDELIM + fileDescriptor.get("fd");
 			// System.out.println("MIRROR STACK " + p_methName);
 			methodExited(p_methName);

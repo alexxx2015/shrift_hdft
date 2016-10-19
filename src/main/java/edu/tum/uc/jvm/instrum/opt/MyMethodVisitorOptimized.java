@@ -71,7 +71,8 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 	 */
 	private boolean ift = true;
 	/**
-	 * if true then execution of each event is measured and dumped later on into a file
+	 * if true then execution of each event is measured and dumped later on into
+	 * a file
 	 */
 	private boolean eventTimer = false;
 
@@ -137,14 +138,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 					|| (p_opcode >= Opcodes.INEG && p_opcode <= Opcodes.DNEG)) {
 				// t2t conversion, 133-147, unary
 				// tneg, 116-119, unary
-				if(this.eventTimer){
-				// add call to start event creation timer
-				mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
-				mv.visitLdcInsn(chopNode.getByteCodeIndex());
-				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabelWithSource());
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+				if (this.eventTimer) {
+					// add call to start event creation timer
+					mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
+					mv.visitLdcInsn(chopNode.getByteCodeIndex());
+					mv.visitLdcInsn(chopNode.getOwnerMethod());
+					mv.visitLdcInsn(chopNode.getLabelWithSource());
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
 				// Create a copy of the opcode argument and box it
 				Type operandType = null;
@@ -203,14 +204,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// shift, 120-125, binary
 				// arithmetic, 96-115, binary
 				// logical, 126-131, binary
-				if(this.eventTimer){
-				// add call to start event creation timer
-				mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
-				mv.visitLdcInsn(chopNode.getByteCodeIndex());
-				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabelWithSource());
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+				if (this.eventTimer) {
+					// add call to start event creation timer
+					mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
+					mv.visitLdcInsn(chopNode.getByteCodeIndex());
+					mv.visitLdcInsn(chopNode.getOwnerMethod());
+					mv.visitLdcInsn(chopNode.getLabelWithSource());
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
 				// Create a copy of the two opcode arguments and box them
 				switch (p_opcode) {
@@ -296,14 +297,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_REFERENCE)) {
 			if ((p_opcode >= Opcodes.IALOAD && p_opcode <= Opcodes.SALOAD)) {
 				// load from array
-				if(this.eventTimer){
-				// add call to start event creation timer
-				mv.visitLdcInsn(JavaEventName.READ_ARRAY);
-				mv.visitLdcInsn(chopNode.getByteCodeIndex());
-				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabelWithSource());
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+				if (this.eventTimer) {
+					// add call to start event creation timer
+					mv.visitLdcInsn(JavaEventName.READ_ARRAY);
+					mv.visitLdcInsn(chopNode.getByteCodeIndex());
+					mv.visitLdcInsn(chopNode.getOwnerMethod());
+					mv.visitLdcInsn(chopNode.getLabelWithSource());
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
 				// Create a copy of the array and the index
 				mv.visitInsn(Opcodes.DUP2);
@@ -352,14 +353,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_MODIFY)) {
 			if (p_opcode >= Opcodes.IASTORE && p_opcode <= Opcodes.SASTORE) {
 				// write into array
-				if(this.eventTimer){
-				// add call to start event creation timer
-				mv.visitLdcInsn(JavaEventName.WRITE_ARRAY);
-				mv.visitLdcInsn(chopNode.getByteCodeIndex());
-				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabelWithSource());
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+				if (this.eventTimer) {
+					// add call to start event creation timer
+					mv.visitLdcInsn(JavaEventName.WRITE_ARRAY);
+					mv.visitLdcInsn(chopNode.getByteCodeIndex());
+					mv.visitLdcInsn(chopNode.getOwnerMethod());
+					mv.visitLdcInsn(chopNode.getLabelWithSource());
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
 				// duplicate value, index, array & box value if primitive
 				Type arrayType = null;
@@ -412,14 +413,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				// handling void return not needed here (there are no chopnodes
 				// for this because of missing data
 				// propagation)
-				if(this.eventTimer){
-				// add call to start event creation timer
-				mv.visitLdcInsn(JavaEventName.PREPARE_METHOD_RETURN);
-				mv.visitLdcInsn(chopNode.getByteCodeIndex());
-				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabelWithSource());
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+				if (this.eventTimer) {
+					// add call to start event creation timer
+					mv.visitLdcInsn(JavaEventName.PREPARE_METHOD_RETURN);
+					mv.visitLdcInsn(chopNode.getByteCodeIndex());
+					mv.visitLdcInsn(chopNode.getOwnerMethod());
+					mv.visitLdcInsn(chopNode.getLabelWithSource());
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
 				// duplicate top stack value (return value)
 				Type retType = Type.getReturnType(descriptor);
@@ -517,14 +518,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		// check for the chopnode to be present here and that it has the correct
 		// operation
 		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_ASSIGN)) {
-			if(this.eventTimer){
-			// add call to start event creation timer
-			mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
-			mv.visitLdcInsn(chopNode.getByteCodeIndex());
-			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabelWithSource());
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+			if (this.eventTimer) {
+				// add call to start event creation timer
+				mv.visitLdcInsn(JavaEventName.BINARY_ASSIGN);
+				mv.visitLdcInsn(chopNode.getByteCodeIndex());
+				mv.visitLdcInsn(chopNode.getOwnerMethod());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
 			// Load opcode operands explicitly on stack and box em
 			mv.visitVarInsn(Opcodes.ILOAD, p_var);
@@ -592,14 +593,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		// operation
 		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_REFERENCE)
 				&& (p_opcode == Opcodes.GETSTATIC || p_opcode == Opcodes.GETFIELD)) {
-			if(this.eventTimer){
-			// add call to start event creation timer
-			mv.visitLdcInsn(JavaEventName.READ_FIELD);
-			mv.visitLdcInsn(chopNode.getByteCodeIndex());
-			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabelWithSource());
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+			if (this.eventTimer) {
+				// add call to start event creation timer
+				mv.visitLdcInsn(JavaEventName.READ_FIELD);
+				mv.visitLdcInsn(chopNode.getByteCodeIndex());
+				mv.visitLdcInsn(chopNode.getOwnerMethod());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
 			// Create a copy of the opcode argument (field owner object)
 			// (or load null to fill fieldOwner parameter in delegate method)
@@ -644,14 +645,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 					false);
 		} else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_MODIFY)
 				&& (p_opcode == Opcodes.PUTSTATIC || p_opcode == Opcodes.PUTFIELD)) {
-			if(this.eventTimer){
-			// add call to start event creation timer
-			mv.visitLdcInsn(JavaEventName.WRITE_FIELD);
-			mv.visitLdcInsn(chopNode.getByteCodeIndex());
-			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabelWithSource());
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+			if (this.eventTimer) {
+				// add call to start event creation timer
+				mv.visitLdcInsn(JavaEventName.WRITE_FIELD);
+				mv.visitLdcInsn(chopNode.getByteCodeIndex());
+				mv.visitLdcInsn(chopNode.getOwnerMethod());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
 			// true if value has type long, double or float
 			Type valueType = Type.getType(p_desc);
@@ -764,7 +765,6 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		}
 
 		if (sources != null && sources.size() > 0) {
-
 			// Restfb method invocation
 			if (p_owner.replace("/", ".").toLowerCase().equals("com.restfb.defaultfacebookclient")
 					&& p_name.toLowerCase().equals("fetchobject")) {
@@ -805,8 +805,9 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
-//			p_owner.replace("/", ".") + "|" + p_name + p_desc
-			mv.visitLdcInsn(this.methodName+this.descriptor);// load parent method name
+			// p_owner.replace("/", ".") + "|" + p_name + p_desc
+			mv.visitLdcInsn(this.methodName + this.descriptor);// load parent
+																// method name
 			mv.visitLdcInsn(String.join("|", sourceIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabelWithSource());
 
@@ -816,13 +817,13 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// } else {
 			// mv.visitLdcInsn(JavaEventName.CALL_STATIC_METHOD);
 			// }
-			if(this.eventTimer){
-			mv.visitLdcInsn(JavaEventName.SOURCE_INVOKED);
-			mv.visitLdcInsn(chopNode.getByteCodeIndex());
-			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabelWithSource());
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+			if (this.eventTimer) {
+				mv.visitLdcInsn(JavaEventName.SOURCE_INVOKED);
+				mv.visitLdcInsn(chopNode.getByteCodeIndex());
+				mv.visitLdcInsn(chopNode.getOwnerMethod());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
 			// <-- add timer
 
@@ -862,13 +863,13 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// } else {
 			// mv.visitLdcInsn(JavaEventName.CALL_STATIC_METHOD);
 			// }
-			if(this.eventTimer){
-			mv.visitLdcInsn(JavaEventName.SINK_INVOKED);
-			mv.visitLdcInsn(chopNode.getByteCodeIndex());
-			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabelWithSource());
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+			if (this.eventTimer) {
+				mv.visitLdcInsn(JavaEventName.SINK_INVOKED);
+				mv.visitLdcInsn(chopNode.getByteCodeIndex());
+				mv.visitLdcInsn(chopNode.getOwnerMethod());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
 			// <-- add timer
 
@@ -948,7 +949,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 
 			String wrapperMethodName;
 			if (isConstructor) {
-//				make it more unique
+				// make it more unique
 				wrapperMethodName = "newInit" + p_owner.replace("/", "");
 			} else {
 				wrapperMethodName = p_name;
@@ -1069,20 +1070,20 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode == Opcodes.INVOKEINTERFACE);
 
 				// -----> RETURN_INSTANCE_METHOD START
-				boolean addReturn =true;
+				boolean addReturn = true;
 				if (addReturn) {
-					if(this.eventTimer){
-					// add call to start event creation timer
-					if (isInstanceOrInterfaceMethod || isConstructor) {
-						mv.visitLdcInsn(JavaEventName.RETURN_INSTANCE_METHOD);
-					} else {
-						mv.visitLdcInsn(JavaEventName.RETURN_STATIC_METHOD);
-					}
-					mv.visitLdcInsn(chopNode.getByteCodeIndex());
-					mv.visitLdcInsn(chopNode.getOwnerMethod());
-					mv.visitLdcInsn(chopNode.getLabelWithSource());
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+					if (this.eventTimer) {
+						// add call to start event creation timer
+						if (isInstanceOrInterfaceMethod || isConstructor) {
+							mv.visitLdcInsn(JavaEventName.RETURN_INSTANCE_METHOD);
+						} else {
+							mv.visitLdcInsn(JavaEventName.RETURN_STATIC_METHOD);
+						}
+						mv.visitLdcInsn(chopNode.getByteCodeIndex());
+						mv.visitLdcInsn(chopNode.getOwnerMethod());
+						mv.visitLdcInsn(chopNode.getLabelWithSource());
+						mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+								"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 					}
 					// Duplicate return value (or if constructor, the
 					// unintialized
@@ -1164,17 +1165,17 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// <== Create a new asm-method instance
 
 			// add call to start event creation timer
-			if(this.eventTimer){
-			if (isInstanceOrInterfaceMethod || isConstructor) {
-				mv.visitLdcInsn(JavaEventName.CALL_INSTANCE_METHOD);
-			} else {
-				mv.visitLdcInsn(JavaEventName.CALL_STATIC_METHOD);
-			}
-			mv.visitLdcInsn(chopNode.getByteCodeIndex());
-			mv.visitLdcInsn(chopNode.getOwnerMethod());
-			mv.visitLdcInsn(chopNode.getLabelWithSource());
-			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+			if (this.eventTimer) {
+				if (isInstanceOrInterfaceMethod || isConstructor) {
+					mv.visitLdcInsn(JavaEventName.CALL_INSTANCE_METHOD);
+				} else {
+					mv.visitLdcInsn(JavaEventName.CALL_STATIC_METHOD);
+				}
+				mv.visitLdcInsn(chopNode.getByteCodeIndex());
+				mv.visitLdcInsn(chopNode.getOwnerMethod());
+				mv.visitLdcInsn(chopNode.getLabelWithSource());
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 			}
 			// Load chopnode label
 			mv.visitLdcInsn(chopNode.getLabelWithSource());
@@ -1254,16 +1255,14 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		// operation
 		if (chopNode != null && chopNode.getOperation().equals(Flow.OP_ASSIGN)) {
 			if (p_opcode == Opcodes.CHECKCAST) {
-				// unary
-
-				if(this.eventTimer){
-				// add call to start event creation timer
-				mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
-				mv.visitLdcInsn(chopNode.getByteCodeIndex());
-				mv.visitLdcInsn(chopNode.getOwnerMethod());
-				mv.visitLdcInsn(chopNode.getLabelWithSource());
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
-						"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
+				if (this.eventTimer) {
+					// add call to start event creation timer
+					mv.visitLdcInsn(JavaEventName.UNARY_ASSIGN);
+					mv.visitLdcInsn(chopNode.getByteCodeIndex());
+					mv.visitLdcInsn(chopNode.getOwnerMethod());
+					mv.visitLdcInsn(chopNode.getLabelWithSource());
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startEventTimer",
+							"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V", false);
 				}
 				// Create a copy of the opcode argument (already reference type)
 				mv.visitInsn(Opcodes.DUP);

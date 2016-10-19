@@ -127,14 +127,13 @@ public class Instrumentor {
 		// _logger.info("Done instrumenting " + className);
 		return cw.toByteArray();
 	}
-
+	/*
 	static class JavaClassFileFilter implements FilenameFilter {
-
 		@Override
 		public boolean accept(File dir, String name) {
 			return name.endsWith("\\.class");
 		}
-
 	}
+	*/
 
 }

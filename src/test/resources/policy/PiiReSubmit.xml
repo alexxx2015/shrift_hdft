@@ -25,11 +25,8 @@
 			</not>
 		</condition>
 		<authorizationAction name="default">
-			<allow>
-				<modify>
-					<parameter name="payload" value="12345" />
-				</modify>
-			</allow>
+			<inhibit/>
+			<!-- Either inhibition or overwrite with void-data -->
 		</authorizationAction>
 	</preventiveMechanism>
 </policy>

@@ -617,7 +617,8 @@ public class InstrumDelegateOpt {
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
 		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
-			Map<String, String> contextInformation = (Map<String, String>) FileExt.extract(p_ownerobj);
+			Map<String, String> ctxInfo = (Map<String, String>) FileExt.extract(p_ownerobj);
+			ctxInfo.putAll((Map<String, String>) JerseyUrlExt.extract(p_ownerobj));
 			String[] sinkIds = p_sink.split("\\|");
 			String calleeObjMemAddr = getAddress(p_ownerobj);
 			String parentObjMemAddr = getAddress(p_parentobj);
@@ -641,10 +642,10 @@ public class InstrumDelegateOpt {
 							if (SOURCEPARAMS.containsKey(src)) {
 								dependSourceParams.put(src, SOURCEPARAMS.get(src));
 								Map<String, String> eventParam = SOURCEPARAMS.get(src);
-								if (eventParam.containsKey("restInfo")) {
+								if (eventParam.containsKey("ctxInfo")) {
 									try {
 										JSONObject jrestInfo = (JSONObject) new JSONParser()
-												.parse(eventParam.get("restInfo"));
+												.parse(eventParam.get("ctxInfo"));
 										restSource = jrestInfo.get("url-protocol").toString() + "://"
 												+ jrestInfo.get("url-host") + ":" + jrestInfo.get("url-port")
 												+ jrestInfo.get("url-path");
@@ -664,7 +665,7 @@ public class InstrumDelegateOpt {
 				eventParams.put("calleeObjectClass", p_ownerclass);
 				eventParams.put("calleeObjectAddress", calleeObjMemAddr);
 				eventParams.put("calledMethod", p_ownermethod);
-				eventParams.put("contextInformation", JSONObject.toJSONString(contextInformation));
+				eventParams.put("contextInformation", JSONObject.toJSONString(ctxInfo));
 				eventParams.put("chopLabel", label);
 				eventParams.put("sinkParam", sinkParam);
 				eventParams.put("sinkId", sink.getId());
@@ -928,9 +929,8 @@ public class InstrumDelegateOpt {
 		specificParams.put("processId", Utility.getPID());
 		
 		String eventId = createEventId(eventName, specificParams);
-//		boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
-//				|| eventName.equals(JavaEventName.SINK_INVOKED);
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)){// && isSourceSink) {
+//		boolean isSourceSink = eventName.equals(JavaEventName.SINK_INVOKED);//eventName.equals(JavaEventName.SOURCE_INVOKED)
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)){// && !isSourceSink) {
 			if (EVENTTIMER) {
 //				Stop timer event creation
 				StatisticsUtil.endEventCreation(eventName);

@@ -16,7 +16,6 @@
 		<trigger action="Sink" tryEvent="true">
 			<paramMatch name="Source"
 				value="http://localhost:8080/ppl-rest/pii/getPii" />
-			<!-- <paramMatch name="pii" value="{piiId}" /> -->
 		</trigger>
 		<condition>
 			<not>
@@ -27,7 +26,7 @@
 		<authorizationAction name="default">
 			<allow>
 				<modify>
-					<parameter name="payload" value="12345" />
+					<parameter name="payload" value="abcde" />
 				</modify>
 			</allow>
 		</authorizationAction>

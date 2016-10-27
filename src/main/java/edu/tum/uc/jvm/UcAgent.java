@@ -10,7 +10,8 @@ public final class UcAgent {
 
 	public static void premain(String args, Instrumentation instr) throws Exception{
 		INSTR = instr;
-		INSTR.addTransformer(new MyUcTransformer());
+//		INSTR.addTransformer(new MyUcTransformer());
+		INSTR.addTransformer(new MyUcTransformerOpt());
 		MirrorStack.runnable = true;	
 	}
 

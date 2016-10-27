@@ -87,7 +87,7 @@ public class MyUcTransformerOpt implements ClassFileTransformer {
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
-//		System.out.println("[MyUcTransformer]: Calling tranform ...");
+//		System.out.println("[MyUcTransformer]: Calling tranform ..."+className);
 		
 		if(instrumentedClasses.containsKey(className))
 			return classfileBuffer;
@@ -122,8 +122,7 @@ public class MyUcTransformerOpt implements ClassFileTransformer {
 		ClassNode cn = new ClassNode();
 		cr.accept(cn, 0);
 
-		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS
-				| ClassWriter.COMPUTE_FRAMES);// ClassWriter cw = new
+		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS);//				| ClassWriter.COMPUTE_FRAMES);// ClassWriter cw = new
 												// ClassWriter(cr,
 												// ClassWriter.COMPUTE_MAXS |
 												// ClassWriter.COMPUTE_FRAMES);
@@ -140,6 +139,7 @@ public class MyUcTransformerOpt implements ClassFileTransformer {
 				.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTED_CLASS_PATH);
 		if ((s != null) && !s.equals("")) {
 			try {
+//				System.out.println("DUMPING class "+className);
 				File f = new File(s + cr.getClassName().replace("/", "_")
 						+ ".class");
 				if (!f.getParentFile().exists()) {

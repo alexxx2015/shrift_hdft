@@ -55,6 +55,7 @@ public class StatisticsUtil implements ServletContextListener {
 	MethodTimer timer = new MethodTimer(threadId, methodFQName);
 	MethodTimers.add(timer);
 	timer.start();
+//	System.out.println("START method timer "+timer.startTime+", "+timer.getMethodFQName());
     }
 
     /**
@@ -70,6 +71,7 @@ public class StatisticsUtil implements ServletContextListener {
 	    if (timer.isRunning()) {
 		timer.stop();
 	    }
+//	    System.out.println("STOP method timer "+timer.stopTime +", "+timer.getTimeInterval()+", "+timer.getMethodFQName());
 	}
     }
 

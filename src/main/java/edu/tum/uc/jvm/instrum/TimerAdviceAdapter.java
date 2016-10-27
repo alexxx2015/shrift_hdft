@@ -65,11 +65,11 @@ public class TimerAdviceAdapter extends AdviceAdapter {
 	 */
 	protected void onMethodEnter() {
 		if (shouldAddTimer()) {
-			if (!InstrumDelegateOpt.eventBasicRepoAdded) {
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, InstrumDelegateOpt.class.getName().replace(".", "/"),
-						"populateMyEventBasic", "()V", false);
-				InstrumDelegateOpt.eventBasicRepoAdded = true;
-			}
+//			if (!InstrumDelegateOpt.eventBasicRepoAdded) {
+//				mv.visitMethodInsn(Opcodes.INVOKESTATIC, InstrumDelegateOpt.class.getName().replace(".", "/"),
+//						"populateMyEventBasic", "()V", false);
+//				InstrumDelegateOpt.eventBasicRepoAdded = true;
+//			}
 			mv.visitLdcInsn(fqName);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startMethodTimer",
 					"(Ljava/lang/String;)V", false);

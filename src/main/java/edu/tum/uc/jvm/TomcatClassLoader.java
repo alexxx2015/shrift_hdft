@@ -1,7 +1,10 @@
 package edu.tum.uc.jvm;
 import java.security.AccessControlException;
+
+import org.objectweb.asm.Opcodes;
 import org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader;
 
+import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.shrift.MirrorStack;
 
 
@@ -33,7 +36,13 @@ public class TomcatClassLoader extends TomcatInstrumentableClassLoader{
 	
 	private void addUCTransformer(){		
 		//super.addTransformer(new UcTransformer(true));
-		super.addTransformer(new MyUcTransformer(true));
+//		super.addTransformer(new MyUcTransformer(true));
+		super.addTransformer(new MyUcTransformerOpt(true));
+
+		if (!InstrumDelegateOpt.eventBasicRepoAdded) {
+			InstrumDelegateOpt.populateMyEventBasic();
+			InstrumDelegateOpt.eventBasicRepoAdded = true;
+		}
 	}
 	
 //	@Override

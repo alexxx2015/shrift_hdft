@@ -573,7 +573,7 @@ public class InstrumDelegateOpt {
 			String sourceParam = "";
 			if (source.isReturn()) {
 				sourceParam = "ret";
-			} else if (param > 0) {
+			} else if (param >= 0) {
 				sourceParam = String.valueOf(param);
 			}
 
@@ -928,9 +928,9 @@ public class InstrumDelegateOpt {
 		specificParams.put("processId", Utility.getPID());
 		
 		String eventId = createEventId(eventName, specificParams);
-		boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
-				|| eventName.equals(JavaEventName.SINK_INVOKED);
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2) && !isSourceSink) {
+//		boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
+//				|| eventName.equals(JavaEventName.SINK_INVOKED);
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)){// && !isSourceSink) {
 			if (EVENTTIMER) {
 //				Stop timer event creation
 				StatisticsUtil.endEventCreation(eventName);
@@ -947,12 +947,13 @@ public class InstrumDelegateOpt {
 		((MyEventBasic) event).setBoolIsActual(isActual);
 
 		sendEventRepo.put(eventId, sendEventRepo.get(eventId) + 1);
-
+//		System.out.println("SEND "+event.getName()+" , "+eventId);
 		if (EVENTTIMER)
 			StatisticsUtil.endEventCreation(eventName);
 		// send event to pdp
 		IResponse response = ucCom.sendEvent(event, false);
 		LASTRESPONSE = response;
+//		System.out.println("SEND EVENT "+event.getName());
 		boolean success = (response != null && (response.getAuthorizationAction().isStatus(EStatus.ALLOW)
 				|| response.getAuthorizationAction().isStatus(EStatus.MODIFY))) ? true : false;
 		if (EVENTTIMER)

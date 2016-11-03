@@ -73,13 +73,6 @@ public class TimerAdviceAdapter extends AdviceAdapter {
 			mv.visitLdcInsn(fqName);
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "startMethodTimer",
 					"(Ljava/lang/String;)V", false);
-		} else if (((this.methodAccess & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC)
-				&& this.methodName.toLowerCase().equals("main")) {
-			if (!InstrumDelegateOpt.eventBasicRepoAdded) {
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, InstrumDelegateOpt.class.getName().replace(".", "/"),
-						"populateMyEventBasic", "()V", false);
-				InstrumDelegateOpt.eventBasicRepoAdded = true;
-			}
 		}
 	}
 

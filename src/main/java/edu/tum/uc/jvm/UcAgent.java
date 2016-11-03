@@ -3,6 +3,7 @@ package edu.tum.uc.jvm;
 import java.lang.instrument.*;
 import java.lang.management.ManagementFactory;
 
+import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.shrift.MirrorStack;
 
 public final class UcAgent {	
@@ -13,6 +14,11 @@ public final class UcAgent {
 //		INSTR.addTransformer(new MyUcTransformer());
 		INSTR.addTransformer(new MyUcTransformerOpt());
 		MirrorStack.runnable = true;	
+		
+		if (!InstrumDelegateOpt.eventBasicRepoAdded) {
+			InstrumDelegateOpt.populateMyEventBasic();
+			InstrumDelegateOpt.eventBasicRepoAdded = true;
+		}
 	}
 
 	public static void main(String args, Instrumentation p_instr) throws Exception{

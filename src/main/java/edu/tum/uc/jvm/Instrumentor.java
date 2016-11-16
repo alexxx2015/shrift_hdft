@@ -35,8 +35,8 @@ public class Instrumentor {
 	public static void main(String[] arg) throws IOException, IllegalClassFormatException {
 		// arg = new
 		// String[]{"/home/osn/ws_securibench/JavaFTP/bin","/home/osn/instrumented","/home/osn/uc-reports/uc-jftp.config"};
-		arg = new String[] { "/home/alex/git_repos/io-flow-analyzer/examples/classes/bin", "/home/alex/instrumented",
-				"/home/alex/git_repos/uc4java/src/test/resources/uc-config/uc-userauth.config" };
+//		arg = new String[] { "/home/alex/git_repos/io-flow-analyzer/examples/classes/bin", "/home/alex/instrumented",
+//				"/home/alex/git_repos/uc4java/src/test/resources/uc-config/uc-userauth.config" };
 		if (arg.length != 3)
 			throw new IllegalArgumentException(
 					"Number of commandline parameters insufficient. arg[0]=SourceDir, arg[1]=DestDir, arg[2]=uc.config");

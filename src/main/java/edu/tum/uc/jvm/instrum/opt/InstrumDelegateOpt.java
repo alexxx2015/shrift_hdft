@@ -471,7 +471,6 @@ public class InstrumDelegateOpt {
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
 		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
-
 			synchronized (InstrumDelegateOpt.class) {
 				Map<String, String> eventParams = eventParamMap;// new
 																// HashMap<String,
@@ -957,7 +956,7 @@ public class InstrumDelegateOpt {
 		((MyEventBasic) event).setBoolIsActual(isActual);
 
 		sendEventRepo.put(eventId, sendEventRepo.get(eventId) + 1);
-		// System.out.println("SEND1 "+event.getName()+" , "+eventId);
+//		 System.out.println("SEND1 "+event.getName()+" , "+eventId);
 		if (EVENTTIMER)
 			StatisticsUtil.endEventCreation(eventName);
 		// send event to pdp

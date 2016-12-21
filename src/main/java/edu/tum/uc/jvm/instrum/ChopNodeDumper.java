@@ -47,7 +47,7 @@ public class ChopNodeDumper implements Runnable {
 	};
 
 	public static enum JSONMsg {
-		NODES, LINKS, FQNAME, OFFSET, OPCODE, MISC, SOURCE, TARGET
+		NODES, LINKS, FQNAME, OFFSET, OPCODE, MISC, ID, SOURCE, TARGET
 	}
 
 	// helper class for chop nodes, serves just as a container
@@ -150,12 +150,13 @@ public class ChopNodeDumper implements Runnable {
 					// create and populate chop node
 					n = new ChopNode();
 					n.fqName = s[0];
-					n.offset = s[1];
-					n.opcode = s[2];
-					n.misc = s[3];
+					n.offset = s[2];
+					n.opcode = s[3];
+					n.misc = s[1];
 					n.label = label;
 					createdChopNodes.put(label, n);
 				}
+				
 
 				if (webMgmUrl)
 					addNodeAndSend(n);
@@ -179,7 +180,7 @@ public class ChopNodeDumper implements Runnable {
 		
 
 		ChopNode nhelp;
-		if (lastNode != null && lastNode.next == null) {
+		if (lastNode != null) { // && lastNode.next == null) {
 			lastNode.next = n;// sends a node to the graph rendering
 			n.prev = lastNode;
 			nhelp=lastNode;
@@ -201,7 +202,7 @@ public class ChopNodeDumper implements Runnable {
 		JSONObject jsonMsg = new JSONObject();
 		jsonMsg.put(JSONMsg.NODES, nodes);
 		jsonMsg.put(JSONMsg.LINKS, edges);
-
+		System.out.println("\n"+jsonMsg.toString());
 		target = client.target(ucWebMgmUrl);// .path("graph");
 		target = target.queryParam(REQPARAM.APPID.toString(), appId);
 		target = target.queryParam(REQPARAM.MSG.toString(),
@@ -261,6 +262,9 @@ public class ChopNodeDumper implements Runnable {
 	private static JSONArray convertNodeToJSON(ChopNode n) {
 		JSONArray _return = new JSONArray();
 		JSONObject attrib = new JSONObject();
+		attrib.put(JSONMsg.ID.toString().toLowerCase(), n.label);
+		_return.add(attrib);
+		attrib = new JSONObject();
 		attrib.put(JSONMsg.FQNAME, n.fqName);
 		_return.add(attrib);
 		attrib = new JSONObject();

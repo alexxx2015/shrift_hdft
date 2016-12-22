@@ -1,8 +1,12 @@
 package edu.tum.uc.jvm.declassification;
 
+import java.text.ParseException;
 import java.util.Map;
 
 import com.sun.jersey.api.representation.Form;
+import com.sun.jersey.core.header.ContentDisposition;
+import com.sun.jersey.multipart.BodyPart;
+import com.sun.jersey.multipart.FormDataMultiPart;
 
 public class Declassifier {
 
@@ -17,6 +21,15 @@ public class Declassifier {
 		}
 		else if (o instanceof String){
 			
+		}
+		else if (o instanceof FormDataMultiPart){
+			FormDataMultiPart f = (FormDataMultiPart)o;
+//			f.cleanup();
+			f.getFields().clear();
+			f.getBodyParts().clear();
+			BodyPart b = new BodyPart();
+			b.setEntity("");
+			f.bodyPart(b);
 		}
 		return o;
 	}

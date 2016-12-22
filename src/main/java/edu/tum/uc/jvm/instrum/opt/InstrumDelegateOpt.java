@@ -94,50 +94,51 @@ public class InstrumDelegateOpt {
 	private static IExtractor JerseyUrlExt = new JerseyUrlExtractor();
 
 	public static void populateMyEventBasic() {
-		boolean isActual = true;
-		sendEventRepo = new HashMap<String, Integer>();
-		eventParamMap = new HashMap<String, String>();
-		IEvent event = new MyEventBasic(JavaEventName.READ_ARRAY, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.READ_ARRAY, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.WRITE_ARRAY, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.WRITE_ARRAY, (MyEventBasic) event);
+			boolean isActual = true;
+			sendEventRepo = new HashMap<String, Integer>();
+			eventParamMap = new HashMap<String, String>();
+			IEvent event = new MyEventBasic(JavaEventName.READ_ARRAY, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.READ_ARRAY, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.READ_FIELD, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.READ_FIELD, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.WRITE_ARRAY, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.WRITE_ARRAY, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.WRITE_FIELD, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.WRITE_FIELD, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.READ_FIELD, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.READ_FIELD, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.UNARY_ASSIGN, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.UNARY_ASSIGN, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.WRITE_FIELD, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.WRITE_FIELD, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.BINARY_ASSIGN, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.BINARY_ASSIGN, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.UNARY_ASSIGN, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.UNARY_ASSIGN, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.CALL_INSTANCE_METHOD, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.CALL_INSTANCE_METHOD, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.BINARY_ASSIGN, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.BINARY_ASSIGN, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.CALL_STATIC_METHOD, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.CALL_STATIC_METHOD, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.CALL_INSTANCE_METHOD, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.CALL_INSTANCE_METHOD, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.RETURN_INSTANCE_METHOD, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.RETURN_INSTANCE_METHOD, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.CALL_STATIC_METHOD, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.CALL_STATIC_METHOD, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.RETURN_STATIC_METHOD, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.RETURN_STATIC_METHOD, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.RETURN_INSTANCE_METHOD, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.RETURN_INSTANCE_METHOD, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.RETURN_MAIN_METHOD, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.RETURN_MAIN_METHOD, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.RETURN_STATIC_METHOD, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.RETURN_STATIC_METHOD, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.PREPARE_METHOD_RETURN, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.PREPARE_METHOD_RETURN, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.RETURN_MAIN_METHOD, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.RETURN_MAIN_METHOD, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.SOURCE_INVOKED, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.SOURCE_INVOKED, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.PREPARE_METHOD_RETURN, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.PREPARE_METHOD_RETURN, (MyEventBasic) event);
 
-		event = new MyEventBasic(JavaEventName.SINK_INVOKED, eventParamMap, isActual);
-		eventBasicRepo.put(JavaEventName.SINK_INVOKED, (MyEventBasic) event);
+			event = new MyEventBasic(JavaEventName.SOURCE_INVOKED, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.SOURCE_INVOKED, (MyEventBasic) event);
+
+			event = new MyEventBasic(JavaEventName.SINK_INVOKED, eventParamMap, isActual);
+			eventBasicRepo.put(JavaEventName.SINK_INVOKED, (MyEventBasic) event);
 	}
 
 	/**
@@ -471,7 +472,6 @@ public class InstrumDelegateOpt {
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
 		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
-
 			synchronized (InstrumDelegateOpt.class) {
 				Map<String, String> eventParams = eventParamMap;// new
 																// HashMap<String,
@@ -939,8 +939,11 @@ public class InstrumDelegateOpt {
 		String eventId = createEventId(eventName, specificParams);
 		// boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
 		// || eventName.equals(JavaEventName.SINK_INVOKED);
-		//		boolean isSourceSink = eventName.equals(JavaEventName.SINK_INVOKED);//eventName.equals(JavaEventName.SOURCE_INVOKED)
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)){// && !isSourceSink) {
+		// boolean isSourceSink =
+		// eventName.equals(JavaEventName.SINK_INVOKED);//eventName.equals(JavaEventName.SOURCE_INVOKED)
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 2)) {// &&
+																						// !isSourceSink)
+																						// {
 			if (EVENTTIMER) {
 				// Stop timer event creation
 				StatisticsUtil.endEventCreation(eventName);

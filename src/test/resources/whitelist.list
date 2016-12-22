@@ -11,3 +11,4 @@ startswith:sap.ExampleApp
 startswith:sap.PPLClient
 startswith:types.Utility
 contains:test.Declassification
+startswith:org.snipsnap

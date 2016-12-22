@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.tum.uc.jvm.MyUcTransformer;
+import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 
 public class TestJzip extends AbstractTest {
@@ -22,7 +23,8 @@ public class TestJzip extends AbstractTest {
 	public void init() throws Exception {
 //		this.startPdpServer=true;
 //		init("/uc-config/uc-myjzip.config");
-		init("/uc-config/uc-jzip.config");
+//		init("/uc-config/uc-jzip.config");
+		init("/uc-config/uc.config");
 //		runCode = false;
 	}
 
@@ -46,6 +48,8 @@ public class TestJzip extends AbstractTest {
 //			do not run the instrumented version
 			if(!runCode) return;
 			
+			InstrumDelegateOpt.populateMyEventBasic();
+			
 			ClassLoader parent = this.getClass().getClassLoader();
 			MyClassLoader mcl = new MyClassLoader(parent);
 			
@@ -54,7 +58,8 @@ public class TestJzip extends AbstractTest {
 					instrumented_bytecode);
 			Object obj = reloadClass.newInstance();
 			test.TestIntf myTest2 = (test.TestIntf) obj;
-
+			
+			
 			for (int i = 0; i < 1; i++) {
 				String instruction = "";
 				URL url = null;//this.getClass().getResource("/toBeZippedFilesSmall");
@@ -65,7 +70,7 @@ public class TestJzip extends AbstractTest {
 					// File f = new File("/home/alex/xlayerpip.zip");
 				}
 				else{
-					File f = new File("/home/alex/tmp");
+					File f = new File("/Users/cataldocalo/git/pdp/Gui/UcWebManager/src/main/webapp/apps/d41d8cd98f00b204e9800998ecf8427e/instrumentations/20161114111246/tozip");
 					instruction = "zip " + f.getParent() + "/toBeZipped.zip "+ f.getAbsolutePath() + "/";
 				}
 

@@ -28,7 +28,7 @@ import org.apache.commons.cli.ParseException;
 
 import test.TestIntf;
 
-public class JZip implements TestIntf{
+public class JZip implements TestIntf {
 	List<String> fileList;
 
 	private Properties CONFIGURATION = null;
@@ -38,10 +38,7 @@ public class JZip implements TestIntf{
 	private boolean run;
 	private String[] args;
 	private String commandline = "";
-	
-	public JZip(){
-		
-	}
+
 	public JZip(String[] args) {
 		this.args = args;
 		if (args != null && args.length > 0) {
@@ -252,7 +249,7 @@ public class JZip implements TestIntf{
 		this.fileList = new LinkedList<String>();
 		this.generateFileList(new File(sourceFolder), sourceFolder);
 
-		byte[] buffer = new byte[1024];//131072];
+		byte[] buffer = new byte[1024];
 
 		try {
 			
@@ -275,6 +272,7 @@ public class JZip implements TestIntf{
 				int len;
 				while ((len = bin.read(buffer)) > 0) {
 					zos.write(buffer, 0, len);
+//					System.out.println("ADDR: "+UnsafeUtil.getObjectAddress(buffer));
 				}
 
 				in.close();
@@ -434,9 +432,16 @@ public class JZip implements TestIntf{
 			}
 		}
 	}
+	
+	private void test(){
+		System.out.println(4);
+	}
+
 	@Override
 	public void runtest() {
 		// TODO Auto-generated method stub
-		main(new String[]{});
+		JZip.main(new String[]{});
 	}
+	
+	public JZip() {}
 }

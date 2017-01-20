@@ -35,10 +35,9 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 	public static final String DELEGATECLASS = InstrumDelegateOpt.class
 			.getName().replace(".", "/");
-//	public static final String DELEGATECLASS = InstrumDelegate.class
-//			.getName().replace(".", "/");
+//	public static final String DELEGATECLASS = InstrumDelegate.class.getName().replace(".", "/");
 
-	// true if running instrumentation in a webservice
+//	true if running instrumentation in a webservice
 	private boolean instrument_webservice;
 
 	private static Map<String,Boolean> instrumentedClasses = new HashMap<String,Boolean>();
@@ -47,11 +46,10 @@ public class MyUcTransformer implements ClassFileTransformer {
 //		Initialize pdp communication
 //		UcCommunicator.getInstance().initPDP();
 
-		// Populate PIP
-		// Utility.populatePip(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
+//		Populate PIP
+//		Utility.populatePip(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 
-		// Create for all sinks and sources a corresponding object in the event
-		// repository
+//		Create for all sinks and sources a corresponding object in the event repository
 		EventRepository.createEventObjects(ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 	}
@@ -114,7 +112,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 
 		String statistic = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.STATISTICS);
-		// log time for instrumentation
+//		log time for instrumentation
 		long start_instrumentation = 0;
 		if (!"".equals(statistic)) {
 			start_instrumentation = System.nanoTime();
@@ -136,8 +134,7 @@ public class MyUcTransformer implements ClassFileTransformer {
 					System.nanoTime() - start_instrumentation);
 		}
 
-		// Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in
-		// configuration file
+//		Dump instrumented bytecode if INSTRUMENTED_CLASS_PATH is set in configuration file
 		String s = ConfigProperties
 				.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTED_CLASS_PATH);
 		if ((s != null) && !s.equals("")) {
@@ -160,11 +157,10 @@ public class MyUcTransformer implements ClassFileTransformer {
 			}
 		}
 
-		// Add class name to list of instrumented classes in the instrumentation
-		// delegate
+//		Add class name to list of instrumented classes in the instrumentation delegate
 		InstrumDelegate.addInstrumentedClassName(cr.getClassName());
 
-		// return the instrumented class
+//		return the instrumented class
 		return cw.toByteArray();
 	}
 }

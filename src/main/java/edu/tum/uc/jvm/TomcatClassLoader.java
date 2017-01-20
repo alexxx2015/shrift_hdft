@@ -1,16 +1,13 @@
 package edu.tum.uc.jvm;
 import java.security.AccessControlException;
 
-import org.objectweb.asm.Opcodes;
 import org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader;
 
 import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.shrift.MirrorStack;
 
 
-
-
-public class TomcatClassLoader extends TomcatInstrumentableClassLoader{
+public class TomcatClassLoader extends TomcatInstrumentableClassLoader {
 	
 	public TomcatClassLoader(){
 		super();

@@ -54,12 +54,10 @@ public class TestJzip extends AbstractTest {
 			MyClassLoader mcl = new MyClassLoader(parent);
 			
 			//Reload instrumented JZip class and execute test run: zip a bunch of file in the resource folder 'toBeZippedFiles'
-			Class<?> reloadClass = mcl.define("jzip.JZip",
-					instrumented_bytecode);
+			Class<?> reloadClass = mcl.define("jzip.JZip", instrumented_bytecode);
 			Object obj = reloadClass.newInstance();
 			test.TestIntf myTest2 = (test.TestIntf) obj;
-			
-			
+						
 			for (int i = 0; i < 1; i++) {
 				String instruction = "";
 				URL url = null;//this.getClass().getResource("/toBeZippedFilesSmall");

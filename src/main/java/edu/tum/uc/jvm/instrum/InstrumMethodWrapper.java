@@ -184,6 +184,7 @@ public class InstrumMethodWrapper {
 
 			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod,
 					p_opcode == Opcodes.INVOKEINTERFACE);
+			
 			// <-- Execute the original method
 
 			// int constructorIndex = -1;

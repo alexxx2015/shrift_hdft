@@ -104,46 +104,46 @@ public class QIFMethodWrapper {
 			mv.visitCode();
 
 			// --> Load all parameters into an array
-//			mv.visitLdcInsn(oriArgT.length);
-//			mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
-//			// Store the array element at the end of parameter's list
-//			int locArrayIndex = ++argIndex;
-//			mv.visitVarInsn(Opcodes.ASTORE, locArrayIndex);
-//			int i = paramStartIndex; // local variable index counter
-//			int j = 0; // array index counter
-//			for (Type argType : oriArgT) {
-//				mv.visitVarInsn(Opcodes.ALOAD, locArrayIndex);
-//				mv.visitLdcInsn(j);
-//				if (argType.getSort() == Type.OBJECT) {
-//					mv.visitVarInsn(Opcodes.ALOAD, i);
-//				} else if (argType.getSort() == Type.ARRAY) {
-//					mv.visitVarInsn(Opcodes.ALOAD, i);
-//				} else {
-//					if (argType.getSort() == Type.DOUBLE) {
-//						mv.visitVarInsn(Opcodes.DLOAD, i);
-//						i++;
-//					} else if (argType.getSort() == Type.FLOAT) {
-//						mv.visitVarInsn(Opcodes.FLOAD, i);
-//					} else if (argType.getSort() == Type.LONG) {
-//						mv.visitVarInsn(Opcodes.LLOAD, i);
-//						i++;
-//					} else if (argType.getSort() == Type.INT) {
-//						mv.visitVarInsn(Opcodes.ILOAD, i);
-//					} else if (argType.getSort() == Type.CHAR) {
-//						mv.visitVarInsn(Opcodes.ILOAD, i);
-//					} else if (argType.getSort() == Type.BYTE) {
-//						mv.visitVarInsn(Opcodes.ILOAD, i);
-//					} else if (argType.getSort() == Type.BOOLEAN) {
-//						mv.visitVarInsn(Opcodes.ILOAD, i);
-//					} else if (argType.getSort() == Type.SHORT) {
-//						mv.visitVarInsn(Opcodes.ILOAD, i);
-//					}
-//					Utility.boxTopStackValue(mv, argType);
-//				}
-//				mv.visitInsn(Opcodes.AASTORE);
-//				i++;
-//				j++;
-//			}
+			// mv.visitLdcInsn(oriArgT.length);
+			// mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+			// // Store the array element at the end of parameter's list
+			// int locArrayIndex = ++argIndex;
+			// mv.visitVarInsn(Opcodes.ASTORE, locArrayIndex);
+			// int i = paramStartIndex; // local variable index counter
+			// int j = 0; // array index counter
+			// for (Type argType : oriArgT) {
+			// mv.visitVarInsn(Opcodes.ALOAD, locArrayIndex);
+			// mv.visitLdcInsn(j);
+			// if (argType.getSort() == Type.OBJECT) {
+			// mv.visitVarInsn(Opcodes.ALOAD, i);
+			// } else if (argType.getSort() == Type.ARRAY) {
+			// mv.visitVarInsn(Opcodes.ALOAD, i);
+			// } else {
+			// if (argType.getSort() == Type.DOUBLE) {
+			// mv.visitVarInsn(Opcodes.DLOAD, i);
+			// i++;
+			// } else if (argType.getSort() == Type.FLOAT) {
+			// mv.visitVarInsn(Opcodes.FLOAD, i);
+			// } else if (argType.getSort() == Type.LONG) {
+			// mv.visitVarInsn(Opcodes.LLOAD, i);
+			// i++;
+			// } else if (argType.getSort() == Type.INT) {
+			// mv.visitVarInsn(Opcodes.ILOAD, i);
+			// } else if (argType.getSort() == Type.CHAR) {
+			// mv.visitVarInsn(Opcodes.ILOAD, i);
+			// } else if (argType.getSort() == Type.BYTE) {
+			// mv.visitVarInsn(Opcodes.ILOAD, i);
+			// } else if (argType.getSort() == Type.BOOLEAN) {
+			// mv.visitVarInsn(Opcodes.ILOAD, i);
+			// } else if (argType.getSort() == Type.SHORT) {
+			// mv.visitVarInsn(Opcodes.ILOAD, i);
+			// }
+			// Utility.boxTopStackValue(mv, argType);
+			// }
+			// mv.visitInsn(Opcodes.AASTORE);
+			// i++;
+			// j++;
+			// }
 			// <-- Load all parameters into an array
 
 			// --> Execute the original method
@@ -283,14 +283,14 @@ public class QIFMethodWrapper {
 			_logger.error(e.getMessage());
 		}
 		return _return;
-	}	
+	}
 
 	public static String[] createArithWrapper(int opcode, ClassWriter cv, Label lab, Chop chopNode,
 			String parentClass) {
 		String[] _return = new String[2];
 		StringBuilder wrapperMethodDesc = new StringBuilder();
 		try {
-//			System.out.println(Mnemonic.OPCODE[opcode]);
+			// System.out.println(Mnemonic.OPCODE[opcode]);
 			// Create the wrapper method signature description as follows:
 			// (0)=OP1,(2)=OP2 => OP3
 			Type t = null;
@@ -357,10 +357,12 @@ public class QIFMethodWrapper {
 				sndVarSlot = 2;
 				break;
 			}
-			
-			if(t==null) return _return;
 
-//			assert (t != null); assert(returnOp != -1); assert(loadOp != -1); assert(subOp != -1);
+			if (t == null)
+				return _return;
+
+			// assert (t != null); assert(returnOp != -1); assert(loadOp != -1);
+			// assert(subOp != -1);
 			// Construct the wrapper method signature
 			wrapperMethodDesc.append("(").append(t.getDescriptor()).append(t.getDescriptor()).append(")")
 					.append(t.getDescriptor());
@@ -381,16 +383,18 @@ public class QIFMethodWrapper {
 			MethodVisitor mv = cv.visitMethod(Opcodes.ACC_PRIVATE + Opcodes.ACC_STATIC, wrapperMethodName,
 					wrapperMethodDesc.toString(), null, null);
 			mv.visitCode();
-			
+
 			List<Flow> flows = StaticAnalysis.getFlowsByChopNode(chopNode);
 			if (flows.size() > 0) {
 				for (Flow f : flows) {
 					for (String source : f.getSource()) {
-//						Load operand parameter on the stack
+						// Load operand parameter on the stack
 						mv.visitVarInsn(loadOp, 0);
-						mv.visitMethodInsn(Opcodes.INVOKESTATIC, boxClass.getName().replace(".", "/"), "valueOf", "("+t.getDescriptor()+")L"+boxClass.getName().replace(".", "/")+";",false);
-						mv.visitVarInsn(loadOp, sndVarSlot);			
-						mv.visitMethodInsn(Opcodes.INVOKESTATIC, boxClass.getName().replace(".", "/"), "valueOf", "("+t.getDescriptor()+")L"+boxClass.getName().replace(".", "/")+";",false);
+						mv.visitMethodInsn(Opcodes.INVOKESTATIC, boxClass.getName().replace(".", "/"), "valueOf",
+								"(" + t.getDescriptor() + ")L" + boxClass.getName().replace(".", "/") + ";", false);
+						mv.visitVarInsn(loadOp, sndVarSlot);
+						mv.visitMethodInsn(Opcodes.INVOKESTATIC, boxClass.getName().replace(".", "/"), "valueOf",
+								"(" + t.getDescriptor() + ")L" + boxClass.getName().replace(".", "/") + ";", false);
 						mv.visitLdcInsn(source);
 						mv.visitLdcInsn(opcode);
 						mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decArithQty",
@@ -398,13 +402,13 @@ public class QIFMethodWrapper {
 					}
 				}
 			}
-			
-//			Load operands on the stack and execute the original instruction
+
+			// Load operands on the stack and execute the original instruction
 			mv.visitVarInsn(loadOp, 0);
-			mv.visitVarInsn(loadOp, sndVarSlot);			
+			mv.visitVarInsn(loadOp, sndVarSlot);
 			mv.visitInsn(opcode);
 			mv.visitInsn(returnOp);
-			
+
 			Type[] myArgT = Type.getArgumentTypes(wrapperMethodDesc.toString());
 			mv.visitMaxs(myArgT.length + 6, myArgT.length + 5);
 			mv.visitEnd();
@@ -414,7 +418,7 @@ public class QIFMethodWrapper {
 		}
 		return _return;
 	}
-	
+
 	public static String[] createMethodWrapper(int opcode, String ownerclass, String ownermethod,
 			String descOwnermethod, ClassWriter cv, String parentclass, Chop chopNode) {
 		boolean isConstructor = opcode == Opcodes.INVOKESPECIAL && ownermethod.equals("<init>");
@@ -449,17 +453,17 @@ public class QIFMethodWrapper {
 				}
 			}
 			// Parent-object index
-			 wrapperMethodDesc.append("Ljava/lang/String;");
-			 int srcIndex = ++argIndex;
+			wrapperMethodDesc.append("Ljava/lang/String;");
+			int srcIndex = ++argIndex;
 
 			// Parent-method index
 			// wrapperMethodDesc.append("Ljava/lang/String;");
 			// int parentMethodIndex = ++argIndex;
-			 
+
 			// sourceindex
 			// wrapperMethodDesc.append("Ljava/lang/String;");
 			// int sinksourceIndex = ++argIndex;
-			 
+
 			// chopLabel index
 			// wrapperMethodDesc.append("Ljava/lang/String;");
 			// int chopLabelIndex = ++argIndex;
@@ -494,15 +498,17 @@ public class QIFMethodWrapper {
 					wrapperMethodDesc.toString(), null, null);
 			mv.visitCode();
 
-			int tmpString1= -1;
+			int tmpString1 = -1;
 			int nextLVSlot = 0;
-			if(ownerclass.toLowerCase().equals("java/lang/stringbuilder") && ownermethod.toLowerCase().equals("append")){
-				if(!isConstructor){
-					for(Type t : Type.getType(wrapperMethodDesc.toString()).getArgumentTypes()){
+			if (ownerclass.toLowerCase().equals("java/lang/stringbuilder")
+					&& ownermethod.toLowerCase().equals("append")) {
+				if (!isConstructor) {
+					for (Type t : Type.getType(wrapperMethodDesc.toString()).getArgumentTypes()) {
 						nextLVSlot += t.getSize();
 					}
-					mv.visitVarInsn(Opcodes.ALOAD,0);
-					mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, StringBuilder.class.getName().replace(".", "/"), "toString", "()Ljava/lang/String;", false);					
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+					mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, StringBuilder.class.getName().replace(".", "/"),
+							"toString", "()Ljava/lang/String;", false);
 					mv.visitVarInsn(Opcodes.ASTORE, (tmpString1 = ++nextLVSlot));
 				}
 			}
@@ -535,34 +541,41 @@ public class QIFMethodWrapper {
 			}
 
 			mv.visitMethodInsn(opcode, ownerclass, ownermethod, descOwnermethod, opcode == Opcodes.INVOKEINTERFACE);
-			// <-- Execute the original method			
-			
-			if(ownerclass.toLowerCase().equals("java/lang/stringbuilder") && ownermethod.toLowerCase().equals("append")){
-				if(!isConstructor && tmpString1>0){
+			// <-- Execute the original method
+
+			if (ownerclass.toLowerCase().equals("java/lang/stringbuilder")
+					&& ownermethod.toLowerCase().equals("append")) {
+				if (!isConstructor && tmpString1 > 0) {
 					mv.visitInsn(Opcodes.DUP);
-					mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, StringBuilder.class.getName().replace(".", "/"), "toString", "()Ljava/lang/String;", false);					
+					mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, StringBuilder.class.getName().replace(".", "/"),
+							"toString", "()Ljava/lang/String;", false);
 					mv.visitVarInsn(Opcodes.ALOAD, tmpString1);
 					mv.visitVarInsn(Opcodes.ALOAD, srcIndex);
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decStringQty", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decStringQty",
+							"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
 				}
-			}
-			else if(ownerclass.toLowerCase().equals("java/lang/string") && ownermethod.toLowerCase().contains("replace")){
+			} else if (ownerclass.toLowerCase().equals("java/lang/string")
+					&& ownermethod.toLowerCase().contains("replace")) {
 				mv.visitInsn(Opcodes.DUP);
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 				mv.visitVarInsn(Opcodes.ALOAD, srcIndex);
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decStringQty", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
-			}
-			else if(ownerclass.toLowerCase().equals("java/lang/string") && (ownermethod.toLowerCase().contains("subsequence") || ownermethod.toLowerCase().contains("substr"))){
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decStringQty",
+						"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
+			} else if (ownerclass.toLowerCase().equals("java/lang/string")
+					&& (ownermethod.toLowerCase().contains("subsequence")
+							|| ownermethod.toLowerCase().contains("substr"))) {
 				mv.visitInsn(Opcodes.DUP);
 				mv.visitTypeInsn(Opcodes.CHECKCAST, String.class.getName().replace(".", "/"));
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 				mv.visitVarInsn(Opcodes.ALOAD, srcIndex);
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decSubSequQty", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
-			}			
-			else if(ownerclass.toLowerCase().equals("java/lang/string") && ownermethod.toLowerCase().contains("split")){
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decSubSequQty",
+						"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
+			} else if (ownerclass.toLowerCase().equals("java/lang/string")
+					&& ownermethod.toLowerCase().contains("split")) {
 				mv.visitInsn(Opcodes.DUP);
 				mv.visitVarInsn(Opcodes.ALOAD, srcIndex);
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decSplitQty", "([Ljava/lang/String;Ljava/lang/String;)V", false);
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decSplitQty",
+						"([Ljava/lang/String;Ljava/lang/String;)V", false);
 			}
 
 			// Add return
@@ -588,6 +601,6 @@ public class QIFMethodWrapper {
 			_logger.error(e.getMessage());
 		}
 		return _return;
-	}	
+	}
 
 }

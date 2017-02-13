@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.IllegalClassFormatException;
@@ -18,8 +17,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
+import edu.tum.uc.jvm.declassification.qif.QIFClassVisitor;
 import edu.tum.uc.jvm.instrum.MyClassReader;
-import edu.tum.uc.jvm.instrum.MyClassVisitor;
 import edu.tum.uc.jvm.instrum.MyClassWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
@@ -121,10 +120,10 @@ public class Instrumentor {
 		// _logger.info("Start instrumenting " + className);
 		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 
-		ClassVisitor cv = new MyClassVisitor(Opcodes.ASM5, cw, cn);
-		// ClassVisitor cv = new QIFClassVisitor(Opcodes.ASM5, cw, cn);
+//		ClassVisitor cv = new MyClassVisitor(Opcodes.ASM5, cw, cn);
+		ClassVisitor cv = new QIFClassVisitor(Opcodes.ASM5, cw, cn);
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
-		// _logger.info("Done instrumenting " + className);
+		// _logger.info("Done instrume nting " + className);
 		return cw.toByteArray();
 	}
 	/*

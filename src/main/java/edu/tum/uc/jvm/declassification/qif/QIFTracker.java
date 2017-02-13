@@ -5,12 +5,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
 import groovyjarjarasm.asm.Opcodes;
 
 public class QIFTracker {
+	/*
+	 * Stores for each source how much of its data still exist within the process
+	 */
 	private static class Qif {
 		private String id;
 		private double oriQty = 0.0;
@@ -41,9 +46,14 @@ public class QIFTracker {
 			this.actQty = qty;
 		}
 	}
-
+	/*
+	 * Stores all executed sources
+	 */
 	private static Map<String, Qif> qif = new HashMap<String, Qif>();
-
+	
+	/*
+	 * represents the byte-size of each primitive data type
+	 */
 	public static enum SIZE {
 		BYTE(1), BOOLEAN(1), CHARACTER(2), DOUBLE(8), FLOAT(4), INTEGER(4), LONG(8), SHORT(2);
 
@@ -57,20 +67,28 @@ public class QIFTracker {
 			return this.size;
 		}
 	}
-
+	
+	/*
+	 * Is invoked if a source is executed 
+	 */
 	public static void addQty(Object o, String sourceId) {
 		long size = getSize(o);
 		qif.put(sourceId, new Qif((double) size, sourceId));
 	}
-
-	// public static void decAbsQty(double amount, String sourceId) {
+	
+	/*
+	 * Quantity estimation for String.substr and String.subsequence
+	 */
 	public static void decSubSequQty(String shortenStr, String origStr, String sourceId) {
 		Qif actualAmount = qif.get(sourceId);
 		double amount = (double) shortenStr.length() / origStr.length();
 		double aQif = actualAmount.getActQty() * amount;
 		actualAmount.setActQty(aQif);
 	}
-
+	
+	/*
+	 * Quantity estimation for String.split
+	 */
 	public static void decSplitQty(String[] splitStr, String sourceId) {
 		Qif actualAmount = qif.get(sourceId);
 		int totalLength = Arrays.toString(splitStr).length() - 2;
@@ -82,7 +100,10 @@ public class QIFTracker {
 		double aQif = actualAmount.getActQty() * (amount);
 		actualAmount.setActQty(aQif);
 	}
-
+	
+	/*
+	 * Quantity estimation for arithmetic operations
+	 */
 	public static void decArithQty(Object o1, Object o2, String sourceId, int opcode) {
 		double diff = 0;
 		String o1str, o2str;
@@ -114,6 +135,12 @@ public class QIFTracker {
 			int maxLength = Math.max(o1str.length(), o2str.length());
 			diff = (double) distance / maxLength;
 		}
+		
+		if(opcode == Opcodes.IAND || opcode == Opcodes.LAND){
+			String o2Str = (o2 instanceof Integer) ? Integer.toBinaryString(((Integer)o2).intValue()) : Long.toBinaryString(((Long)o2).longValue());			
+			int count = StringUtils.countMatches(o2Str, "1");
+			diff = 1- (double) count/(getSize(o2)*8);			
+		}
 
 		// Bit-Op: compute the difference as the ratio between the number of
 		// shifted bits and
@@ -125,20 +152,23 @@ public class QIFTracker {
 		} else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
 			diff = ((Long) o2).intValue() / Math.pow(2, 6);
 		}
+		System.out.println("TRACK: "+Mnemonic.OPCODE[opcode]+" , "+o1+" , "+o2);
 
 		Qif actualAmount = qif.get(sourceId);
 		if (actualAmount == null)
 			return;
-
-		double aQif = actualAmount.getActQty() * (1 - diff);
+			
+		double aQif = actualAmount.getActQty() * (1 - diff);		
 		System.out.println("... Reduced: " + diff + " , " + actualAmount.getActQty() + " , " + aQif + " , "
 				+ Mnemonic.OPCODE[opcode]);
 		actualAmount.setActQty(aQif);
 	}
 
-	// Tracks the quantitative flow for conversion commands
-	// Quantity is reduced to the value space of the target data type, but only
-	// if the actual value exceed the max value of the target type
+	/*
+	 * Quantity estimation for primitive typed inversion commands
+	 * Quantity is reduced to the domain of the target data type, but only
+	 * if the actual value exceed the max value of the target type
+	 */
 	public static void decConvQty(Object o, String sourceid, int opcode) {
 		double qty = 0;
 		int i;
@@ -207,6 +237,9 @@ public class QIFTracker {
 		}
 	}
 
+	/*
+	 * Quantity estimation of StringBuilder.append and StringBuilder.replace
+	 */
 	public static void decStringQty(String o1, String o2, String sourceId) {
 		if (!o1.contains(o2) && !o2.contains(o1)) {
 			int d = Utility.levenshteinDistance(o1.trim(), o2.trim());
@@ -227,7 +260,10 @@ public class QIFTracker {
 			System.out.println("-- Reached sink " + sinkId + " with qty " + qif.get(s).getActQty() + " from " + s
 					+ "; Original-Qty " + qif.get(s).getOriQty());
 	}
-
+	
+	/*
+	 * Returns the size of the parameter O in bytes
+	 */
 	public static long getSize(Object o) {
 		long size = 0;
 		if (o instanceof Byte)
@@ -254,13 +290,12 @@ public class QIFTracker {
 			size = UnsafeUtil.sizeOf(o);
 		}
 
-//		System.out.println("UsafeUtil-Size " + size + ", " + o.getClass().getName());
-//		System.out.println("SimpleAgent-Size " + SimpleAgent.getObjectSize(o) + ", " + o.getClass().getName());
-
 		return size;
 	}
 
-	// Computes the number of elements in a multi-dimensional array
+	/*
+	 *  Computes the number of elements in a multi-dimensional array
+	 */
 	public static int getNumElements(Object o) {
 		int _return = 1;
 		if (o.getClass().isArray()) {

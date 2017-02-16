@@ -94,8 +94,8 @@ public class InstrumDelegateOpt {
 	private static IExtractor JerseyUrlExt = new JerseyUrlExtractor();
 
 	public static void populateMyEventBasic() {
-
-		if (!InstrumDelegateOpt.eventBasicRepoAdded) {
+			
+			InstrumDelegateOpt.eventBasicRepoAdded = true;
 			boolean isActual = true;
 			sendEventRepo = new HashMap<String, Integer>();
 			eventParamMap = new HashMap<String, String>();
@@ -140,9 +140,6 @@ public class InstrumDelegateOpt {
 
 			event = new MyEventBasic(JavaEventName.SINK_INVOKED, eventParamMap, isActual);
 			eventBasicRepo.put(JavaEventName.SINK_INVOKED, (MyEventBasic) event);
-			InstrumDelegateOpt.eventBasicRepoAdded = true;
-
-		}
 	}
 
 	/**
@@ -934,7 +931,8 @@ public class InstrumDelegateOpt {
 	}
 
 	private static boolean createEvent(String eventName, Map<String, String> specificParams, boolean isActual) {
-		InstrumDelegateOpt.populateMyEventBasic();
+		if(!InstrumDelegateOpt.eventBasicRepoAdded)
+			populateMyEventBasic();
 		// Map<String, String> allParams = new HashMap<String,
 		// String>(specificParams);
 		specificParams.put("PEP", "Java");

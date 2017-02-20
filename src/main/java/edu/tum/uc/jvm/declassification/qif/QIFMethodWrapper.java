@@ -298,6 +298,7 @@ public class QIFMethodWrapper {
 			int loadOp = -1;
 			int subOp = -1;
 			Class<?> boxClass = null;
+//			second variable slot is usually one, but can be 2 for double and long
 			int sndVarSlot = 1;
 			switch (opcode) {
 			case Opcodes.IADD:

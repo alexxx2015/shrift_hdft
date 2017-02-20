@@ -131,27 +131,13 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 				// therefore we wrap arithmetic binary instructions in a special
 				// wrap such instructions in a special wraper method
 				convertOp = false;
+//				this wrapper only handles arithmetic operations!
 				wrapperDesc = QIFMethodWrapper.createArithWrapper(opcode, cw, lab, chopNode, clName);
 				break;
 			}
 
 			// If we analyze a convert operation then do not wrap instruction
 			if (convertOp) {
-				/*
-				 * List<Flow> flows =
-				 * StaticAnalysis.getFlowsByChopNode(chopNode); if (flows.size()
-				 * > 0) { for (Flow f : flows) { for (String source :
-				 * f.getSource()) { // Load operand parameter on the stack
-				 * mv.visitInsn(dupCmd);
-				 * mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-				 * boxClass.getName().replace(".", "/"), "valueOf", "(" +
-				 * t.getDescriptor() + ")L" + boxClass.getName().replace(".",
-				 * "/") + ";", false); mv.visitLdcInsn(source);
-				 * mv.visitLdcInsn(opcode);
-				 * mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-				 * QIFClassVisitor.DELEGATECLASS, "decConvQty",
-				 * "(Ljava/lang/Object;Ljava/lang/String;I)V", false); } } }
-				 */
 				// Load operand parameter on the stack
 				mv.visitInsn(dupCmd);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, boxClass.getName().replace(".", "/"), "valueOf",
@@ -164,7 +150,7 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 			}
 			// Wrap an arithmetic instruction
 			else if (wrapperDesc != null && wrapperDesc.length > 0 && wrapperDesc[0] != null
-					&& wrapperDesc[1] != null) {
+					&& wrapperDesc[1] != null && !"".equals(wrapperDesc[0]) && !"".equals(wrapperDesc[1])) {
 				String wrapperMethodName = wrapperDesc[0];
 				String wrapperMethodDesc = wrapperDesc[1];
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, clName, wrapperMethodName, wrapperMethodDesc, false);

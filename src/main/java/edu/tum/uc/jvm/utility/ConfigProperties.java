@@ -80,7 +80,7 @@ public final class ConfigProperties {
 				}
 			}
 		}
-		String _return = CONFIGURATION.getProperty(string.toString());
+		String _return = (CONFIGURATION != null) ? CONFIGURATION.getProperty(string.toString()) : "";
  		return _return;
 	}	
 }

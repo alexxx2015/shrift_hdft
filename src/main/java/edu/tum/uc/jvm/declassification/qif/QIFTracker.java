@@ -5,16 +5,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
-import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
 import groovyjarjarasm.asm.Opcodes;
 
 public class QIFTracker {
 	/*
-	 * Stores for each source how much of its data still exist within the process
+	 * Stores for each source how much of its data still exist within the
+	 * process
 	 */
 	private static class Qif {
 		private String id;
@@ -46,11 +44,12 @@ public class QIFTracker {
 			this.actQty = qty;
 		}
 	}
+
 	/*
 	 * Stores all executed sources
 	 */
 	private static Map<String, Qif> qif = new HashMap<String, Qif>();
-	
+
 	/*
 	 * represents the byte-size of each primitive data type
 	 */
@@ -67,107 +66,138 @@ public class QIFTracker {
 			return this.size;
 		}
 	}
-	
+
 	/*
-	 * Is invoked if a source is executed 
+	 * Invoked on an executed source, computes the size of read data and stores
+	 * it into an internal hash table
 	 */
 	public static void addQty(Object o, String sourceId) {
-		long size = getSize(o);
-		qif.put(sourceId, new Qif((double) size, sourceId));
+		long size = getByteSize(o);
+		Qif q = null;
+		if (qif.containsKey(sourceId))
+			q = qif.get(sourceId);
+		else
+			q = new Qif((double) size, sourceId);
+		qif.put(sourceId, q);
 	}
-	
-	/*
-	 * Quantity estimation for String.substr and String.subsequence
-	 */
-	public static void decSubSequQty(String shortenStr, String origStr, String sourceId) {
-		Qif actualAmount = qif.get(sourceId);
-		double amount = (double) shortenStr.length() / origStr.length();
-		double aQif = actualAmount.getActQty() * amount;
-		actualAmount.setActQty(aQif);
-	}
-	
-	/*
-	 * Quantity estimation for String.split
-	 */
-	public static void decSplitQty(String[] splitStr, String sourceId) {
-		Qif actualAmount = qif.get(sourceId);
-		int totalLength = Arrays.toString(splitStr).length() - 2;
-		double amount = -1;
-		for (String s : splitStr) {
-			s = s.trim();
-			amount = Math.max(amount, (double) s.length() / totalLength);
-		}
-		double aQif = actualAmount.getActQty() * (amount);
-		actualAmount.setActQty(aQif);
-	}
-	
+
 	/*
 	 * Quantity estimation for arithmetic operations
 	 */
 	public static void decArithQty(Object o1, Object o2, String sourceId, int opcode) {
-		double diff = 0;
-		String o1str, o2str;
-
-		// Compute the difference between two numeric values as the number of
-		// flipped bits between the result and each operand
-		if (o1 instanceof Integer && o2 instanceof Integer) {
-			o1str = Integer.toBinaryString((Integer) o1);
-			o2str = Integer.toBinaryString((Integer) o2);
-			int distance = Utility.levenshteinDistance(o1str, o2str);
-			int maxLength = Math.max(o1str.length(), o2str.length());// Integer.toBinaryString(Integer.MAX_VALUE).length()+1;
-			diff = (double) distance / maxLength;
-		} else if (o1 instanceof Long && o2 instanceof Long) {
-			o1str = Long.toBinaryString((Long) o1);
-			o2str = Long.toBinaryString((Long) o2);
-			int distance = Utility.levenshteinDistance(o1str, o2str);
-			int maxLength = Math.max(o1str.length(), o2str.length());
-			diff = (double) distance / maxLength;
-		} else if (o1 instanceof Float && o2 instanceof Float) {
-			o1str = Long.toBinaryString(Float.floatToRawIntBits((Float) o1));
-			o2str = Long.toBinaryString(Float.floatToRawIntBits((Float) o2));
-			int distance = Utility.levenshteinDistance(o1str, o2str);
-			int maxLength = Math.max(o1str.length(), o2str.length());
-			diff = (double) distance / maxLength;
-		} else if (o1 instanceof Double && o2 instanceof Double) {
-			o1str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o1));
-			o2str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o2));
-			int distance = Utility.levenshteinDistance(o1str, o2str);
-			int maxLength = Math.max(o1str.length(), o2str.length());
-			diff = (double) distance / maxLength;
-		}
-		
-		if(opcode == Opcodes.IAND || opcode == Opcodes.LAND){
-			String o2Str = (o2 instanceof Integer) ? Integer.toBinaryString(((Integer)o2).intValue()) : Long.toBinaryString(((Long)o2).longValue());			
-			int count = StringUtils.countMatches(o2Str, "1");
-			diff = 1- (double) count/(getSize(o2)*8);			
-		}
-
-		// Bit-Op: compute the difference as the ratio between the number of
-		// shifted bits and
-		// the number of total possible shifts which is 2^5 as java only
-		// considers the last five bits of a word for the number of
-		// shift positions.
-		if (opcode == Opcodes.ISHL || opcode == Opcodes.ISHR || opcode == Opcodes.IUSHR) {
-			diff = ((Integer) o2).intValue() / Math.pow(2, 5);
-		} else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
-			diff = ((Long) o2).intValue() / Math.pow(2, 6);
-		}
-		System.out.println("TRACK: "+Mnemonic.OPCODE[opcode]+" , "+o1+" , "+o2);
-
 		Qif actualAmount = qif.get(sourceId);
 		if (actualAmount == null)
 			return;
-			
-		double aQif = actualAmount.getActQty() * (1 - diff);		
-		System.out.println("... Reduced: " + diff + " , " + actualAmount.getActQty() + " , " + aQif + " , "
-				+ Mnemonic.OPCODE[opcode]);
+		
+		double diff = 0;
+		String o1str, o2str;
+
+		if (opcode == Opcodes.IAND || opcode == Opcodes.LAND || opcode == Opcodes.IOR || opcode == Opcodes.LOR
+				|| opcode == Opcodes.IXOR || opcode == Opcodes.LXOR) {
+			StringBuilder o1strb = null, o2strb = null, restrb = null;
+			if (opcode == Opcodes.IAND || opcode == Opcodes.IOR || opcode == Opcodes.IXOR) {
+				// compute the actual result between both operands
+				int o1val = (int) o1, o2val = (int) o2, res = 0;
+				if (opcode == Opcodes.IAND)
+					res = o1val & o2val;
+				else if (opcode == Opcodes.IOR)
+					res = o1val | o2val;
+				else if (opcode == Opcodes.IXOR)
+					res = o1val ^ o2val;
+				o1strb = new StringBuilder(Integer.toBinaryString(o1val));
+				o2strb = new StringBuilder(Integer.toBinaryString(o2val));
+				restrb = new StringBuilder(Integer.toBinaryString(res));
+			} else if (opcode == Opcodes.LAND || opcode == Opcodes.LOR || opcode == Opcodes.LXOR) {
+				long o1val = (long) o1, o2val = (long) o2, res = 0;
+				if (opcode == Opcodes.LAND)
+					res = o1val & o2val;
+				else if (opcode == Opcodes.LOR)
+					res = o1val | o2val;
+				else if (opcode == Opcodes.LXOR)
+					res = o1val ^ o2val;
+				o1strb = new StringBuilder(Long.toBinaryString(o1val));
+				o2strb = new StringBuilder(Long.toBinaryString(o2val));
+				restrb = new StringBuilder(Long.toBinaryString(res));
+			}
+
+			// generate the reverse binary string
+			o1str = o1strb.reverse().toString();
+			o2str = o2strb.reverse().toString();
+			String restr = restrb.reverse().toString();
+
+			// compute how many positions of the result match within each of the
+			// parameter
+			int[] matches = new int[] { 0, 0 };
+			for (int i = 0; i < restr.length(); i++) {
+				if (o1str.length() > i && restr.charAt(i) == o1str.charAt(i)) {
+					matches[0]++;
+				}
+				if (o2str.length() > i && restr.charAt(i) == o2str.charAt(i)) {
+					matches[1]++;
+				}
+			}
+
+			double o1cut = (double) matches[0] / o1str.length();
+			double o2cut = (double) matches[1] / o2str.length();
+			// System.out.println("MATCHES with "+restr+": " +o1str+" -> "+
+			// matches[0] + " , " + o2str + " -> "+ matches[1]);
+			// System.out.println("DEC: " + o1cut + " , " + o2cut);
+			// diff = 1 - (double) count / (getByteSize(o2) * 8);
+			diff = 1 - Math.max(o1cut, o2cut);
+		}
+		// Bit-Op: compute the difference as the ratio between the number of
+		// shifted bits and the number of total possible shifts which is 2^5 as
+		// java only considers the last five bits of a word for the number of
+		// shift positions.
+		else if (opcode == Opcodes.ISHL || opcode == Opcodes.ISHR || opcode == Opcodes.IUSHR) {
+			diff = ((Integer) o2).intValue() / Math.pow(2, 5);
+		} 
+		else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
+			diff = ((Long) o2).intValue() / Math.pow(2, 6);
+		} 
+//		The else branch handles all the remainig arithmetic commands
+//		rethink how to handle TREM command
+		else {
+			// Compute the difference between two numeric values as the number
+			// of flipped bits between the result and each operand
+			if (o1 instanceof Integer && o2 instanceof Integer) {
+				o1str = Integer.toBinaryString((Integer) o1);
+				o2str = Integer.toBinaryString((Integer) o2);
+				int distance = Utility.levenshteinDistance(o1str, o2str);
+				int maxLength = Math.max(o1str.length(), o2str.length());// Integer.toBinaryString(Integer.MAX_VALUE).length()+1;
+				diff = (double) distance / maxLength;
+			} else if (o1 instanceof Long && o2 instanceof Long) {
+				o1str = Long.toBinaryString((Long) o1);
+				o2str = Long.toBinaryString((Long) o2);
+				int distance = Utility.levenshteinDistance(o1str, o2str);
+				int maxLength = Math.max(o1str.length(), o2str.length());
+				diff = (double) distance / maxLength;
+			} else if (o1 instanceof Float && o2 instanceof Float) {
+				o1str = Long.toBinaryString(Float.floatToRawIntBits((Float) o1));
+				o2str = Long.toBinaryString(Float.floatToRawIntBits((Float) o2));
+				int distance = Utility.levenshteinDistance(o1str, o2str);
+				int maxLength = Math.max(o1str.length(), o2str.length());
+				diff = (double) distance / maxLength;
+			} else if (o1 instanceof Double && o2 instanceof Double) {
+				o1str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o1));
+				o2str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o2));
+				int distance = Utility.levenshteinDistance(o1str, o2str);
+				int maxLength = Math.max(o1str.length(), o2str.length());
+				diff = (double) distance / maxLength;
+			}
+		}
+
+		// System.out.println("... Reduced: " + diff + " , " +
+		// actualAmount.getActQty() + " , " + aQif + " , " +
+		// Mnemonic.OPCODE[opcode]);
+		double aQif = actualAmount.getActQty() * (1 - diff);
 		actualAmount.setActQty(aQif);
 	}
 
 	/*
-	 * Quantity estimation for primitive typed inversion commands
-	 * Quantity is reduced to the domain of the target data type, but only
-	 * if the actual value exceed the max value of the target type
+	 * Quantity estimation for primitive typed inversion commands Quantity is
+	 * reduced to the domain of the target data type, but only if the actual
+	 * value exceed the max value of the target type
 	 */
 	public static void decConvQty(Object o, String sourceid, int opcode) {
 		double qty = 0;
@@ -260,11 +290,11 @@ public class QIFTracker {
 			System.out.println("-- Reached sink " + sinkId + " with qty " + qif.get(s).getActQty() + " from " + s
 					+ "; Original-Qty " + qif.get(s).getOriQty());
 	}
-	
+
 	/*
-	 * Returns the size of the parameter O in bytes
+	 * Returns the size of the parameter o in bytes
 	 */
-	public static long getSize(Object o) {
+	public static long getByteSize(Object o) {
 		long size = 0;
 		if (o instanceof Byte)
 			size = SIZE.BYTE.getSize();
@@ -294,7 +324,7 @@ public class QIFTracker {
 	}
 
 	/*
-	 *  Computes the number of elements in a multi-dimensional array
+	 * Computes the number of elements in a multi-dimensional array
 	 */
 	public static int getNumElements(Object o) {
 		int _return = 1;
@@ -311,7 +341,7 @@ public class QIFTracker {
 		if (_return == 1) {
 			// Compute the size of an atom array element, and multiply it with
 			// the array dimension
-			long arrAtomSize = getSize(o);
+			long arrAtomSize = getByteSize(o);
 			if (arrAtomSize != 0)
 				_return *= arrAtomSize;
 		}
@@ -319,4 +349,29 @@ public class QIFTracker {
 		return _return;
 	}
 
+	// >>>Cutter for string operations
+	/*
+	 * Quantity estimation for String.substr and String.subsequence
+	 */
+	public static void decSubSequQty(String shortenStr, String origStr, String sourceId) {
+		Qif actualAmount = qif.get(sourceId);
+		double amount = (double) shortenStr.length() / origStr.length();
+		double aQif = actualAmount.getActQty() * amount;
+		actualAmount.setActQty(aQif);
+	}
+
+	/*
+	 * Quantity estimation for String.split
+	 */
+	public static void decSplitQty(String[] splitStr, String sourceId) {
+		Qif actualAmount = qif.get(sourceId);
+		int totalLength = Arrays.toString(splitStr).length() - 2;
+		double amount = -1;
+		for (String s : splitStr) {
+			s = s.trim();
+			amount = Math.max(amount, (double) s.length() / totalLength);
+		}
+		double aQif = actualAmount.getActQty() * (amount);
+		actualAmount.setActQty(aQif);
+	}
 }

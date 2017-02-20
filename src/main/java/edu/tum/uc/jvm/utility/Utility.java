@@ -51,6 +51,7 @@ public class Utility {
 	private static List<String[]> BLACKLIST;
 	private static List<String[]> WHITELIST;
 	
+//	check if a method contributes somehow to a reduction of quantity
 	public static boolean hasQtyInfo(String classname, String methodname){
 		boolean _return = false;
 		if(classname.toLowerCase().contains("string") && methodname.toLowerCase().contains("append"))

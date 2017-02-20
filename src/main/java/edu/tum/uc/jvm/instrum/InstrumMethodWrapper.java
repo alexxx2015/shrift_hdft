@@ -12,6 +12,7 @@ import org.objectweb.asm.Type;
 
 import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.declassification.Declassifier;
+import edu.tum.uc.jvm.instrum.activation.SourceSinkActivation;
 import edu.tum.uc.jvm.sap.MethodLabelSecLevel.MethodLabel;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
@@ -184,6 +185,7 @@ public class InstrumMethodWrapper {
 
 			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod,
 					p_opcode == Opcodes.INVOKEINTERFACE);
+//			mv.visitMethodInsn(Opcodes.INVOKESTATIC, SourceSinkActivation.class.getName().replace(".", "/"), "method", "(Ljava/lang/Object;)Z", false);
 			// <-- Execute the original method
 
 			// int constructorIndex = -1;

@@ -9,6 +9,18 @@ public class Test {
 	}
 
 	public static void main(String[] args) {
+		int i = 4;
+		int z = 3;
+		int r = i>>z;
+		System.out.println("i: "+Integer.toBinaryString(i));
+		System.out.println("z: "+Integer.toBinaryString(z));
+		System.out.println("r: "+Integer.toBinaryString(r));
+		
+		float f = 3.0f;
+		System.out.println(Float.floatToRawIntBits(f));
+	}	
+	
+	public static void t(){
 		int o1 = 22, o2 = 14, res = o1 ^ o2;
 		
 //		convert to binary representation

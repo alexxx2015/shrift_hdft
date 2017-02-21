@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.tum.uc.jvm.utility.Mnemonic;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
 import edu.tum.uc.jvm.utility.Utility;
 import groovyjarjarasm.asm.Opcodes;
@@ -81,6 +82,45 @@ public class QIFTracker {
 		qif.put(sourceId, q);
 	}
 
+	// Check if a specific sink was reached
+	public static void check(String sinkId, String... sources) {
+		for (String s : sources)
+			System.out.println("-- Reached sink " + sinkId + " with qty " + qif.get(s).getActQty() + " from " + s
+					+ "; Original-Qty " + qif.get(s).getOriQty());
+	}
+
+	/*
+	 * Returns the size of the parameter o in bytes
+	 */
+	public static long getByteSize(Object o) {
+		long size = 0;
+		if (o instanceof Byte)
+			size = SIZE.BYTE.getSize();
+		else if (o instanceof Boolean)
+			size = SIZE.BOOLEAN.getSize();
+		else if (o instanceof Character)
+			size = SIZE.CHARACTER.getSize();
+		else if (o instanceof Short)
+			size = SIZE.SHORT.getSize();
+		else if (o instanceof Double)
+			size = SIZE.DOUBLE.getSize();
+		else if (o instanceof Float)
+			size = SIZE.FLOAT.getSize();
+		else if (o instanceof Integer)
+			size = SIZE.INTEGER.getSize();
+		else if (o instanceof Long)
+			size = SIZE.LONG.getSize();
+		else if (o instanceof String)
+			size = ((String) o).length();
+		else if (o.getClass().isArray()) {
+			size = (long) getNumElements(o);
+		} else {
+			size = UnsafeUtil.sizeOf(o);
+		}
+
+		return size;
+	}
+
 	/*
 	 * Quantity estimation for arithmetic operations
 	 */
@@ -88,9 +128,9 @@ public class QIFTracker {
 		Qif actualAmount = qif.get(sourceId);
 		if (actualAmount == null)
 			return;
-		
+
 		double diff = 0;
-		String o1str, o2str;
+		String o1str = "", o2str = "";
 
 		if (opcode == Opcodes.IAND || opcode == Opcodes.LAND || opcode == Opcodes.IOR || opcode == Opcodes.LOR
 				|| opcode == Opcodes.IXOR || opcode == Opcodes.LXOR) {
@@ -151,46 +191,89 @@ public class QIFTracker {
 		// shift positions.
 		else if (opcode == Opcodes.ISHL || opcode == Opcodes.ISHR || opcode == Opcodes.IUSHR) {
 			diff = ((Integer) o2).intValue() / Math.pow(2, 5);
-		} 
-		else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
+		} else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
 			diff = ((Long) o2).intValue() / Math.pow(2, 6);
-		} 
-//		The else branch handles all the remainig arithmetic commands
-//		rethink how to handle TREM command
+		}
+		// The else branch handles all the remainig arithmetic commands re-think
+		// how to handle TREM command
 		else {
-			// Compute the difference between two numeric values as the number
-			// of flipped bits between the result and each operand
-			if (o1 instanceof Integer && o2 instanceof Integer) {
+//			Compute the difference between two numeric values as the number of flipped bits between the result and each operand
+			int distance=0, maxLength=0;
+//			if (o1 instanceof Integer && o2 instanceof Integer) {
+//				o1str = Integer.toBinaryString((Integer) o1);
+//				o2str = Integer.toBinaryString((Integer) o2);
+//				distance = Utility.levenshteinDistance(o1str, o2str);
+//				maxLength = Math.max(o1str.length(), o2str.length());// Integer.toBinaryString(Integer.MAX_VALUE).length()+1;
+//				diff = (double) distance / maxLength;
+//			} else if (o1 instanceof Long && o2 instanceof Long) {
+//				o1str = Long.toBinaryString((Long) o1);
+//				o2str = Long.toBinaryString((Long) o2);
+//				distance = Utility.levenshteinDistance(o1str, o2str);
+//				maxLength = Math.max(o1str.length(), o2str.length());
+//				diff = (double) distance / maxLength;
+//			} else if (o1 instanceof Float && o2 instanceof Float) {
+//				o1str = Long.toBinaryString(Float.floatToRawIntBits((Float) o1));
+//				o2str = Long.toBinaryString(Float.floatToRawIntBits((Float) o2));
+//				distance = Utility.levenshteinDistance(o1str, o2str);
+//				maxLength = Math.max(o1str.length(), o2str.length());
+//				diff = (double) distance / maxLength;
+//			} else if (o1 instanceof Double && o2 instanceof Double) {
+//				o1str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o1));
+//				o2str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o2));
+//				distance = Utility.levenshteinDistance(o1str, o2str);
+//				maxLength = Math.max(o1str.length(), o2str.length());
+//				diff = (double) distance / maxLength;
+//			}			
+			String restr = "";
+			if(o1 instanceof Integer && o2 instanceof Integer){
+				int res = 0;
+				if(opcode == Opcodes.IADD) res = (int)o1 + (int)o2;
+				else if (opcode == Opcodes.ISUB) res = (int)o1 - (int)o2;
+				else if (opcode == Opcodes.IMUL) res = (int)o1 * (int)o2;
+				else if (opcode == Opcodes.IDIV) res = (int)o1 / (int)o2;
+				restr = Integer.toBinaryString(res);
 				o1str = Integer.toBinaryString((Integer) o1);
 				o2str = Integer.toBinaryString((Integer) o2);
-				int distance = Utility.levenshteinDistance(o1str, o2str);
-				int maxLength = Math.max(o1str.length(), o2str.length());// Integer.toBinaryString(Integer.MAX_VALUE).length()+1;
-				diff = (double) distance / maxLength;
-			} else if (o1 instanceof Long && o2 instanceof Long) {
+			} else if (o1 instanceof Long && o2 instanceof Long){
+				long res = 0;
+				if(opcode == Opcodes.IADD) res = (long)o1 + (long)o2;
+				else if (opcode == Opcodes.ISUB) res = (long)o1 - (long)o2;
+				else if (opcode == Opcodes.IMUL) res = (long)o1 * (long)o2;
+				else if (opcode == Opcodes.IDIV) res = (long)o1 / (long)o2;
+				restr = Long.toBinaryString(res);
 				o1str = Long.toBinaryString((Long) o1);
 				o2str = Long.toBinaryString((Long) o2);
-				int distance = Utility.levenshteinDistance(o1str, o2str);
-				int maxLength = Math.max(o1str.length(), o2str.length());
-				diff = (double) distance / maxLength;
-			} else if (o1 instanceof Float && o2 instanceof Float) {
-				o1str = Long.toBinaryString(Float.floatToRawIntBits((Float) o1));
-				o2str = Long.toBinaryString(Float.floatToRawIntBits((Float) o2));
-				int distance = Utility.levenshteinDistance(o1str, o2str);
-				int maxLength = Math.max(o1str.length(), o2str.length());
-				diff = (double) distance / maxLength;
-			} else if (o1 instanceof Double && o2 instanceof Double) {
+			} else if (o1 instanceof Float && o2 instanceof Float){
+				float res = 0;
+				if(opcode == Opcodes.IADD) res = (float)o1 + (float)o2;
+				else if (opcode == Opcodes.ISUB) res = (float)o1 - (float)o2;
+				else if (opcode == Opcodes.IMUL) res = (float)o1 * (float)o2;
+				else if (opcode == Opcodes.IDIV) res = (float)o1 / (float)o2;
+				restr = Integer.toBinaryString(Float.floatToIntBits(res));
+				o1str = Integer.toBinaryString(Float.floatToRawIntBits((Float) o1));
+				o2str = Integer.toBinaryString(Float.floatToRawIntBits((Float) o2));
+			} else if (o1 instanceof Double && o2 instanceof Double){
+				double res = 0;
+				if(opcode == Opcodes.IADD) res = (double)o1 + (double)o2;
+				else if (opcode == Opcodes.ISUB) res = (double)o1 - (double)o2;
+				else if (opcode == Opcodes.IMUL) res = (double)o1 * (double)o2;
+				else if (opcode == Opcodes.IDIV) res = (double)o1 / (double)o2;
+				restr = Long.toBinaryString(Double.doubleToLongBits(res));
 				o1str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o1));
 				o2str = Long.toBinaryString(Double.doubleToRawLongBits((Double) o2));
-				int distance = Utility.levenshteinDistance(o1str, o2str);
-				int maxLength = Math.max(o1str.length(), o2str.length());
-				diff = (double) distance / maxLength;
+			}
+			
+			if(!"".equals(restr)){
+				int levDistA = Utility.levenshteinDistance(o1str, restr);
+				int levDistB = Utility.levenshteinDistance(o2str, restr);
+				maxLength = Math.max(o1str.length(), o2str.length());
+				diff = Math.min((double)levDistA/maxLength, (double)levDistB/maxLength);
+//				System.out.println("LTD to restr "+restr+" , o1str "+o1str+" "+levDistA+" , o2str "+o2str+" "+levDistB);
 			}
 		}
 
-		// System.out.println("... Reduced: " + diff + " , " +
-		// actualAmount.getActQty() + " , " + aQif + " , " +
-		// Mnemonic.OPCODE[opcode]);
 		double aQif = actualAmount.getActQty() * (1 - diff);
+		System.out.println("QIF: diff "+diff+" , aQif "+aQif+" , actualAmount "+actualAmount.getActQty()+" , 1-D "+(1-diff)+" , "+Mnemonic.OPCODE[opcode]);
 		actualAmount.setActQty(aQif);
 	}
 
@@ -268,62 +351,6 @@ public class QIFTracker {
 	}
 
 	/*
-	 * Quantity estimation of StringBuilder.append and StringBuilder.replace
-	 */
-	public static void decStringQty(String o1, String o2, String sourceId) {
-		if (!o1.contains(o2) && !o2.contains(o1)) {
-			int d = Utility.levenshteinDistance(o1.trim(), o2.trim());
-			Qif actualAmount = qif.get(sourceId);
-			if (actualAmount != null) {
-				int length = Math.max(o1.trim().length(), o2.trim().length());
-				double aQif = actualAmount.getActQty() * (1 - ((double) d / length));
-				// System.out.println("-- "+sourceId+" reduced from "+
-				// actualAmount.getActQty()+" to "+aQif);
-				actualAmount.setActQty(aQif);
-			}
-		}
-	}
-
-	// Check if a specific sink was reached
-	public static void check(String sinkId, String... sources) {
-		for (String s : sources)
-			System.out.println("-- Reached sink " + sinkId + " with qty " + qif.get(s).getActQty() + " from " + s
-					+ "; Original-Qty " + qif.get(s).getOriQty());
-	}
-
-	/*
-	 * Returns the size of the parameter o in bytes
-	 */
-	public static long getByteSize(Object o) {
-		long size = 0;
-		if (o instanceof Byte)
-			size = SIZE.BYTE.getSize();
-		else if (o instanceof Boolean)
-			size = SIZE.BOOLEAN.getSize();
-		else if (o instanceof Character)
-			size = SIZE.CHARACTER.getSize();
-		else if (o instanceof Short)
-			size = SIZE.SHORT.getSize();
-		else if (o instanceof Double)
-			size = SIZE.DOUBLE.getSize();
-		else if (o instanceof Float)
-			size = SIZE.FLOAT.getSize();
-		else if (o instanceof Integer)
-			size = SIZE.INTEGER.getSize();
-		else if (o instanceof Long)
-			size = SIZE.LONG.getSize();
-		else if (o instanceof String)
-			size = ((String) o).length();
-		else if (o.getClass().isArray()) {
-			size = (long) getNumElements(o);
-		} else {
-			size = UnsafeUtil.sizeOf(o);
-		}
-
-		return size;
-	}
-
-	/*
 	 * Computes the number of elements in a multi-dimensional array
 	 */
 	public static int getNumElements(Object o) {
@@ -349,7 +376,24 @@ public class QIFTracker {
 		return _return;
 	}
 
-	// >>>Cutter for string operations
+
+	// >>>Degrader for string operations
+	/*
+	 * Quantity estimation of StringBuilder.append and StringBuilder.replace
+	 */
+	public static void decStringQty(String o1, String o2, String sourceId) {
+		if (!o1.contains(o2) && !o2.contains(o1)) {
+			int d = Utility.levenshteinDistance(o1.trim(), o2.trim());
+			Qif actualAmount = qif.get(sourceId);
+			if (actualAmount != null) {
+				int length = Math.max(o1.trim().length(), o2.trim().length());
+				double aQif = actualAmount.getActQty() * (1 - ((double) d / length));
+				// System.out.println("-- "+sourceId+" reduced from "+
+				// actualAmount.getActQty()+" to "+aQif);
+				actualAmount.setActQty(aQif);
+			}
+		}
+	}
 	/*
 	 * Quantity estimation for String.substr and String.subsequence
 	 */

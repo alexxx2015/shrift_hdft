@@ -46,14 +46,8 @@ public class RequestCheck {
     }
 
 
-<<<<<<< Updated upstream
     public static boolean parseObjectBool(Object o, Object[] fieldName) {
     	System.out.println("RequestCheck.parse "+o);
-=======
-
-    public static boolean parseObject(Object o, Object[] w) {
-    	System.out.println("RequestCheck.parse"+o+" "+w);
->>>>>>> Stashed changes
         if (o instanceof HttpServletRequest) {
 
             HttpServletRequest request = (HttpServletRequest) o;
@@ -68,12 +62,7 @@ public class RequestCheck {
 
 
 
-<<<<<<< Updated upstream
     public static String parseObject(Object o,Object[] fieldName) {
-=======
-        }
-        return true;
->>>>>>> Stashed changes
 
         if (o instanceof HttpServletRequest) {
 
@@ -112,11 +101,7 @@ public class RequestCheck {
         String protected_fields = "first_name!&!policy1##last_name!&!policy2##age!&!policy3#";
 
 
-<<<<<<< Updated upstream
 //        parseObject(protected_fields);
-=======
-        parseObject(protected_fields, null);
->>>>>>> Stashed changes
 
         System.out.println(containsFieldWithPolicy("string"));
 

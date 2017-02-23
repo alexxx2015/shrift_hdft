@@ -2,6 +2,13 @@
  * Created by xtarx on 23/02/2017.
  */
 package edu.tum.uc.jvm.checker;
+/**
+ * Created by xtarx on 23/02/2017.
+ */
+
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
+import java.lang.reflect.Array;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,25 +49,34 @@ public class RequestCheck {
     }
 
 
-
-    public static void parseObject(Object o) {
+    public static Boolean parseObjectBool(Object o, Object[] fieldName) {
 
         if (o instanceof HttpServletRequest) {
 
             HttpServletRequest request = (HttpServletRequest) o;
-
             String protected_fields = request.getParameter("uc_protected_fields");
-
             if (protected_fields != null) {
                 parse_field(protected_fields);
+                return containsField((String)fieldName[0]);
             }
-
-        } else {
-
-            System.out.println("NOO");
-
         }
+        return false;
+    }
 
+
+
+    public static String parseObject(Object o,Object[] fieldName) {
+
+        if (o instanceof HttpServletRequest) {
+
+            HttpServletRequest request = (HttpServletRequest) o;
+            String protected_fields = request.getParameter("uc_protected_fields");
+            if (protected_fields != null) {
+                parse_field(protected_fields);
+                return containsFieldWithPolicy((String)fieldName[0]);
+            }
+        }
+        return null;
     }
 
 
@@ -88,7 +104,7 @@ public class RequestCheck {
         String protected_fields = "first_name!&!policy1##last_name!&!policy2##age!&!policy3#";
 
 
-        parseObject(protected_fields);
+//        parseObject(protected_fields);
 
         System.out.println(containsFieldWithPolicy("string"));
 
@@ -99,3 +115,4 @@ public class RequestCheck {
 
 
 }
+

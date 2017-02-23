@@ -5,14 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import edu.tum.uc.jvm.MyUcTransformer;
+import edu.tum.uc.jvm.checker.RequestCheck;
 import edu.tum.uc.jvm.declassification.Declassifier;
-import edu.tum.uc.jvm.instrum.activation.SourceSinkActivation;
 import edu.tum.uc.jvm.sap.MethodLabelSecLevel.MethodLabel;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
@@ -21,6 +20,8 @@ import edu.tum.uc.jvm.utility.analysis.SinkSource;
 public class InstrumMethodWrapper {
 
 	static Map<String, String> METHODS = new HashMap<String, String>();
+
+	public static final String CHECKERCLASS = RequestCheck.class.getName().replace(".", "/");
 
 	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
 			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources) {
@@ -185,7 +186,16 @@ public class InstrumMethodWrapper {
 
 			mv.visitMethodInsn(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod,
 					p_opcode == Opcodes.INVOKEINTERFACE);
-//			mv.visitMethodInsn(Opcodes.INVOKESTATIC, SourceSinkActivation.class.getName().replace(".", "/"), "method", "(Ljava/lang/Object;)Z", false);
+
+			if (!isConstructor && !isStatic) {
+				mv.visitVarInsn(Opcodes.ALOAD, 0);
+				mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, CHECKERCLASS, "parseObject", "(Ljava/lang/Object;[Ljava/lang/Object;)Z", false);
+				mv.visitInsn(Opcodes.POP);
+			}
+			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+			// SourceSinkActivation.class.getName().replace(".", "/"), "method",
+			// "(Ljava/lang/Object;)Z", false);
 			// <-- Execute the original method
 
 			// int constructorIndex = -1;
@@ -461,50 +471,55 @@ public class InstrumMethodWrapper {
 					"(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z",
 					false);
 			mv.visitInsn(Opcodes.POP);
-//			Label elseLab = new Label();
-//			mv.visitJumpInsn(Opcodes.IFNE, elseLab);
-////			in case invoked sink is not allowed overwrite the respective sind parameter
-//			boolean issink = false;
-//			i = paramStartIndex;
-//			for (Type t : argT) {
-//				// Check if sink parameter must be desclassified
-//				for (SinkSource s : p_sinks) {
-//					if (s.getParam() == i) {
-//						issink = true;
-//					}
-//				}
-//				if(!issink){
-//					i++;
-//					continue;
-//				}
-//				if (t.getSort() == Type.OBJECT) {
-//					mv.visitVarInsn(Opcodes.ALOAD, i);
-//					mv.visitMethodInsn(Opcodes.INVOKESTATIC, Declassifier.class.getName().replace(".", "/"), "declassify", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
-//					mv.visitInsn(Opcodes.POP);
-//				} else if (t.getSort() == Type.ARRAY) {
-//					mv.visitIntInsn(Opcodes.BIPUSH, 0);
-//					mv.visitTypeInsn(Opcodes.ANEWARRAY, Object.class.getName().replace(".", "/"));
-//					mv.visitVarInsn(Opcodes.ASTORE, i);
-//				} else if (t.getSort() == Type.DOUBLE) {
-//					mv.visitLdcInsn(0D);
-//					mv.visitVarInsn(Opcodes.DSTORE, i);
-//					i++;
-//				} else if (t.getSort() == Type.FLOAT) {
-//					mv.visitLdcInsn(0f);
-//					mv.visitVarInsn(Opcodes.FSTORE, i);
-//				} else if (t.getSort() == Type.LONG) {
-//					mv.visitLdcInsn(0L);
-//					mv.visitVarInsn(Opcodes.LSTORE, i);
-//					i++;
-//				} else if ((t.getSort() == Type.INT) || (t.getSort() == Type.CHAR)) {
-//					mv.visitIntInsn(Opcodes.BIPUSH, 0);
-//					mv.visitVarInsn(Opcodes.ISTORE, i);
-//				}
-//				i++;
-//				break;
-//			}
-//			mv.visitLabel(elseLab);
-			
+			// Label elseLab = new Label();
+			// mv.visitJumpInsn(Opcodes.IFNE, elseLab);
+			//// in case invoked sink is not allowed overwrite the respective
+			// sind parameter
+			// boolean issink = false;
+			// i = paramStartIndex;
+			// for (Type t : argT) {
+			// // Check if sink parameter must be desclassified
+			// for (SinkSource s : p_sinks) {
+			// if (s.getParam() == i) {
+			// issink = true;
+			// }
+			// }
+			// if(!issink){
+			// i++;
+			// continue;
+			// }
+			// if (t.getSort() == Type.OBJECT) {
+			// mv.visitVarInsn(Opcodes.ALOAD, i);
+			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+			// Declassifier.class.getName().replace(".", "/"), "declassify",
+			// "(Ljava/lang/Object;)Ljava/lang/Object;", false);
+			// mv.visitInsn(Opcodes.POP);
+			// } else if (t.getSort() == Type.ARRAY) {
+			// mv.visitIntInsn(Opcodes.BIPUSH, 0);
+			// mv.visitTypeInsn(Opcodes.ANEWARRAY,
+			// Object.class.getName().replace(".", "/"));
+			// mv.visitVarInsn(Opcodes.ASTORE, i);
+			// } else if (t.getSort() == Type.DOUBLE) {
+			// mv.visitLdcInsn(0D);
+			// mv.visitVarInsn(Opcodes.DSTORE, i);
+			// i++;
+			// } else if (t.getSort() == Type.FLOAT) {
+			// mv.visitLdcInsn(0f);
+			// mv.visitVarInsn(Opcodes.FSTORE, i);
+			// } else if (t.getSort() == Type.LONG) {
+			// mv.visitLdcInsn(0L);
+			// mv.visitVarInsn(Opcodes.LSTORE, i);
+			// i++;
+			// } else if ((t.getSort() == Type.INT) || (t.getSort() ==
+			// Type.CHAR)) {
+			// mv.visitIntInsn(Opcodes.BIPUSH, 0);
+			// mv.visitVarInsn(Opcodes.ISTORE, i);
+			// }
+			// i++;
+			// break;
+			// }
+			// mv.visitLabel(elseLab);
+
 			// Preprocessing, to execute the original method
 			if (isConstructor) {
 				mv.visitTypeInsn(Opcodes.NEW, p_ownerclass);
@@ -570,7 +585,7 @@ public class InstrumMethodWrapper {
 			// UcTransformer.HOOKMETHOD, "timerT4Stop",
 			// "(Ljava/lang/String;)V", false);
 			// }
-			
+
 			// Add return
 			if (retT.getSort() == Type.OBJECT || retT.getSort() == Type.ARRAY || isConstructor) {
 				mv.visitInsn(Opcodes.ARETURN);

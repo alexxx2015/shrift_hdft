@@ -2,10 +2,11 @@
  * Created by xtarx on 23/02/2017.
  */
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import java.lang.reflect.Array;
-import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
 public class RequestCheck {
@@ -46,7 +47,7 @@ public class RequestCheck {
 
 
     public static boolean parseObjectBool(Object o, Object[] fieldName) {
-
+    	System.out.println("RequestCheck.parse "+o);
         if (o instanceof HttpServletRequest) {
 
             HttpServletRequest request = (HttpServletRequest) o;

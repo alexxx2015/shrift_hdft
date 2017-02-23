@@ -1,10 +1,6 @@
 /**
  * Created by xtarx on 23/02/2017.
  */
-package edu.tum.uc.jvm.checker;
-/**
- * Created by xtarx on 23/02/2017.
- */
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
@@ -49,7 +45,7 @@ public class RequestCheck {
     }
 
 
-    public static Boolean parseObjectBool(Object o, Object[] fieldName) {
+    public static boolean parseObjectBool(Object o, Object[] fieldName) {
 
         if (o instanceof HttpServletRequest) {
 
@@ -115,4 +111,3 @@ public class RequestCheck {
 
 
 }
-

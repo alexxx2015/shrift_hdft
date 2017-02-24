@@ -1,3 +1,4 @@
+package edu.tum.uc.jvm.checker;
 /**
  * Created by xtarx on 23/02/2017.
  */
@@ -95,20 +96,18 @@ public class RequestCheck {
     }
 
 
-
-    public static void main(String[] args) {
-
-        String protected_fields = "first_name!&!policy1##last_name!&!policy2##age!&!policy3#";
-
-
-//        parseObject(protected_fields);
-
-        System.out.println(containsFieldWithPolicy("string"));
-
-        System.out.println(containsFieldWithPolicy("age"));
-
-
-    }
+//    public static void main(String[] args) {
+//
+//        String protected_fields = "first_name!&!policy1##last_name!&!policy2##age!&!policy3#";
+//
+//
+//        parseObjectBool(protected_fields, null);
+//
+//        System.out.println(containsFieldWithPolicy("string"));
+//
+//        System.out.println(containsFieldWithPolicy("age"));
+//
+//    }
 
 
 }

@@ -190,8 +190,10 @@ public class InstrumMethodWrapper {
 			if (!isConstructor && !isStatic) {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 				mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, CHECKERCLASS, "parseObject", "(Ljava/lang/Object;[Ljava/lang/Object;)Z", false);
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, CHECKERCLASS, "parseObjectBool", "(Ljava/lang/Object;[Ljava/lang/Object;)Z", false);
 				mv.visitInsn(Opcodes.POP);
+//				mv.visitInsn(Opcodes.ICONST_0);
+//				mv.visitMethodInsn(Opcodes.INVOKESTATIC, System.class.getName().replace(".", "/"), "exit", "(I)V", false);
 			}
 			// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 			// SourceSinkActivation.class.getName().replace(".", "/"), "method",

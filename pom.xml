@@ -43,6 +43,12 @@
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-client</artifactId>
 			<version>2.23.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.javassist</groupId>
+					<artifactId>javassist</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.predic8</groupId>
@@ -80,8 +86,36 @@
 			<version>1.0</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.apache.tomcat.embed</groupId>
-					<artifactId>tomcat-embed-core</artifactId>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria-zipkin</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria-kafka</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria-jetty</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria-logback</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria-zookeeper</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria-tomcat</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.linecorp.armeria</groupId>
+					<artifactId>armeria-retrofit2</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -94,26 +128,31 @@
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>catalina</artifactId>
 			<version>6.0.44</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>6.0.44</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-util</artifactId>
 			<version>8.0.12</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-api</artifactId>
 			<version>8.0.12</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-util-scan</artifactId>
 			<version>8.0.26</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>

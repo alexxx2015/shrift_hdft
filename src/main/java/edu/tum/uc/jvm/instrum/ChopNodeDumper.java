@@ -202,7 +202,7 @@ public class ChopNodeDumper implements Runnable {
 		JSONObject jsonMsg = new JSONObject();
 		jsonMsg.put(JSONMsg.NODES, nodes);
 		jsonMsg.put(JSONMsg.LINKS, edges);
-		System.out.println("\n"+jsonMsg.toString());
+//		System.out.println("\n"+jsonMsg.toString());
 		target = client.target(ucWebMgmUrl);// .path("graph");
 		target = target.queryParam(REQPARAM.APPID.toString(), appId);
 		target = target.queryParam(REQPARAM.MSG.toString(),

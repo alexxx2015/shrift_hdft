@@ -58,7 +58,7 @@ public class RequestCheck {
             System.out.println("RequestCheck.parse: protected field "+protected_fields);
             if (!"".equals(protected_fields) && protected_fields != null) {
                 //if field doesnt excist in protected fields, remove it from hashmap
-                if (protected_fields.contains((String)fieldName[0])) {
+                if (!protected_fields.contains((String)fieldName[0])) {
                     hm.remove((String)fieldName[0]);
                 }
                 parse_field(protected_fields);

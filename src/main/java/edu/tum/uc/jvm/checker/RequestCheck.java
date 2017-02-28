@@ -54,8 +54,13 @@ public class RequestCheck {
         	
             HttpServletRequest request = (HttpServletRequest) o;
             String protected_fields = request.getParameter("uc_protected_fields");
+
             System.out.println("RequestCheck.parse: protected field "+protected_fields);
-            if (!"".equals(protected_fields) && protected_fields != null) {            	
+            if (!"".equals(protected_fields) && protected_fields != null) {
+                //if field doesnt excist in protected fields, remove it from hashmap
+                if (protected_fields.contains((String)fieldName[0])) {
+                    hm.remove((String)fieldName[0]);
+                }
                 parse_field(protected_fields);
                 boolean _return = containsField((String)fieldName[0]);
                 System.out.println("RequestCheck.parse.containsField: "+_return+" , FN: "+fieldName[0]);
@@ -99,18 +104,18 @@ public class RequestCheck {
     }
 
 
-//    public static void main(String[] args) {
-//
-//        String protected_fields = "first_name!&!policy1##last_name!&!policy2##age!&!policy3#";
-//
-//
-//        parseObjectBool(protected_fields, null);
-//
-//        System.out.println(containsFieldWithPolicy("string"));
-//
-//        System.out.println(containsFieldWithPolicy("age"));
-//
-//    }
+    public static void main(String[] args) {
+
+        String protected_fields = "first_name!&!policy1##last_name!&!policy2##age!&!policy3#";
+
+
+        parseObjectBool(protected_fields, null);
+
+        System.out.println(containsFieldWithPolicy("string"));
+
+        System.out.println(containsFieldWithPolicy("age"));
+
+    }
 
 
 }

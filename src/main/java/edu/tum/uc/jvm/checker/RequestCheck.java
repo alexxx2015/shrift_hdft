@@ -55,9 +55,10 @@ public class RequestCheck {
             HttpServletRequest request = (HttpServletRequest) o;
             String protected_fields = request.getParameter("uc_protected_fields");
             System.out.println("RequestCheck.parse: protected field "+protected_fields);
-            if (protected_fields != null) {
+            if (!"".equals(protected_fields) && protected_fields != null) {            	
                 parse_field(protected_fields);
-                return containsField((String)fieldName[0]);
+                boolean _return = containsField((String)fieldName[0]);
+                System.out.println("RequestCheck.parse.containsField: "+_return+" , FN: "+fieldName[0]);
             }
         }
         return false;

@@ -50,9 +50,11 @@ public class RequestCheck {
     public static boolean parseObjectBool(Object o, Object[] fieldName) {
     	System.out.println("RequestCheck.parse "+o);
         if (o instanceof HttpServletRequest) {
-
+        	System.out.println("RequestCheck.parse: Instance of HttpServletRequest");
+        	
             HttpServletRequest request = (HttpServletRequest) o;
             String protected_fields = request.getParameter("uc_protected_fields");
+            System.out.println("RequestCheck.parse: protected field "+protected_fields);
             if (protected_fields != null) {
                 parse_field(protected_fields);
                 return containsField((String)fieldName[0]);

@@ -177,22 +177,55 @@ public class QIFTracker {
 				}
 			}
 
-			double o1cut = (double) matches[0] / o1str.length();
-			double o2cut = (double) matches[1] / o2str.length();
 			// System.out.println("MATCHES with "+restr+": " +o1str+" -> "+
 			// matches[0] + " , " + o2str + " -> "+ matches[1]);
 			// System.out.println("DEC: " + o1cut + " , " + o2cut);
 			// diff = 1 - (double) count / (getByteSize(o2) * 8);
-			diff = 1 - Math.max(o1cut, o2cut);
+			diff = (double)Math.min((double) matches[0], (double) matches[1])/restrb.length();
 		}
 		// Bit-Op: compute the difference as the ratio between the number of
 		// shifted bits and the number of total possible shifts which is 2^5 as
 		// java only considers the last five bits of a word for the number of
 		// shift positions.
 		else if (opcode == Opcodes.ISHL || opcode == Opcodes.ISHR || opcode == Opcodes.IUSHR) {
-			diff = ((Integer) o2).intValue() / Math.pow(2, 5);
+			short dataTypeSize = (short)Math.pow(2, 5);
+			int a = ((Integer)o1).intValue();
+			int b = ((Integer)o2).intValue();
+//			convert to binary string representation
+			StringBuilder astr = new StringBuilder(Integer.toBinaryString(a)).reverse();
+			for(int i = astr.length(); i < dataTypeSize; i++){
+				astr.append(0);
+			}
+			astr = astr.reverse();
+//			compute matching positions
+			int strStart = opcode == Opcodes.ISHR ? astr.length() - b : 0;
+			int strEnd = opcode == Opcodes.ISHR ? astr.length() : b;
+			boolean ones = false;
+			for(int i = strStart; i< strEnd; i++){
+				if(astr.toString().toCharArray()[i] == '1'){ones=true;break;}
+			}		
+//			diff = ((Integer) o2).intValue() / Math.pow(2, 5);	
+			if(ones) diff = (double) b / dataTypeSize;
 		} else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
-			diff = ((Long) o2).intValue() / Math.pow(2, 6);
+			short dataTypeSize = (short)Math.pow(2, 6);
+			long a = ((Long)o1).longValue();
+			int b = ((Integer)o2).intValue();
+//			convert to binary string representation
+			StringBuilder astr = new StringBuilder(Long.toBinaryString(a)).reverse();
+			for(int i = astr.length(); i < dataTypeSize; i++){
+				astr.append(0);
+			}
+			astr = astr.reverse();
+//			compute matching positions
+			int strStart = opcode == Opcodes.LSHR ? astr.length() - b : 0;
+			int strEnd = opcode == Opcodes.LSHR ? astr.length() : b;
+			boolean ones = false;
+			for(int i = strStart; i< strEnd; i++){
+				if(astr.toString().toCharArray()[i] == '1'){ones = true; break;}
+			}			
+			
+//			diff = ((Long) o2).intValue() / Math.pow(2, 6);
+			if(ones) diff = (double)b / dataTypeSize;
 		}
 		// The else branch handles all the remainig arithmetic commands re-think
 		// how to handle TREM command

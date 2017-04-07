@@ -6,6 +6,11 @@ import java.lang.management.ManagementFactory;
 import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.shrift.MirrorStack;
 
+/**
+ * Hooks into the java class loading process as a Javaagent
+ * @author alex
+ *
+ */
 public final class UcAgent {	
 	public static Instrumentation INSTR;
 

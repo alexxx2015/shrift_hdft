@@ -6,7 +6,11 @@ import org.springframework.instrument.classloading.tomcat.TomcatInstrumentableCl
 import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 import edu.tum.uc.jvm.shrift.MirrorStack;
 
-
+/**
+ * Hooks into the tomcat classloader to intercept loaded java classes. Needs to be specified inside Tomcat's context.xml file. 
+ * @author alex
+ *
+ */
 public class TomcatClassLoader extends TomcatInstrumentableClassLoader {
 	
 	public TomcatClassLoader(){

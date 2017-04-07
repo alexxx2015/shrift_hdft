@@ -34,7 +34,7 @@ import edu.tum.uc.jvm.utility.MethEvent;
 import edu.tum.uc.jvm.utility.analysis.CreationSite;
 
 /**
- * Communication instance to the PDP
+ * Communication instance to the PDP (UC-Infrastructure)
  */
 
 public class UcCommunicator {

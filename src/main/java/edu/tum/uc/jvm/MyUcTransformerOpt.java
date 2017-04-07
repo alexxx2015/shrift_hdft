@@ -25,7 +25,11 @@ import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
-
+/**
+ * Transforms a single class. Takes a class as a bytecodestream. Uses internally optimized instrumentation code, to reduce performance overhead
+ * @author alex
+ *
+ */
 public class MyUcTransformerOpt implements ClassFileTransformer {
 
 	private static TomcatClassLoader myClassLoader;

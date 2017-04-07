@@ -1,5 +1,10 @@
 import edu.tum.uc.jvm.declassification.Declassifier;
 
+/**
+ * This is just a simple test file, doing nothing
+ * @author alex
+ *
+ */
 public class Test {
 	public static void main(String[] args) {
 		int o = 13;

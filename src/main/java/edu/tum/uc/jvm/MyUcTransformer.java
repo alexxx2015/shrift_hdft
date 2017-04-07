@@ -27,6 +27,11 @@ import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
 
+/**
+ * Transforms a single class. Takes a class as a bytecodestream
+ * @author alex
+ *
+ */
 public class MyUcTransformer implements ClassFileTransformer {
 
 	private static TomcatClassLoader myClassLoader;

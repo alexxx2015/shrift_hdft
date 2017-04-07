@@ -24,6 +24,12 @@ import edu.tum.uc.jvm.instrum.MyClassWriter;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
 
+/**
+ * Main Instrumentor class for offline instrumentation. 
+ * @author alex
+ *
+ */
+
 //JVM property to format loggin output: -Djava.util.logging.SimpleFormatter.format='%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %2$s %5$s%6$s%n'
 public class Instrumentor {
 

@@ -24,7 +24,11 @@ import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.StatisticsWriter;
 import edu.tum.uc.jvm.utility.Utility;
-
+/**
+ * Transforms a single class. Takes a class as a bytecodestream. Uses internally visitor classses for quantitative information flow tracking
+ * @author alex
+ *
+ */
 public class QIFUCTransformer implements ClassFileTransformer {
 	
 	private static Logger _logger = Logger.getLogger(QIFUCTransformer.class.getName());

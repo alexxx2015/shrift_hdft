@@ -29,7 +29,7 @@
 		</authorizationAction>
 		<authorizationAction name="default">
 			<modify>
-			    <parameter name="param2" value="null"/°
+			    <parameter name="param2" value="null"/>
 			</modify>
 		</authorizationAction>
 	</preventiveMechanism>

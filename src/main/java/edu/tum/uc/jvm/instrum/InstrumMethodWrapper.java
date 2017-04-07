@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -13,7 +12,6 @@ import org.objectweb.asm.Type;
 import edu.tum.uc.jvm.MyUcTransformer;
 import edu.tum.uc.jvm.checker.RequestCheck;
 import edu.tum.uc.jvm.declassification.Declassifier;
-import edu.tum.uc.jvm.sap.MethodLabelSecLevel.MethodLabel;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
@@ -24,15 +22,15 @@ public class InstrumMethodWrapper {
 	
 	static Map<String, String> METHODS = new HashMap<String, String>();
 
-	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
-			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources) {
-		return createSourceWrapper(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, cv, p_parentclass,
-				p_sources, null);
-	}
+//	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
+//			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources) {
+//		return createSourceWrapper(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, cv, p_parentclass,
+//				p_sources, null);
+//	}
 
 	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
-			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources,
-			List<MethodLabel> methodLabel) {
+			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources//,List<MethodLabel> methodLabel
+			) {
 		boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_ownermethod.equals("<init>");
 		boolean isStatic = p_opcode == Opcodes.INVOKESTATIC;
 		String[] _return = new String[2];
@@ -279,9 +277,9 @@ public class InstrumMethodWrapper {
 			mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);// Load method
 															// params array
 			String label = "";
-			if (methodLabel != null && methodLabel.size() > 0) {
-				label = methodLabel.get(0).idText;
-			}
+//			if (methodLabel != null && methodLabel.size() > 0) {
+//				label = methodLabel.get(0).idText;
+//			}
 			mv.visitLdcInsn(label);
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "sourceInvoked",
@@ -313,15 +311,15 @@ public class InstrumMethodWrapper {
 		return _return;
 	}
 
-	public static String[] createSinkWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
-			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sinks) {
-		return createSinkWrapper(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, cv, p_parentclass, p_sinks,
-				null);
-	}
+//	public static String[] createSinkWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
+//			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sinks) {
+//		return createSinkWrapper(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, cv, p_parentclass, p_sinks,null
+//				);
+//	}
 
 	public static String[] createSinkWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
-			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sinks,
-			List<MethodLabel> methodLabel) {
+			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sinks//,List<MethodLabel> methodLabel
+			) {
 
 		String[] _return = new String[2];
 		boolean isConstructor = p_opcode == Opcodes.INVOKESPECIAL && p_ownermethod.equals("<init>");
@@ -464,9 +462,9 @@ public class InstrumMethodWrapper {
 			mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
 
 			String label = "";
-			if (methodLabel != null && methodLabel.size() > 0) {
-				label = methodLabel.get(0).idText;
-			}
+//			if (methodLabel != null && methodLabel.size() > 0) {
+//				label = methodLabel.get(0).idText;
+//			}
 			mv.visitLdcInsn(label);
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "sinkInvoked",

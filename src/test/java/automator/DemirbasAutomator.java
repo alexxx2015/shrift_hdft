@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.By;
 
 /**
- * Created by Vladi on 27/09/15.
+ * Created by alex on 27/09/15.
  */
 public class DemirbasAutomator extends Automator {
 

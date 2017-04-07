@@ -29,7 +29,7 @@ import edu.tum.uc.jvm.utility.analysis.StaticAnalysis.NODETYPE;
  * shutdown of a webservice (therefore this is a subclass of <code>ServletContextListener</code>) or by calling
  * <code>writeToFile()</code>.
  * 
- * @author vladi
+ * @author alex
  *
  */
 @WebListener

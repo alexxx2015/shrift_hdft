@@ -28,7 +28,7 @@ import edu.tum.uc.jvm.utility.eval.JavaEventName;
  * instrumentation which inserts calls to <code>InstrumDelegate</code> for
  * tracking event generation and event timers.
  * 
- * @author vladi
+ * @author alex
  *
  */
 public class MyMethodVisitor extends MethodVisitor {

@@ -4,7 +4,7 @@ package edu.tum.uc.jvm.utility.eval;
  * This class is a wrapper around a <code>StringBuilder</code> adding CSV separators and quotation marks, whenever a new
  * line or a coherent string is inserted.
  * 
- * @author vladi
+ * @author alex
  *
  */
 public class CSVStringBuilder {

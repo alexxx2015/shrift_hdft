@@ -18,7 +18,7 @@ import sun.misc.Unsafe;
 /**
  * This class provides an interface to <code>the sun.misc.Unsafe</code>.
  * 
- * @author vladi
+ * @author alex
  *
  */
 public class UnsafeUtil {

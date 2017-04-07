@@ -7,7 +7,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 
 /**
- * Created by Vladi on 28/09/15.
+ * Created by alex on 28/09/15.
  */
 public class Automator {
 

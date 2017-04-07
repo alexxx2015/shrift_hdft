@@ -20,7 +20,7 @@ import edu.tum.uc.jvm.utility.ConfigProperties;
  * This class is responsible to insert delegate calls for starting and stopping
  * method timers based on the method name.
  * 
- * @author vladi
+ * @author alex
  *
  */
 public class TimerAdviceAdapter extends AdviceAdapter {

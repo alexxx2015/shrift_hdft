@@ -4,7 +4,7 @@ import java.text.DecimalFormat;
 
 /**
  * An abstract base class representing a timer that can be started and stopped based on system time.
- * @author vladi
+ * @author alex
  *
  */
 public abstract class Timer {

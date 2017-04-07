@@ -8,7 +8,7 @@ import edu.tum.uc.jvm.utility.analysis.SinkSource;
 
 /**
  * Represents a timer for an event.
- * @author vladi
+ * @author alex
  *
  */
 public class EventTimer extends Timer {

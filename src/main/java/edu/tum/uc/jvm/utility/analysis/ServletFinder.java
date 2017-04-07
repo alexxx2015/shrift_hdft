@@ -40,7 +40,7 @@ public class ServletFinder {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws IOException {
 	String wsName = "SnipSnap";
-	String jarPath = "/home/vladi/SnipSnap.jar";
+	String jarPath = "/home/alex/SnipSnap.jar";
 	JarFile jarFile = new JarFile(jarPath);
 	Collection<ServletInfo> mainServletClasses = getServletClasses(jarFile);
 	jarFile.close();

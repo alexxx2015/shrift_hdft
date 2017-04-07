@@ -11,7 +11,7 @@ import edu.tum.uc.jvm.utility.ConfigProperties;
 /**
  * This class is responsible for adding bytecode at the end of a method during instrumentation.
  * 
- * @author vladi
+ * @author alex
  *
  */
 public class MyAdviceAdapter extends AdviceAdapter {

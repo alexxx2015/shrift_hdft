@@ -7,7 +7,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 /**
- * Created by Vladi on 06/11/15.
+ * Created by alex on 06/11/15.
  */
 public class WebGoatAutomator extends Automator {
 

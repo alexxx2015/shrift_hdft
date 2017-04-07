@@ -9,7 +9,7 @@ import java.util.Vector;
 
 /**
  * Represents a timer for a method where <code>EventTimer</code>s can be added.
- * @author vladi
+ * @author alex
  *
  */
 public class MethodTimer extends Timer {

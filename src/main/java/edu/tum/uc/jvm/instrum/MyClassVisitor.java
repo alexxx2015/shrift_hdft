@@ -17,7 +17,7 @@ import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
  * This class is responsible to provide a MethodVisitor object to ASM in order
  * to instrument a method.
  * 
- * @author vladi
+ * @author alex
  *
  */
 public class MyClassVisitor extends ClassVisitor {

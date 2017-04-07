@@ -8,7 +8,7 @@ import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by Vladi on 05/11/15.
+ * Created by alex on 05/11/15.
  */
 public class SnipSnapAutomator extends Automator {
 

@@ -42,7 +42,7 @@ import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
  * This class acts as the delegate of the instrumentation. Calls to public
  * methods of this class are inserted into bytecode to generate events.
  * 
- * @author vladi
+ * @author alex
  *
  */
 public class InstrumDelegate {

@@ -1,6 +1,7 @@
 package edu.tum.uc.jvm.declassification.qif;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.LocalVariablesSorter;
-import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 
 import edu.tum.uc.jvm.utility.Mnemonic;
@@ -37,6 +37,22 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 	private LocalVariablesSorter lvs = null;
 	private Map<Integer, LocalVariableNode> localVarTmp;
 	private Label endLabel;
+	
+//	private Map<Integer,Label> jmpLabel = new HashMap<Integer,Label>();
+	
+//	extends the chop class with the oringnal jump label
+	static class ExtendedChop extends Chop{
+		private Label jumpLabel;
+		ExtendedChop(Chop c, Label jl){
+			super(c.getByteCodeIndex(), c.getOwnerMethod(), c.getLabel(), c.getOperation(), c.getLocal2vn());
+			this.jumpLabel = jl;
+		}
+		
+		public Label getJumpLabel(){
+			return this.jumpLabel;
+		}
+	}
+	private Map<Integer, ExtendedChop> jmpChops = new HashMap<Integer,ExtendedChop>();
 
 	public QIFMethodVisitor(int p_version, MethodVisitor p_mv, int access, String name, String desc, String signature,
 			String classname, List<Chop> chopNodes, ClassWriter cw) {
@@ -57,8 +73,9 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
 		Label lab = this.getCurrentLabel();
 		Chop chopNode = checkChopNode(lab);
-		if (chopNode != null)
+		if (chopNode != null){
 			_logger.debug("Label found for " + chopNode.getLabel() + ", at offset " + lab.getOffset());
+		}
 
 		mv.visitFieldInsn(opcode, owner, name, desc);
 	}
@@ -72,6 +89,19 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 
 		mv.visitIincInsn(var, increment);
 	}
+	
+
+	
+	@Override
+	public void visitLabel(Label lbl){
+		mv.visitLabel(lbl);				
+		for(ExtendedChop c : this.jmpChops.values()){
+			if(c.getJumpLabel().equals(lbl) && !c.getLabel().toLowerCase().trim().startsWith("if")){
+				this.instrumentImplicitFlows(c);
+			}
+		}		
+	}
+
 
 	@Override
 	public void visitInsn(int opcode) {
@@ -80,6 +110,11 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 		if (chopNode != null) {
 			_logger.debug("Label found for " + chopNode.getLabel() + ", at offset " + lab.getOffset() + ", "
 					+ Mnemonic.OPCODE[opcode]);
+			
+//			if(this.jmpChops.containsKey(chopNode.getByteCodeIndex())){
+//				System.out.println("Target of a jump "+chopNode.getLabel()+", "+this.jmpChops.get(chopNode.getByteCodeIndex()).getLabel());				
+//				this.instrumentImplicitFlows(chopNode, opcode);
+//			}
 
 			String[] wrapperDesc = null;
 			boolean convertOp = false;
@@ -181,17 +216,33 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 
 		mv.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
 	}
-
+	
 	@Override
 	public void visitJumpInsn(int opcode, Label label) {
+		mv.visitJumpInsn(opcode, label);
+		
+//		check if instruction is part of a chop
 		Label lab = this.getCurrentLabel();
 		Chop chopNode = checkChopNode(lab);
-		if (chopNode != null)
+		if (chopNode != null){
 			_logger.debug("Label found for " + chopNode.getLabel() + ", at offset " + lab.getOffset());
-
-		mv.visitJumpInsn(opcode, label);
+//			this.jmpLabel.put(chopNode.getByteCodeIndex(), label);
+			
+//			put the target offset of a jump instruction into the jmpChops map. 
+			String[] chopLab = chopNode.getLabel()!=null? chopNode.getLabel().split("goto") : null;
+			if(chopLab != null && chopLab.length >= 2){
+				int jmpOffset = Integer.parseInt(chopLab[1].trim());
+				Chop jmpChopNode = this.getChopNode(this.clName.replaceAll("/", ".")+"."+this.mName, jmpOffset);
+				ExtendedChop ec = new ExtendedChop(jmpChopNode,label);
+				this.jmpChops.put(jmpOffset, ec);
+			}
+//			in case the current branch instruction is the target of another jump instruction (e.g. because of an else-if) remove it from the map
+			this.jmpChops.remove(chopNode.getByteCodeIndex());
+			
+			this.instrumentImplicitFlows(chopNode);
+		}
 	}
-
+	
 	@Override
 	public void visitLdcInsn(Object cst) {
 		Label lab = this.getCurrentLabel();
@@ -351,7 +402,21 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 	public LocalVariablesSorter getLvs() {
 		return this.lvs;
 	}
-
+	
+//	adds the code which quantitative implicit flow tracking
+	private void instrumentImplicitFlows(Chop chopNode){
+		List<Flow> flows = StaticAnalysis.getFlowsByChopNode(chopNode);
+		if (flows.size() > 0) {
+			for (Flow f : flows) {
+				for (String source : f.getSource()) {
+					mv.visitLdcInsn(source);
+					mv.visitLdcInsn(chopNode.getLabel());
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, QIFClassVisitor.DELEGATECLASS, "decImplicitQty", "(Ljava/lang/String;Ljava/lang/String;)V", false);
+				}
+			}
+		}
+	}
+	
 	// private int createTmpVar(Type type) {
 	// int index = -1;
 	// index = this.lvs.newLocal(type);
@@ -365,18 +430,23 @@ public class QIFMethodVisitor extends AbstractMethodVisitor {
 	// return index;
 	// }
 
-	// @Override
-	// public void visitEnd() {
-	// if (this.localVarTmp.size() > 0) {
-	// for (int key : this.localVarTmp.keySet()) {
-	// LocalVariableNode n = this.localVarTmp.get(key);
-	// mv.visitLocalVariable(n.name, n.desc, n.signature, n.start.getLabel(),
-	// n.end.getLabel(), n.index);
-	// }
-	// this.localVarTmp.clear();
-	// }
-	// mv.visitLabel(endLabel);
-	// mv.visitEnd();
-	// }
+//	@Override
+	public void visitEnde() {
+//		if (this.localVarTmp.size() > 0) {
+//			for (int key : this.localVarTmp.keySet()) {
+//				LocalVariableNode n = this.localVarTmp.get(key);
+//				mv.visitLocalVariable(n.name, n.desc, n.signature, n.start.getLabel(), n.end.getLabel(), n.index);
+//			}
+//			this.localVarTmp.clear();
+//		}
+//		mv.visitLabel(endLabel);
+		
+//		Iterator<Integer> jmpIt = this.jmpLabel.keySet().iterator();
+//		while(jmpIt.hasNext()){
+//			int opcode = jmpIt.next();
+//			System.out.println("JMP: "+opcode+" , "+this.jmpLabel.get(opcode).getOffset()+" , "+this.clName+"."+this.mName);
+//		}
+		mv.visitEnd();
+	}
 
 }

@@ -795,7 +795,7 @@ public class MyMethodVisitorSAP extends MethodVisitor {
 			}
 
 			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "", "");
+				chopNode = new Chop(-1, "", "", "", "");
 
 			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sources) {
@@ -842,7 +842,7 @@ public class MyMethodVisitorSAP extends MethodVisitor {
 			// Opcodes.INVOKEINTERFACE);
 		} else if (sinks != null && sinks.size() > 0) {
 			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "", "");
+				chopNode = new Chop(-1, "", "", "", "");
 
 			String[] wrapperDesc = InstrumMethodWrapper.createSinkWrapper(p_opcode, p_owner, p_name, p_desc, cv,
 					this.className, sinks);

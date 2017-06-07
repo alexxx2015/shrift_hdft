@@ -40,5 +40,17 @@ public abstract class AbstractMethodVisitor extends MethodVisitor{
 		}
 		return null;
 	}
+	
+	protected Chop getChopNode(String classMethodName, int offset){
+		if(this.chopNodes != null && (this.chopNodes.size() > 0)){
+			Iterator<Chop> it = this.chopNodes.iterator();
+			while(it.hasNext()){
+				Chop c = it.next();
+				if(c.getOwnerMethod().startsWith(classMethodName) && (offset == c.getByteCodeIndex()))
+					return c;				
+			}
+		}
+		return null;
+	}
 
 }

@@ -1,6 +1,5 @@
 package edu.tum.uc.jvm.declassification.qif;
 
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +12,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import edu.tum.uc.jvm.utility.Mnemonic;
-import edu.tum.uc.jvm.utility.Utility;
-import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.Flow;
+import edu.tum.uc.jvm.utility.analysis.Flow.Chop;
 import edu.tum.uc.jvm.utility.analysis.SinkSource;
 import edu.tum.uc.jvm.utility.analysis.StaticAnalysis;
 

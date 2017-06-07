@@ -19,10 +19,12 @@ public class QIFTracker {
 		private String id;
 		private double oriQty = 0.0;
 		private double actQty = 0.0;
+		private SIZE dataTypeSize;
 
-		Qif(double qty, String id) {
+		Qif(double qty, String id, SIZE s) {
 			this.oriQty = this.actQty = qty;
 			this.id = id;
+			this.dataTypeSize = s;
 		}
 
 		public double getOriQty() {
@@ -36,6 +38,10 @@ public class QIFTracker {
 		public String getId() {
 			return this.id;
 		}
+		
+		public SIZE getDataTypeSize(){
+			return this.dataTypeSize;
+		}
 
 		public void setOritQty(double qty) {
 			this.oriQty = qty;
@@ -43,6 +49,10 @@ public class QIFTracker {
 
 		public void setActQty(double qty) {
 			this.actQty = qty;
+		}
+		
+		public void setDataTypeSize(SIZE s){
+			this.dataTypeSize = s;
 		}
 	}
 
@@ -77,8 +87,10 @@ public class QIFTracker {
 		Qif q = null;
 		if (qif.containsKey(sourceId))
 			q = qif.get(sourceId);
-		else
-			q = new Qif((double) size, sourceId);
+		else{
+			SIZE s = getSize(o);
+			q = new Qif((double) size, sourceId, s);
+		}
 		qif.put(sourceId, q);
 	}
 
@@ -120,6 +132,51 @@ public class QIFTracker {
 
 		return size;
 	}
+	public static SIZE getSize(Object o) {
+		SIZE size = null;
+		if (o instanceof Byte)
+			size = SIZE.BYTE;
+		else if (o instanceof Boolean)
+			size = SIZE.BOOLEAN;
+		else if (o instanceof Character)
+			size = SIZE.CHARACTER;
+		else if (o instanceof Short)
+			size = SIZE.SHORT;
+		else if (o instanceof Double)
+			size = SIZE.DOUBLE;
+		else if (o instanceof Float)
+			size = SIZE.FLOAT;
+		else if (o instanceof Integer)
+			size = SIZE.INTEGER;
+		else if (o instanceof Long)
+			size = SIZE.LONG;
+//		else if (o instanceof String)
+//			size = ((String) o);
+//		else if (o.getClass().isArray()) {
+//			size = (long) getNumElements(o);
+//		} 
+//		else {
+//			size = UnsafeUtil.sizeOf(o);
+//		}
+
+		return size;
+	}
+	
+	public static void decImplicitQty(String sourceId, String label){
+		System.out.println(sourceId+" , "+label);
+		
+		Qif actualAmount = qif.get(sourceId);
+		if(actualAmount == null) return;
+		
+		SIZE size= actualAmount.getDataTypeSize();
+		double diff = 0;
+		if(size != null){
+			diff = (double)size.getSize() * 0.1;
+		}
+		double aQif = actualAmount.getActQty() - diff;
+		System.out.println("QIF: diff "+diff+" , aQif "+aQif+" , actualAmount "+actualAmount.getActQty()+" , 1-D "+(1-diff));
+		actualAmount.setActQty(aQif);
+	}
 
 	/*
 	 * Quantity estimation for arithmetic operations
@@ -159,6 +216,8 @@ public class QIFTracker {
 				o2strb = new StringBuilder(Long.toBinaryString(o2val));
 				restrb = new StringBuilder(Long.toBinaryString(res));
 			}
+			
+//			System.out.println(restrb.toString()+" ; "+o1strb.toString()+" ; "+o2strb.toString());
 
 			// generate the reverse binary string
 			o1str = o1strb.reverse().toString();
@@ -177,11 +236,11 @@ public class QIFTracker {
 				}
 			}
 
-			// System.out.println("MATCHES with "+restr+": " +o1str+" -> "+
-			// matches[0] + " , " + o2str + " -> "+ matches[1]);
-			// System.out.println("DEC: " + o1cut + " , " + o2cut);
+//			System.out.println("MATCHES with " + restr + ": " + o1str + " -> " + matches[0] + " , " + o2str + " -> " + matches[1]);
+//			System.out.println("DEC: " + o1cut + " , " + o2cut);
 			// diff = 1 - (double) count / (getByteSize(o2) * 8);
-			diff = (double)Math.min((double) matches[0], (double) matches[1])/restrb.length();
+//			diff = (double)Math.min((double) matches[0], (double) matches[1])/restrb.length();
+			diff = (double) matches[0]/o1str.length();
 		}
 		// Bit-Op: compute the difference as the ratio between the number of
 		// shifted bits and the number of total possible shifts which is 2^5 as

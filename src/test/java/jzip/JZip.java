@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -422,6 +423,7 @@ public class JZip implements TestIntf {
 				FileInputStream fis = new FileInputStream(f);
 				CONFIGURATION = new Properties();
 				CONFIGURATION.load(fis);
+				
 				this.showConfig();
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block

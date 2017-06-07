@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<policySet xmlns="http://www22.in.tum.de/enfLangDuDS">
+	<policy name="prevent_show_email">
+		<preventiveMechanism>
+			<trigger action="showEmail" tryEvent="true"/>
+			<condition>
+				<true/>
+			</condition>
+			<action>
+				<inhibit/>
+			</action>
+		</preventiveMechanism>
+	</policy>
+
+	<policy name="prevent_show_email_lax">
+		<preventiveMechanism>
+			<trigger action="showEmail" tryEvent="true"/>
+			<condition>
+			        <eventMatch action="showEmail" tryEvent="true">
+        				<paramMatch name="userRating" value="bad"/>
+        			</eventMatch>
+			</condition>
+			<action>
+				<inhibit/>
+			</action>
+		</preventiveMechanism>
+	</policy>
+</policySet>

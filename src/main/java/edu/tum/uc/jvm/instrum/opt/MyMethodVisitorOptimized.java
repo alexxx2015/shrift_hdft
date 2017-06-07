@@ -12,7 +12,6 @@ import org.objectweb.asm.Type;
 
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.MyUcTransformer;
-import edu.tum.uc.jvm.UcTransformer;
 import edu.tum.uc.jvm.instrum.ChopNodeDumper;
 import edu.tum.uc.jvm.instrum.InstrumDelegate;
 import edu.tum.uc.jvm.instrum.InstrumMethodWrapper;
@@ -788,7 +787,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			}
 
 			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "", "");
+				chopNode = new Chop(-1, "", "", "", "");
 
 			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sources) {
@@ -839,7 +838,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// Opcodes.INVOKEINTERFACE);
 		} else if (sinks != null && sinks.size() > 0) {
 			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "", "");
+				chopNode = new Chop(-1, "", "", "", "");
 
 			String[] wrapperDesc = InstrumMethodWrapper.createSinkWrapper(p_opcode, p_owner, p_name, p_desc, cv,
 					this.className, sinks);

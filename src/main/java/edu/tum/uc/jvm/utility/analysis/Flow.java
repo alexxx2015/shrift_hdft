@@ -53,7 +53,7 @@ public class Flow {
 		this.source = source;
 	}
 
-	public class Chop {
+	public static class Chop {
 		private int byteCodeIndex;
 		private String ownerMethod;
 		private String label;

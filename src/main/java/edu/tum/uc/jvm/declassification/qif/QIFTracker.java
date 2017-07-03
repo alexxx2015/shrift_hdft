@@ -171,9 +171,11 @@ public class QIFTracker {
 		SIZE size= actualAmount.getDataTypeSize();
 		double diff = 0;
 		if(size != null){
-			diff = (double)size.getSize() * 0.1;
+			diff = (double)1 / (size.getSize()*8);
 		}
-		double aQif = actualAmount.getActQty() - diff;
+//		double aQif = actualAmount.getActQty() - diff;
+		double aQif = actualAmount.getActQty() * (1-diff);
+//		double aQif = actualAmount.getActQty() - 1;
 		System.out.println("QIF: diff "+diff+" , aQif "+aQif+" , actualAmount "+actualAmount.getActQty()+" , 1-D "+(1-diff));
 		actualAmount.setActQty(aQif);
 	}
@@ -192,6 +194,7 @@ public class QIFTracker {
 		if (opcode == Opcodes.IAND || opcode == Opcodes.LAND || opcode == Opcodes.IOR || opcode == Opcodes.LOR
 				|| opcode == Opcodes.IXOR || opcode == Opcodes.LXOR) {
 			StringBuilder o1strb = null, o2strb = null, restrb = null;
+			int dataTypeSize = 32;
 			if (opcode == Opcodes.IAND || opcode == Opcodes.IOR || opcode == Opcodes.IXOR) {
 				// compute the actual result between both operands
 				int o1val = (int) o1, o2val = (int) o2, res = 0;
@@ -206,6 +209,7 @@ public class QIFTracker {
 				restrb = new StringBuilder(Integer.toBinaryString(res));
 			} else if (opcode == Opcodes.LAND || opcode == Opcodes.LOR || opcode == Opcodes.LXOR) {
 				long o1val = (long) o1, o2val = (long) o2, res = 0;
+				dataTypeSize= 64;
 				if (opcode == Opcodes.LAND)
 					res = o1val & o2val;
 				else if (opcode == Opcodes.LOR)
@@ -216,13 +220,19 @@ public class QIFTracker {
 				o2strb = new StringBuilder(Long.toBinaryString(o2val));
 				restrb = new StringBuilder(Long.toBinaryString(res));
 			}
-			
-//			System.out.println(restrb.toString()+" ; "+o1strb.toString()+" ; "+o2strb.toString());
 
+			o1strb.reverse(); o2strb.reverse(); restrb.reverse();
+			for(int i = 0; i < dataTypeSize; i++){
+				if(o1strb.length() < dataTypeSize) o1strb.append("0");
+				if(o2strb.length() < dataTypeSize) o2strb.append("0");
+				if(restrb.length() < dataTypeSize) restrb.append("0");
+			}
+			
 			// generate the reverse binary string
 			o1str = o1strb.reverse().toString();
 			o2str = o2strb.reverse().toString();
 			String restr = restrb.reverse().toString();
+			
 
 			// compute how many positions of the result match within each of the
 			// parameter
@@ -237,10 +247,22 @@ public class QIFTracker {
 			}
 
 //			System.out.println("MATCHES with " + restr + ": " + o1str + " -> " + matches[0] + " , " + o2str + " -> " + matches[1]);
-//			System.out.println("DEC: " + o1cut + " , " + o2cut);
-			// diff = 1 - (double) count / (getByteSize(o2) * 8);
+//			diff = 1 - (double) count / (getByteSize(o2) * 8);
+//			if(Math.min((double) matches[0], (double) matches[1]) != restrb.length())
 //			diff = (double)Math.min((double) matches[0], (double) matches[1])/restrb.length();
-			diff = (double) matches[0]/o1str.length();
+			
+			if(matches[0] > matches[1])
+				diff = (double)(o1str.trim().length() - matches[0]) / o1str.trim().length();
+			else if(matches[1] > matches[0])
+				diff = (double)(o2str.trim().length() - matches[1])/o2str.trim().length();
+			else if(matches[1]==matches[0])
+				diff = (double)(Math.max(o1str.trim().length(), o2str.trim().length())-matches[0])/Math.max(o1str.trim().length(), o2str.trim().length());
+			
+			if(diff == 1) diff=0;
+			
+				
+//			System.out.println(Math.min((double) matches[0], (double) matches[1])+", "+restrb.length()+", "+diff);
+//			diff = (double) matches[0]/o1str.length();
 		}
 		// Bit-Op: compute the difference as the ratio between the number of
 		// shifted bits and the number of total possible shifts which is 2^5 as
@@ -264,6 +286,7 @@ public class QIFTracker {
 				if(astr.toString().toCharArray()[i] == '1'){ones=true;break;}
 			}		
 //			diff = ((Integer) o2).intValue() / Math.pow(2, 5);	
+//			System.out.println("SHIFT with " + b + " position " + a +" , "+Mnemonic.OPCODE[opcode] + " -> " + astr+" , "+dataTypeSize);
 			if(ones) diff = (double) b / dataTypeSize;
 		} else if (opcode == Opcodes.LSHL || opcode == Opcodes.LSHR || opcode == Opcodes.LUSHR) {
 			short dataTypeSize = (short)Math.pow(2, 6);
@@ -358,14 +381,16 @@ public class QIFTracker {
 			if(!"".equals(restr)){
 				int levDistA = Utility.levenshteinDistance(o1str, restr);
 				int levDistB = Utility.levenshteinDistance(o2str, restr);
+				
 				maxLength = Math.max(o1str.length(), o2str.length());
-				diff = Math.min((double)levDistA/maxLength, (double)levDistB/maxLength);
+				
+				diff = Math.max((double)levDistA/maxLength, (double)levDistB/maxLength);
 //				System.out.println("LTD to restr "+restr+" , o1str "+o1str+" "+levDistA+" , o2str "+o2str+" "+levDistB);
 			}
 		}
 
 		double aQif = actualAmount.getActQty() * (1 - diff);
-		System.out.println("QIF: diff "+diff+" , aQif "+aQif+" , actualAmount "+actualAmount.getActQty()+" , 1-D "+(1-diff)+" , "+Mnemonic.OPCODE[opcode]);
+		System.out.println("QIF: diff "+diff+" , aQif "+aQif+" , actualAmount "+actualAmount.getActQty()+" , 1-diff "+(1-diff)+" , "+Mnemonic.OPCODE[opcode]);
 		actualAmount.setActQty(aQif);
 	}
 

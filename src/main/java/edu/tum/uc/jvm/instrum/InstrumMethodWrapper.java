@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.catalina.connector.Request;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -20,7 +21,7 @@ import edu.tum.uc.jvm.utility.analysis.SinkSource;
 
 public class InstrumMethodWrapper {
 
-	private static String CHECKERCLASS = RequestCheck.class.getName().replaceAll(".", "/");
+	private static String CHECKERCLASS = RequestCheck.class.getName().replace(".", "/");
 	
 	static Map<String, String> METHODS = new HashMap<String, String>();
 
@@ -29,7 +30,7 @@ public class InstrumMethodWrapper {
 		return createSourceWrapper(p_opcode, p_ownerclass, p_ownermethod, p_descownermethod, cv, p_parentclass,
 				p_sources, null);
 	}
-
+	
 	public static String[] createSourceWrapper(int p_opcode, String p_ownerclass, String p_ownermethod,
 			String p_descownermethod, ClassWriter cv, String p_parentclass, List<SinkSource> p_sources,
 			List<MethodLabel> methodLabel) {
@@ -190,11 +191,15 @@ public class InstrumMethodWrapper {
 			// <-- Execute the original method
 			
 			if (!isConstructor && !isStatic) {
+//				if source is not a constructor, check if it is marked as sensitive by the client
+				/*
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 				mv.visitVarInsn(Opcodes.ALOAD, paramArrayIndex);
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, CHECKERCLASS, "parseObjectBool",
 						"(Ljava/lang/Object;[Ljava/lang/Object;)Z", false);
 				mv.visitInsn(Opcodes.POP);
+				*/
+				
 				// mv.visitInsn(Opcodes.ICONST_0);
 				// mv.visitMethodInsn(Opcodes.INVOKESTATIC,
 				// System.class.getName().replace(".", "/"), "exit", "(I)V",

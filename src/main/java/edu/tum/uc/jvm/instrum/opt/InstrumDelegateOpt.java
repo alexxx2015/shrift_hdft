@@ -559,10 +559,6 @@ public class InstrumDelegateOpt {
 		Map<String, String> ctxInfo = (Map<String, String>) FileExt.extract(p_ownerobj);
 		ctxInfo.putAll((Map<String, String>) JerseyUrlExt.extract(p_sourceobj));
 
-		String[] sourceIds = p_source.split("\\|");
-		for (String s : sourceIds) {
-			InstrumDelegateOpt.ActivatedSources.add(s.trim());
-		}
 		String calleeObjMemAddr = getAddress(p_ownerobj);
 		String parentObjMemAddr = getAddress(p_parentobj);
 		String sourceObjMemAddr = getAddress(p_sourceobj);
@@ -570,7 +566,11 @@ public class InstrumDelegateOpt {
 		if (p_sourceobj != null) {
 			sourceObjectClass = p_sourceobj.getClass().getName();
 		}
+		String[] sourceIds = p_source.split("\\|");
 		for (String s : sourceIds) {
+			if(InstrumDelegateOpt.ActivatedSources.contains(s.trim())) continue;
+			
+			InstrumDelegateOpt.ActivatedSources.add(s.trim());
 			// Object o =
 			// UnsafeUtil.objectFromAddress(Long.parseLong(calleeObjMemAddr));
 			SinkSource source = StaticAnalysis.getSourceById(s);

@@ -79,6 +79,7 @@ public class InstrumDelegateOpt {
 	private static Map<String, String> eventParamMap = new HashMap<String, String>();
 	private static boolean EVENTTIMER = false;
 	private static Set<String> ActivatedSources = new HashSet<String>();
+	private static Set<String> ActivatedSinks = new HashSet<String>();
 	// stores parameter values for each activated source
 	private static Map<String, Map<String, String>> SOURCEPARAMS = new HashMap<String, Map<String, String>>();
 
@@ -632,6 +633,10 @@ public class InstrumDelegateOpt {
 			String restSource = "";// Jersey
 
 			for (String s : sinkIds) {
+				if(InstrumDelegateOpt.ActivatedSinks.contains(s.trim())) continue;
+				
+				InstrumDelegateOpt.ActivatedSinks.add(s.trim());
+				
 				SinkSource sink = StaticAnalysis.getSinkById(s);
 				int param = sink.getParam();
 				String sinkParam = "";

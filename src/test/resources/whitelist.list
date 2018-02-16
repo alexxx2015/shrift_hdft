@@ -1,0 +1,17 @@
+contains:org.owasp
+contains:test.TestProgram10
+contains:test.DataMover
+contains:HelloWorld
+contains:eu.demirbas
+contains:jzip
+startswith:sample.Hdft
+startswith:JFTP
+startswith:de.tum.in.www22.uc.osn.apps.birthday
+startswith:net.eyde.personalblog
+startswith:restfb.test
+startswith:sap.UserAuth
+startswith:sap.ExampleApp
+startswith:sap.PPLClient
+startswith:types.Utility
+contains:test.Declassification
+startswith:org.snipsnap

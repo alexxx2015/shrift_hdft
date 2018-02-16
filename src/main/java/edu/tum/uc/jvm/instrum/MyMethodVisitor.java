@@ -845,12 +845,19 @@ public class MyMethodVisitor extends MethodVisitor {
 						"([Lcom/restfb/Parameter;Lde/tum/in/i22/uc/cm/datatypes/java/names/SourceSinkName$Type;Ljava/lang/String;)[Lcom/restfb/Parameter;",
 						false);
 			}
-			
-			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "","");
+
+//			(int p_byteCodeIndex, String p_ownerMethod, String p_label, String p_operation, String p_local2vn)
+			if (chopNode == null){
+//				chopNode = new Flow().new Chop(-1, "", "", "","");
+				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName
+						+ this.descriptor;
+				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call","");
+			}
 			
 			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sources) {
+				if(sourceIds.contains(s.getId())) continue;
+				
 				sourceIds.add(s.getId());
 			}
 
@@ -866,8 +873,6 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(String.join("|", sourceIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabel());
 			
-
-
 //			--> add timer, add call to start event creation timer
 //			if (isInstanceOrInterfaceMethod || isConstructor) {
 //				mv.visitLdcInsn(JavaEventName.CALL_INSTANCE_METHOD);
@@ -878,11 +883,12 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
 			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(String.join("|", sourceIds));
 			mv.visitMethodInsn(
 					Opcodes.INVOKESTATIC,
 					MyUcTransformer.DELEGATECLASS,
 					"startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V",
+					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
 					false);
 //			<-- add timer
 
@@ -897,15 +903,29 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			// mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode ==
 			// Opcodes.INVOKEINTERFACE);
+			System.out.println("SOURCE FOUND "+String.join(",", sourceIds));
 		} else if (sinks != null && sinks.size() > 0) {
-			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "","");
+			if (chopNode == null){
+//				chopNode = new Flow().new Chop(-1, "", "", "","");
+				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName
+						+ this.descriptor;
+				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call","");
+			}
 
 			String[] wrapperDesc = InstrumMethodWrapper.createSinkWrapper(p_opcode, p_owner,
 					p_name, p_desc, cv, this.className, sinks);
+			
 			List<String> sinkIds = new LinkedList<String>();
+			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sinks) {
+				if(sinkIds.contains(s.getId())) continue;
+				
 				sinkIds.add(s.getId());
+				for(Flow f : StaticAnalysis.getFlows()){
+					if(s.getId().equals(f.getSink())){
+						sourceIds.addAll(f.getSource());
+					}
+				}
 			}
 			
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
@@ -915,7 +935,8 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(String.join("|", sinkIds));// Load sinksourceIds
-			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(chopNode.getLabel());			
+			mv.visitLdcInsn(String.join("|", sourceIds));
 			
 //			--> add timer, add call to start event creation timer
 //			if (isInstanceOrInterfaceMethod || isConstructor) {
@@ -927,11 +948,12 @@ public class MyMethodVisitor extends MethodVisitor {
 			mv.visitLdcInsn(chopNode.getByteCodeIndex());
 			mv.visitLdcInsn(chopNode.getOwnerMethod());
 			mv.visitLdcInsn(chopNode.getLabel());
+			mv.visitLdcInsn(String.join("|", sinkIds));
 			mv.visitMethodInsn(
 					Opcodes.INVOKESTATIC,
 					MyUcTransformer.DELEGATECLASS,
 					"startEventTimer",
-					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V",
+					"(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
 					false);
 //			<-- add timer
 			
@@ -946,6 +968,7 @@ public class MyMethodVisitor extends MethodVisitor {
 			}
 			// mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode ==
 			// Opcodes.INVOKEINTERFACE);
+			System.out.println("SINK FOUND "+String.join(",", sinkIds));
 
 		}
 		// check for the chopnode to be present here and that it has the correct

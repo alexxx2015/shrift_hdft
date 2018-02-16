@@ -175,6 +175,7 @@ public class UcCommunicator {
 
 	public IResponse sendEvent(IEvent event, boolean forceAsync) {
 		UcCommunicator.getInstance().initPDP();
+//		System.out.println("SEND EVENT: "+event);
 		Object o = this.pdpClient != null ? this.pdpClient : this.pdpController;
 		synchronized (o) {
 			try {
@@ -214,6 +215,7 @@ public class UcCommunicator {
 	public boolean sendEvent2Pdp(IEvent event, String p_methName) {
 		event.getParameters().put("ThreadId", String.valueOf(Thread.currentThread().getId()));
 
+		System.out.println("SEND EVENT "+event);
 		IResponse response;
 		Boolean timer5 = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.TIMER_T5));
 		if (timer5) {

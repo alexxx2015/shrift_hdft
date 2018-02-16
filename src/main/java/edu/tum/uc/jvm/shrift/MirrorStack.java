@@ -147,6 +147,9 @@ public class MirrorStack {
 	}
 
 	public static void timerT1Start() {
+
+		EventRepository.createEventObjects(ConfigProperties
+				.getProperty(ConfigProperties.PROPERTIES.ANALYSIS_REPORT));
 		TIMER_T1 = System.nanoTime();
 	}
 
@@ -696,7 +699,6 @@ public class MirrorStack {
 		FileDescriptorExtractor fdExt = new FileDescriptorExtractor();
 		Map<String,String> fileDescriptor = (Map<String, String>) fdExt.extract(o);
 		event.getParameters().put("fileDescriptor", fileDescriptor.get("fd"));
-
 		Boolean timer3 = new Boolean(
 				ConfigProperties
 						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3));
@@ -705,6 +707,7 @@ public class MirrorStack {
 			long start = System.nanoTime();
 			// _return = methodInvoked(event);
 			_return = ucCom.sendEvent2Pdp(event, p_methName);
+			System.out.println("DONE");
 			StatisticsWriter.logExecutionTimerT3(p_methName, System.nanoTime()
 					- start);
 		} else {

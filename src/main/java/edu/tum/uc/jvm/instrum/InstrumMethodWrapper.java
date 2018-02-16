@@ -374,6 +374,10 @@ public class InstrumMethodWrapper {
 			wrapperMethodDesc.append("Ljava/lang/String;");
 			int chopLabelIndex = ++argIndex;
 
+			// source index
+			wrapperMethodDesc.append("Ljava/lang/String;");
+			int sourceIndex = ++argIndex;
+
 			wrapperMethodDesc.append(")");
 
 			Type retT = Type.getReturnType(p_descownermethod);
@@ -384,7 +388,7 @@ public class InstrumMethodWrapper {
 			}
 
 			// Constructors are renamed
-			String wrapperMethodName = p_ownermethod;
+			String wrapperMethodName = "wrapper_"+p_ownermethod;
 			if (isConstructor) {
 				wrapperMethodName = p_ownerclass.replace("/", "_") + "_init";
 			}
@@ -449,7 +453,7 @@ public class InstrumMethodWrapper {
 			}
 
 			// Send an event to the pdp
-			if (isConstructor) {
+			if (isConstructor || isStatic) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			} else if (!isStatic) {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// first parameter is the
@@ -473,9 +477,11 @@ public class InstrumMethodWrapper {
 				label = methodLabel.get(0).idText;
 			}
 			mv.visitLdcInsn(label);
+			
+			mv.visitVarInsn(Opcodes.ALOAD, sourceIndex);//Load depending sources on stakc
 
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, MyUcTransformer.DELEGATECLASS, "sinkInvoked",
-					"(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z",
+					"(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z",
 					false);
 			mv.visitInsn(Opcodes.POP);
 			// Label elseLab = new Label();

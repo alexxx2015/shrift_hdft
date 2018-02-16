@@ -75,6 +75,7 @@ public class MyClassVisitor extends ClassVisitor {
 			// the configuration file
 			if (ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION) != null
 					&& ConfigProperties.getProperty(ConfigProperties.PROPERTIES.INSTRUMENTATION).equals("true")) {
+				System.out.println("INSTR: "+this.className);
 				// timers for tracking time spent in a method
 				TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,
 						p_signature, this.className, this.classNode.superName);
@@ -88,6 +89,7 @@ public class MyClassVisitor extends ClassVisitor {
 //				mv = new MyMethodVisitorSAP(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
 //						chopNodes, this.classWriter, this.superName);
 			} else {
+				System.out.println("NO-INSTR: "+this.className);
 				// only timers for methods, no other additional bytecode
 				TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,
 						p_signature, this.className, this.classNode.superName);

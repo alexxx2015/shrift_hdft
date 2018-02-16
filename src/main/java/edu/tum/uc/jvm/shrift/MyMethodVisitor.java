@@ -43,7 +43,7 @@ public class MyMethodVisitor extends MethodVisitor {
 		this.description = p_desc;
 		this.cv = cv;
 
-		this.fqName = this.className.replace("/", ".") + "." + this.methodName+":"+this.description;
+		this.fqName = this.className.replace("/", ".") + "." + this.methodName+this.description;
 		this.chopNodes = p_chopNodes;
 
 		if (((this.methNode.access & Opcodes.ACC_STATIC) != Opcodes.ACC_STATIC)
@@ -507,8 +507,8 @@ public class MyMethodVisitor extends MethodVisitor {
 		boolean enforcement = new Boolean(e);
 
 		Label label = this.getCurrentLabel();
-		String invokerFQN = this.fqName + this.description;
-		
+		String invokerFQN = this.fqName;// + this.description;
+
 		// Check if method invocation belongs to the set of sinks or sources
 		List<SinkSource> sors = StaticAnalysis.getType(invokerFQN, label.getOffset());		
 		if (sors.size() == 0) {

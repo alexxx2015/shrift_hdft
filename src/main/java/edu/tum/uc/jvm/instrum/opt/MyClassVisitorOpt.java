@@ -7,6 +7,9 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.util.Printer;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceMethodVisitor;
 
 import edu.tum.uc.jvm.instrum.MyAdviceAdapter;
 import edu.tum.uc.jvm.instrum.TimerAdviceAdapter;
@@ -90,6 +93,9 @@ public class MyClassVisitorOpt extends ClassVisitor {
 //						chopNodes, this.classWriter, this.superName);
 //				mv = new MyMethodVisitorSAP(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
 //						chopNodes, this.classWriter, this.superName);
+				
+//				Printer p = new Textifier();
+//				mv = new TraceMethodVisitor(mv,p);
 			} else {
 				// only timers for methods, no other additional bytecode
 				TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,

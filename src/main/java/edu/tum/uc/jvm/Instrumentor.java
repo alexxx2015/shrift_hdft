@@ -5,29 +5,30 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.lang.instrument.IllegalClassFormatException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import edu.tum.uc.jvm.instrum.MyClassReader;
-import edu.tum.uc.jvm.instrum.MyClassVisitor;
 import edu.tum.uc.jvm.instrum.MyClassWriter;
+import edu.tum.uc.jvm.instrum.opt.MyClassVisitorOpt;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.Utility;
 
 //JVM property to format loggin output: -Djava.util.logging.SimpleFormatter.format='%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %2$s %5$s%6$s%n'
 public class Instrumentor {
 
-	private static Logger _logger = Logger.getLogger(Instrumentor.class.getName());
+//	private static Logger _logger = Logger.getLogger(Instrumentor.class.getName());
 
 	// arg[0] = Source-Directory of to be instrumented files
 	// arg[1] = Destination-Directory of instrumented files
@@ -49,36 +50,38 @@ public class Instrumentor {
 			throw new FileNotFoundException("File " + ucConfig.getName() + " does not exist or cannot be found");
 		}
 		if (!sourceDir.exists()) {
-			_logger.info("Creating source dir " + sourceDir.getName());
+//			_logger.info("Creating source dir " + sourceDir.getName());
 			sourceDir.mkdirs();
 		}
 		if (!destDir.exists()) {
-			_logger.info("Creating destination dir " + destDir.getName());
+//			_logger.info("Creating destination dir " + destDir.getName());
 			destDir.mkdirs();
 		}
-		_logger.info("Reading configuration file: " + ucConfig.getAbsolutePath());
+//		_logger.info("Reading configuration file: " + ucConfig.getAbsolutePath());
 		ConfigProperties.setConfigFile(ucConfig.getAbsolutePath());
 
-		_logger.info("Search for classfiles in " + sourceDir);
+//		_logger.info("Search for classfiles in " + sourceDir);
 		traverseDir(sourceDir, destDir, sourceDir, ucConfig);
 	}
 
 	private static void traverseDir(File sourceDir, File destDir, File currentDir, File ucConfig)
 			throws IllegalClassFormatException, IOException {
 		// Do instrumentation for each JavaClassFile
+		boolean isClassFile=true;
 		for (File f : currentDir.listFiles()) {
 			if (f.isDirectory()) {
 				traverseDir(sourceDir, destDir, f, ucConfig);
 				continue;
 			}
-			if (!f.getName().endsWith(".class")) {
-				// TODO: just copy the file before continue
-				continue;
-			}
+			
+			isClassFile = (f.getName().endsWith(".class")) ? true : false;
 
 			InputStream is = new FileInputStream(f);
 			byte[] raw_bytecode = IOUtils.toByteArray(is);
-			byte[] instrumentedClass = transform(raw_bytecode);
+			byte[] instrumentedClass = raw_bytecode;
+			if(isClassFile){
+				instrumentedClass = transform(raw_bytecode);
+			}
 
 			String sourceClassName = f.getAbsolutePath();
 			String destClassName = sourceClassName.replace(sourceDir.getAbsolutePath(), destDir.getAbsolutePath());
@@ -121,10 +124,18 @@ public class Instrumentor {
 		// _logger.info("Start instrumenting " + className);
 		MyClassWriter cw = new MyClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 
-		ClassVisitor cv = new MyClassVisitor(Opcodes.ASM5, cw, cn);
+		ClassVisitor cv = new MyClassVisitorOpt(Opcodes.ASM5, cw, cn);
 		// ClassVisitor cv = new QIFClassVisitor(Opcodes.ASM5, cw, cn);
+
+		
+//		PrintWriter pw = new PrintWriter(System.out);
+//		TraceClassVisitor tcv = new TraceClassVisitor(cv,new Textifier(),pw);
+		
+
+		
 		cr.accept(cv, ClassReader.EXPAND_FRAMES);
 		// _logger.info("Done instrumenting " + className);
+		System.out.println("INSTR: "+className);
 		return cw.toByteArray();
 	}
 	/*

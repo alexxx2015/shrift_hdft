@@ -750,8 +750,11 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		boolean isInterfaceMethod = p_opcode == Opcodes.INVOKEINTERFACE;
 
 		boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod || isPrivateInstanceMethod || isInterfaceMethod;
-
+		
 		// Get method invocation offset label
+		Label l = this.getCurrentLabel();
+		if (l == null) System.out.println(this.className+", "+this.methodName+"; "+p_owner+", "+p_name); 
+		
 		int ofs = this.getCurrentLabel().getOffset();
 		List<SinkSource> sources = StaticAnalysis.isSourceWithFlow(fqName, ofs);
 		List<SinkSource> sinks = StaticAnalysis.isSinkWithFlow(fqName, ofs);
@@ -765,6 +768,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		}
 
 		if (sources != null && sources.size() > 0) {
+			
 			// Restfb method invocation
 			if (p_owner.replace("/", ".").toLowerCase().equals("com.restfb.defaultfacebookclient")
 					&& p_name.toLowerCase().equals("fetchobject")) {
@@ -787,13 +791,20 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 						false);
 			}
 
-			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "", "");
+			if (chopNode == null){
+//				chopNode = new Flow().new Chop(-1, "", "", "", "");
+				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName
+						+ this.descriptor;
+				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call","");
+			}
 
 			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sources) {
+				if(sourceIds.contains(s.getId())) continue;
+
 				sourceIds.add(s.getId());
 			}
+//			System.out.println("SOURCE FOUND: "+this.fqName+", "+p_owner+"."+p_name+", "+String.join(",", sourceIds));
 
 			String[] wrapperDesc = InstrumMethodWrapper.createSourceWrapper(p_opcode, p_owner, p_name, p_desc, cv,
 					this.className, sources);
@@ -837,16 +848,30 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			}
 			// mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode ==
 			// Opcodes.INVOKEINTERFACE);
+			System.out.println("SOURCE: "+sourceIds+", "+p_owner+"."+p_name);
 		} else if (sinks != null && sinks.size() > 0) {
-			if (chopNode == null)
-				chopNode = new Flow().new Chop(-1, "", "", "", "");
+			if (chopNode == null){
+//				chopNode = new Flow().new Chop(-1, "", "", "", "");
+				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName
+						+ this.descriptor;
+				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call","");
+			}
 
 			String[] wrapperDesc = InstrumMethodWrapper.createSinkWrapper(p_opcode, p_owner, p_name, p_desc, cv,
 					this.className, sinks);
+
 			List<String> sinkIds = new LinkedList<String>();
+			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sinks) {
+				if(sinkIds.contains(s.getId())) continue;
 				sinkIds.add(s.getId());
+				for(Flow f : StaticAnalysis.getFlows()){
+					if(s.getId().equals(f.getSink())){
+						sourceIds.addAll(f.getSource());
+					}
+				}
 			}
+//			System.out.println("SINK FOUND: "+String.join(",", sinkIds)+", "+this.fqName+", "+p_owner+"."+p_name+", "+String.join(",", sourceIds));
 
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
@@ -856,6 +881,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			mv.visitLdcInsn(this.methodName);// load parent method name
 			mv.visitLdcInsn(String.join("|", sinkIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabelWithSource());
+			mv.visitLdcInsn(String.join("|", sourceIds));
 
 			// --> add timer, add call to start event creation timer
 			// if (isInstanceOrInterfaceMethod || isConstructor) {
@@ -881,12 +907,15 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitInsn(Opcodes.SWAP);
 				mv.visitInsn(Opcodes.POP);
 			}
+			System.out.println("SINK: "+sinkIds+", "+p_owner+"."+p_name);
 			// mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode ==
 			// Opcodes.INVOKEINTERFACE);
 		}
 		// check for the chopnode to be present here and that it has the correct
 		// operation
 		else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL) && this.ift) {
+			System.out.println("CHOP: "+chopNode.getLabel()+", "+chopNode.getOwnerMethod()+", "+p_owner+"."+p_name);
+//			System.out.println("INSTRUMENTING "+chopNode.getLabelWithSource()+", "+chopNode.getOwnerMethod());
 			StringBuilder desc = new StringBuilder();
 			// Generate new method signature
 			Type[] argT = Type.getArgumentTypes(p_desc);
@@ -1202,6 +1231,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitInsn(Opcodes.SWAP);
 				mv.visitInsn(Opcodes.POP);
 			}
+			
 			// else if(isConstructor && isSuperConstructor){
 			// mv.visitVarInsn(Opcodes.ASTORE, 0);
 			// mv.visitInsn(Opcodes.POP);

@@ -81,7 +81,7 @@ public class StaticAnalysis {
 	 * and output=null
 	 */
 	public static List<SinkSource> getType(String fullyQualifiedName, int offset) {
-		if (fullyQualifiedName.contains("zipIt")) {
+		if (fullyQualifiedName.contains("JFTP.FTPCmdServer.getFile") && offset==174) {
 			int u = 0;
 			u++;
 		}

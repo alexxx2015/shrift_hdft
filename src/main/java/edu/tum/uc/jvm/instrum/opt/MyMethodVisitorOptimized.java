@@ -878,7 +878,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
-			mv.visitLdcInsn(this.methodName);// load parent method name
+			mv.visitLdcInsn(this.methodName + this.descriptor);// load parent method name
 			mv.visitLdcInsn(String.join("|", sinkIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitLdcInsn(String.join("|", sourceIds));

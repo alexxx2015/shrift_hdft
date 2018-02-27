@@ -640,9 +640,7 @@ public class InstrumDelegateOpt {
 		for(String s : sources){
 			if(InstrumDelegateOpt.ActivatedSources.contains(s.trim())) nonActiveSources.add(s.trim());
 		}
-		System.out.println("Sink invoked_1 "+p_ownermethod+", "+p_source+", "+nonActiveSources.size());
 		if (nonActiveSources.size() > 0) {
-			System.out.println("Sink invoked_2 "+p_ownermethod);
 
 //		String[] l = label.split(Chop.LABEL_SPLIT);
 //		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {

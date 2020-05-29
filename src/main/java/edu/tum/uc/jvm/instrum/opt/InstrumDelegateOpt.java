@@ -28,8 +28,9 @@ import de.tum.in.i22.uc.cm.datatypes.java.names.JavaName;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.UcCommunicator;
 import edu.tum.uc.jvm.declassification.Declassifier;
-import edu.tum.uc.jvm.extractor.FileDescriptorExtractor;
+import edu.tum.uc.jvm.extractor.FileNameDescExtractor;
 import edu.tum.uc.jvm.extractor.IExtractor;
+import edu.tum.uc.jvm.extractor.IPExtractor;
 import edu.tum.uc.jvm.extractor.JerseyUrlExtractor;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
@@ -49,6 +50,12 @@ import edu.tum.uc.jvm.utility.eval.StatisticsUtil;
  *
  */
 public class InstrumDelegateOpt {
+	
+	/**
+	 * Instrumented field name
+	 */
+	
+	public static final String INSTRUMENTED_FIELD_NAME = "_INSTRUMENTED_";
 
 	/**
 	 * The singleton instance of UcCommunicator.
@@ -91,8 +98,9 @@ public class InstrumDelegateOpt {
 
 	private static IResponse LASTRESPONSE;
 
-	private static IExtractor FileExt = new FileDescriptorExtractor();
+	private static IExtractor FileExt = new FileNameDescExtractor();
 	private static IExtractor JerseyUrlExt = new JerseyUrlExtractor();
+	private static IPExtractor IpExt = new IPExtractor();
 
 	public static void populateMyEventBasic() {
 
@@ -150,7 +158,22 @@ public class InstrumDelegateOpt {
 	 *            The name of the given class.
 	 * @return The instrumentation status of the class with the given name.
 	 */
-	public static boolean classIsInstrumented(String className) {
+	public static boolean classIsInstrumented(String className, Object o) {
+		if(o != null && !InstrumentedClasses.contains(className)){
+			for(Field f : o.getClass().getFields()){
+				if (InstrumDelegateOpt.INSTRUMENTED_FIELD_NAME.equals(f.getName())){
+					try {
+						boolean b = (boolean)f.get(o);
+						if((boolean)f.get(o)){
+							InstrumDelegateOpt.addInstrumentedClassName(className);
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+				}
+			}
+		}
 		return InstrumentedClasses.contains(className);
 	}
 
@@ -220,11 +243,11 @@ public class InstrumDelegateOpt {
 	public static void startEventTimer(String eventName, int bci, String cnOwnerMethod, String cnLabel,
 			String sourceSinkId) {
 		for (String s : sourceSinkId.split("\\|")) {
-//			System.out.println("CHECK STARTEVENTTIMER: "+s);
+			// System.out.println("CHECK STARTEVENTTIMER: "+s);
 			if (InstrumDelegateOpt.ActivatedSources.contains(s.trim())
 					|| InstrumDelegateOpt.ActivatedSinks.contains(s.trim()))
 				continue;
-//			System.out.println("STARTEVENTTIMER: "+s);
+			// System.out.println("STARTEVENTTIMER: "+s);
 			startEventTimer(eventName, bci, cnOwnerMethod, cnLabel);
 		}
 	}
@@ -295,7 +318,7 @@ public class InstrumDelegateOpt {
 			String label) {
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
-		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
 			Map<String, String> eventParams = new HashMap<String, String>();
 			eventParams.put("parentObjectAddress", getAddress(parentObject));
 			eventParams.put("parentClass", getClass(parentObject, parentMethod));
@@ -379,14 +402,14 @@ public class InstrumDelegateOpt {
 			Object parentObject, String parentMethod, String label) {
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
-		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
 			Map<String, String> eventParams = new HashMap<String, String>();
 			eventParams.put("parentObjectAddress", getAddress(parentObject));
 			eventParams.put("parentClass", getClass(parentObject, parentMethod));
 			eventParams.put("parentMethod", getMethod(parentMethod));
 			eventParams.put("fieldOwnerClass", fieldOwnerObject != null ? getClass(fieldOwnerObject) : fieldOwnerClass);
 			eventParams.put("fieldOwnerClassIsInstrumented",
-					String.valueOf(classIsInstrumented(getClass(fieldOwnerObject, fieldOwnerClass))));
+					String.valueOf(classIsInstrumented(getClass(fieldOwnerObject, fieldOwnerClass),fieldOwnerObject)));
 			eventParams.put("fieldOwnerAddress", getAddress(fieldOwnerObject));
 			eventParams.put("fieldName", fieldName);
 			eventParams.put("assigneeClass", getClass(assignee));
@@ -415,7 +438,7 @@ public class InstrumDelegateOpt {
 	public static void unaryAssign(Object arg, Object parentObject, String parentMethod, String label) {
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
-		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
 			Map<String, String> eventParams = new HashMap<String, String>();
 			eventParams.put("parentObjectAddress", getAddress(parentObject));
 			eventParams.put("parentClass", getClass(parentObject, parentMethod));
@@ -500,10 +523,11 @@ public class InstrumDelegateOpt {
 				eventParams.put("methodArgTypes", JSONArray.toJSONString(Arrays.asList(getClasses(args))));
 				eventParams.put("methodArgAddresses", JSONArray.toJSONString(Arrays.asList(getAddresses(args))));
 				eventParams.put("calleeObjectIsInstrumented",
-						String.valueOf(classIsInstrumented(getClass(callee, calledMethod))));
+						String.valueOf(classIsInstrumented(getClass(callee, calledMethod),callee)));
 
 				if (l.length >= 1)
-					eventParams.put("chopLabel", l[0]);
+					eventParams.put("chopLabel", label);
+//					eventParams.put("chopLabel", l[0]);
 				if (l.length >= 2)
 					eventParams.put("SRCDEP", l[1]);
 
@@ -541,7 +565,7 @@ public class InstrumDelegateOpt {
 			Object parentObject, String p_label) {
 		// send chop node only if its corresponding source was already triggered
 		String[] l = label.split(Chop.LABEL_SPLIT);
-		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1])) {
+		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
 			Map<String, String> eventParams = new HashMap<String, String>();
 			eventParams.put("parentObjectAddress", getAddress(parentObject));
 			eventParams.put("parentClass", getClass(parentObject, parentMethod));
@@ -575,16 +599,20 @@ public class InstrumDelegateOpt {
 		String calleeObjMemAddr = getAddress(p_ownerobj);
 		String parentObjMemAddr = getAddress(p_parentobj);
 		String sourceObjMemAddr = getAddress(p_sourceobj);
-		String sourceObjectClass = "";
+		String sourceObjectClass = "";		
 		if (p_sourceobj != null) {
 			sourceObjectClass = p_sourceobj.getClass().getName();
 		}
+		String sourceFilePath = ctxInfo.containsKey("path") ? ctxInfo.get("path"):"";
 		String[] sourceIds = p_source.split("\\|");
 		for (String s : sourceIds) {
-			if (InstrumDelegateOpt.ActivatedSources.contains(s.trim()))
+			s = s.trim();
+			String stmp = s;
+			if(!"".equals(sourceFilePath)) stmp += "|"+sourceFilePath;
+			if (InstrumDelegateOpt.ActivatedSources.contains(stmp))
 				continue;
-			InstrumDelegateOpt.ActivatedSources.add(s.trim());
-		
+			InstrumDelegateOpt.ActivatedSources.add(s);
+
 			// Object o =
 			// UnsafeUtil.objectFromAddress(Long.parseLong(calleeObjMemAddr));
 			SinkSource source = StaticAnalysis.getSourceById(s);
@@ -626,7 +654,7 @@ public class InstrumDelegateOpt {
 			Object[] p_ownermethodparams, Object p_parentobj, String p_parentClass, String p_parentmethodname,
 			String p_source, String p_chopLabel) {
 		return sinkInvoked(p_ownerobj, p_ownerclass, p_ownermethod, p_ownermethodparams, p_parentobj, p_parentClass,
-				p_parentmethodname, p_source, p_chopLabel, null,null);
+				p_parentmethodname, p_source, p_chopLabel, null, null);
 	}
 
 	public static boolean sinkInvoked(Object p_ownerobj, String p_ownerclass, String p_ownermethod,
@@ -634,18 +662,21 @@ public class InstrumDelegateOpt {
 			String p_sink, String label, String p_label, String p_source) {
 		boolean _return = true;
 		// send chop node only if its corresponding source was already triggered
-		//Filter non-activated sources from activated
-		String[] sources = p_source.split("\\|");//label.split(Chop.LABEL_SPLIT);
+		// Filter non-activated sources from activated
+		String[] sources = p_source.split("\\|");// label.split(Chop.LABEL_SPLIT);
 		List<String> nonActiveSources = new LinkedList<String>();
-		for(String s : sources){
-			if(InstrumDelegateOpt.ActivatedSources.contains(s.trim())) nonActiveSources.add(s.trim());
+		for (String s : sources) {
+			if (InstrumDelegateOpt.ActivatedSources.contains(s.trim()))
+				nonActiveSources.add(s.trim());
 		}
 		if (nonActiveSources.size() > 0) {
 
-//		String[] l = label.split(Chop.LABEL_SPLIT);
-//		if (l.length >= 2 && InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
+			// String[] l = label.split(Chop.LABEL_SPLIT);
+			// if (l.length >= 2 &&
+			// InstrumDelegateOpt.ActivatedSources.contains(l[1].trim())) {
 			Map<String, String> ctxInfo = (Map<String, String>) FileExt.extract(p_ownerobj);
 			ctxInfo.putAll((Map<String, String>) JerseyUrlExt.extract(p_ownerobj));
+			ctxInfo.putAll((Map<String, String>) IpExt.extract(p_ownerobj));
 			String[] sinkIds = p_sink.split("\\|");
 			String calleeObjMemAddr = getAddress(p_ownerobj);
 			String parentObjMemAddr = getAddress(p_parentobj);
@@ -654,10 +685,9 @@ public class InstrumDelegateOpt {
 			String restSource = "";// Jersey
 
 			for (String s : sinkIds) {
-//				if (InstrumDelegateOpt.ActivatedSinks.contains(s.trim()))
-//					continue;
-//				InstrumDelegateOpt.ActivatedSinks.add(s.trim());
-				
+				// if (InstrumDelegateOpt.ActivatedSinks.contains(s.trim()))
+				// continue;
+				// InstrumDelegateOpt.ActivatedSinks.add(s.trim());
 
 				SinkSource sink = StaticAnalysis.getSinkById(s);
 				int param = sink.getParam();
@@ -786,10 +816,11 @@ public class InstrumDelegateOpt {
 				eventParams.put("argsCount", String.valueOf(argsCount));
 				eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
 				eventParams.put("calleeObjectIsInstrumented",
-						String.valueOf(classIsInstrumented(getClass(caller, calledMethod))));
+						String.valueOf(classIsInstrumented(getClass(caller, calledMethod),caller)));
 				// eventParams.put("chopLabel", label);
 				if (l.length >= 1)
-					eventParams.put("chopLabel", l[0]);
+					eventParams.put("chopLabel", label);
+//					eventParams.put("chopLabel", l[0]);
 				if (l.length >= 2)
 					eventParams.put("SRCDEP", l[1]);
 				createEvent(JavaEventName.RETURN_INSTANCE_METHOD, eventParams);
@@ -836,7 +867,7 @@ public class InstrumDelegateOpt {
 			eventParams.put("returnValueAddress", getAddress(returnValue));
 			eventParams.put("argsCount", String.valueOf(argsCount));
 			eventParams.put("sourcesMap", JSONObject.toJSONString(getSourcesMap(parentMethod, bytecodeOffset)));
-			eventParams.put("calleeClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod))));
+			eventParams.put("calleeClassIsInstrumented", String.valueOf(classIsInstrumented(getClass(calledMethod),null)));
 			eventParams.put("chopLabel", label);
 			createEvent(JavaEventName.RETURN_STATIC_METHOD, eventParams);
 		}
@@ -929,6 +960,8 @@ public class InstrumDelegateOpt {
 		String sourceObjectAddress = param.containsKey("sourceObjectAddress") ? param.get("sourceObjectAddress") : "";
 		String argumentAddress = param.containsKey("argumentAddress") ? param.get("argumentAddress") : "";
 		String returnValueAddress = param.containsKey("returnValueAddress") ? param.get("returnValueAddress") : "";
+		String arrayAddress = param.containsKey("arrayAddress") ? param.get("arrayAddress"):"";
+		String arrayIndex = param.containsKey("index") ? param.get("index"):"";
 
 		if (eventName.equals(JavaEventName.CALL_INSTANCE_METHOD)) {
 			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM)
@@ -953,6 +986,12 @@ public class InstrumDelegateOpt {
 		} else if (eventName.equals(JavaEventName.SINK_INVOKED)) {
 			_return = _return.append(sinkId).append(DLM).append(calleeObjectClass).append(DLM)
 					.append(calleeObjectAddress);
+		} else if (eventName.equals(JavaEventName.READ_ARRAY)) {
+			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM)
+					.append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(arrayAddress).append(DLM).append(arrayIndex);
+		} else if (eventName.equals(JavaEventName.WRITE_ARRAY)) {
+			_return = _return.append(pid).append(DLM).append(threadId).append(DLM).append(parentClass).append(DLM)
+					.append(parentObjectAddress).append(DLM).append(parentMethod).append(DLM).append(arrayAddress).append(DLM).append(arrayIndex);
 		}
 		return _return.toString();
 	}
@@ -965,14 +1004,14 @@ public class InstrumDelegateOpt {
 		specificParams.put("PEP", "Java");
 		specificParams.put("threadId", Utility.getThreadId());
 		specificParams.put("processId", Utility.getPID());
+		specificParams.put("IFT", ConfigProperties.getProperty(ConfigProperties.PROPERTIES.IFT));
 
 		String eventId = createEventId(eventName, specificParams);
 		// boolean isSourceSink = eventName.equals(JavaEventName.SOURCE_INVOKED)
 		// || eventName.equals(JavaEventName.SINK_INVOKED);
 		// boolean isSourceSink =
 		// eventName.equals(JavaEventName.SINK_INVOKED);//eventName.equals(JavaEventName.SOURCE_INVOKED)
-		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 1)) {// && !isSourceSink) {
-
+		if (sendEventRepo.containsKey(eventId) && (sendEventRepo.get(eventId) >= 100)) {// && !isSourceSink){
 			if (EVENTTIMER) {
 				// Stop timer event creation
 				StatisticsUtil.endEventCreation(eventName);
@@ -989,7 +1028,7 @@ public class InstrumDelegateOpt {
 		((MyEventBasic) event).setBoolIsActual(isActual);
 
 		sendEventRepo.put(eventId, sendEventRepo.get(eventId) + 1);
-//		 System.out.println("SEND1 EVENT "+event.getName()+" , "+eventId);
+		// System.out.println("SEND1 EVENT "+event.getName()+" , "+eventId);
 		if (EVENTTIMER)
 			StatisticsUtil.endEventCreation(eventName);
 		// send event to pdp

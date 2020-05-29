@@ -3,6 +3,8 @@ package edu.tum.uc.jvm.utility.analysis;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.security.auth.callback.LanguageCallback;
+
 import edu.tum.uc.jvm.instrum.opt.InstrumDelegateOpt;
 
 public class Flow {
@@ -60,6 +62,7 @@ public class Flow {
 		private String operation;
 		private String sourceId;
 		private String local2vn;
+		private String phiLabel;
 		public static final String LABEL_SEP = "|";
 		public static final String LABEL_SPLIT = "\\|";
 
@@ -90,11 +93,15 @@ public class Flow {
 		}
 
 		public String getLabel() {
-			return this.label;
+			if(this.phiLabel == null || "".equals(this.phiLabel.trim()))
+				return this.label;
+			return this.label + LABEL_SEP +this.phiLabel.trim();
 		}
 
 		public String getLabelWithSource() {
-			return this.label + LABEL_SEP + this.sourceId;
+			if(this.phiLabel == null || "".equals(this.phiLabel.trim()))
+				return this.label + LABEL_SEP + this.sourceId;
+			return this.label + LABEL_SEP + this.sourceId+LABEL_SEP+this.phiLabel.trim();
 		}
 
 		public String getOperation() {
@@ -108,5 +115,12 @@ public class Flow {
 		public String getLocal2vn() {
 			return this.local2vn;
 		}
+		public String getPhiLabel(){
+			return this.phiLabel;
+		}
+		public void setPhiLabel(String s){
+			this.phiLabel = s;
+		}
+		
 	}
 }

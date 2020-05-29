@@ -196,6 +196,9 @@ public class StatisticsUtil implements ServletContextListener {
     public static void writeToFile() {
 
 	try {
+		if(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS).trim().equals("")){
+			return;
+		}
 	    File statsFile = new File(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.STATISTICS));
 	    if (!statsFile.getParentFile().exists()) {
 		statsFile.getParentFile().mkdirs();

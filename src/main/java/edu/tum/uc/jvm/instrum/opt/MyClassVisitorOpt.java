@@ -1,15 +1,16 @@
 package edu.tum.uc.jvm.instrum.opt;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.util.Printer;
-import org.objectweb.asm.util.Textifier;
-import org.objectweb.asm.util.TraceMethodVisitor;
+import org.objectweb.asm.Type;
 
 import edu.tum.uc.jvm.instrum.MyAdviceAdapter;
 import edu.tum.uc.jvm.instrum.TimerAdviceAdapter;
@@ -63,10 +64,11 @@ public class MyClassVisitorOpt extends ClassVisitor {
 	 */
 	public MethodVisitor visitMethod(int p_access, String p_name, String p_desc, String p_signature,
 			String[] p_exceptions) {
-		
+
 		// Get chop nodes list from analysis report
 		String k = this.className.replace("/", ".") + "." + p_name + p_desc;
 		List<Chop> chopNodes = StaticAnalysis.getChop(k);
+		this.enrichChopWithPhi(chopNodes);
 
 		// Forward the method to next ClassVisitor in chain
 		MethodVisitor mv = cv.visitMethod(p_access, p_name, p_desc, p_signature, p_exceptions);
@@ -87,15 +89,17 @@ public class MyClassVisitorOpt extends ClassVisitor {
 				MyAdviceAdapter myAa = new MyAdviceAdapter(Opcodes.ASM4, timeAa, p_access, p_name, p_desc, p_signature,
 						this.className);
 				// actual instrumentation for tracking events
-				mv = new MyMethodVisitorOptimized(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
-						chopNodes, this.classWriter, this.superName);
-//				mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
-//						chopNodes, this.classWriter, this.superName);
-//				mv = new MyMethodVisitorSAP(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature, this.className,
-//						chopNodes, this.classWriter, this.superName);
-				
-//				Printer p = new Textifier();
-//				mv = new TraceMethodVisitor(mv,p);
+				mv = new MyMethodVisitorOptimized(Opcodes.ASM4, myAa, p_access, p_name, p_desc, p_signature,
+						this.className, chopNodes, this.classWriter, this.superName);
+				// mv = new MyMethodVisitor(Opcodes.ASM4, myAa, p_access,
+				// p_name, p_desc, p_signature, this.className,
+				// chopNodes, this.classWriter, this.superName);
+				// mv = new MyMethodVisitorSAP(Opcodes.ASM4, myAa, p_access,
+				// p_name, p_desc, p_signature, this.className,
+				// chopNodes, this.classWriter, this.superName);
+
+				// Printer p = new Textifier();
+				// mv = new TraceMethodVisitor(mv,p);
 			} else {
 				// only timers for methods, no other additional bytecode
 				TimerAdviceAdapter timeAa = new TimerAdviceAdapter(Opcodes.ASM4, mv, p_access, p_name, p_desc,
@@ -106,9 +110,46 @@ public class MyClassVisitorOpt extends ClassVisitor {
 		return mv;
 	}
 
+	private void enrichChopWithPhi(List<Chop> chopNodes) {
+		// Catch all phi nodes
+		List<Chop> phiNodes = chopNodes.stream().filter(s -> s.getByteCodeIndex() == -8).collect(Collectors.toList());
+		
+		//check foreach chopnode if its left assignment variable is part of a Phi instruction
+		chopNodes.stream().filter(s -> s.getByteCodeIndex() >= 0).forEach(s -> {
+			String[] labelCmp = s.getLabel().split("=");
+			if(labelCmp.length >=2 &&  (labelCmp[0].trim().toLowerCase().startsWith("v") || labelCmp[0].trim().toLowerCase().startsWith("p"))){
+				String leftVar = labelCmp[0].trim();
+				for(Chop c : phiNodes){
+					String[] phiParts = c.getLabel().split("=");
+					if(phiParts.length >= 2 && phiParts[1].contains(leftVar)){
+						s.setPhiLabel(c.getLabel());
+					}
+				}
+			}
+		});
+
+	}
+
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 		this.superName = superName;
 		cv.visit(version, access, name, signature, superName, interfaces);
+	}
+
+	// @Override
+	// public FieldVisitor visitField(int access, java.lang.String name,
+	// java.lang.String descriptor, java.lang.String signature, java.lang.Object
+	// value){
+	// System.out.println("FV: "+access+" "+name+" , "+descriptor+" ,
+	// "+signature+" , "+ value+", "+Type.BOOLEAN_TYPE.toString());
+	// return cv.visitField(access, name, descriptor, signature, value);
+	// }
+
+	@Override
+	public void visitEnd() {
+		cv.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL,
+				InstrumDelegateOpt.INSTRUMENTED_FIELD_NAME, Type.BOOLEAN_TYPE.toString(), Type.BOOLEAN_TYPE.toString(),
+				(Object) new Boolean(true));
+		cv.visitEnd();
 	}
 }

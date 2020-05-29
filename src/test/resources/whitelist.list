@@ -4,7 +4,7 @@ contains:test.DataMover
 contains:HelloWorld
 contains:eu.demirbas
 contains:jzip
-startswith:sample.Hdft
+startswith:hdft.Sample
 startswith:JFTP
 startswith:de.tum.in.www22.uc.osn.apps.birthday
 startswith:net.eyde.personalblog

@@ -27,7 +27,7 @@ import de.tum.in.i22.uc.cm.datatypes.interfaces.IEvent;
 import de.tum.in.i22.uc.cm.datatypes.interfaces.IResponse;
 import de.tum.in.i22.uc.cm.datatypes.java.names.SourceSinkName;
 import edu.tum.uc.jvm.UcCommunicator;
-import edu.tum.uc.jvm.extractor.FileDescriptorExtractor;
+import edu.tum.uc.jvm.extractor.FileNameDescExtractor;
 import edu.tum.uc.jvm.extractor.IExtractor;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.UnsafeUtil;
@@ -74,7 +74,7 @@ public class InstrumDelegate {
 		sinksAndSources.addAll(StaticAnalysis.getSinks());
 		EVENTTIMER = Boolean.parseBoolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.EVENTTIMER));
 	}	
-	private static IExtractor FileExt = new FileDescriptorExtractor();
+	private static IExtractor FileExt = new FileNameDescExtractor();
 
 
 	/**

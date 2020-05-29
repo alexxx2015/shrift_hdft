@@ -26,7 +26,7 @@ import edu.tum.uc.jvm.deprecated.container.Container;
 import edu.tum.uc.jvm.deprecated.container.Field;
 import edu.tum.uc.jvm.deprecated.container.LocalVariable;
 import edu.tum.uc.jvm.deprecated.container.ObjectReference;
-import edu.tum.uc.jvm.extractor.FileDescriptorExtractor;
+import edu.tum.uc.jvm.extractor.FileNameDescExtractor;
 import edu.tum.uc.jvm.utility.ConfigProperties;
 import edu.tum.uc.jvm.utility.EventRepository;
 import edu.tum.uc.jvm.utility.MethEvent;
@@ -696,7 +696,7 @@ public class MirrorStack {
 
 		boolean _return;
 
-		FileDescriptorExtractor fdExt = new FileDescriptorExtractor();
+		FileNameDescExtractor fdExt = new FileNameDescExtractor();
 		Map<String,String> fileDescriptor = (Map<String, String>) fdExt.extract(o);
 		event.getParameters().put("fileDescriptor", fileDescriptor.get("fd"));
 		Boolean timer3 = new Boolean(
@@ -811,7 +811,7 @@ public class MirrorStack {
 		Boolean timer3 = new Boolean(
 				ConfigProperties
 						.getProperty(ConfigProperties.PROPERTIES.TIMER_T3));
-		FileDescriptorExtractor fdExt = new FileDescriptorExtractor();
+		FileNameDescExtractor fdExt = new FileNameDescExtractor();
 		if (timer3) {
 			long start = System.nanoTime();
 			Map<String,String> fileDescriptor = (Map<String, String>) fdExt.extract(o);

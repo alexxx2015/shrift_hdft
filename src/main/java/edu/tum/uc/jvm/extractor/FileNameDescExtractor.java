@@ -15,10 +15,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class FileDescriptorExtractor implements IExtractor {
+public class FileNameDescExtractor implements IExtractor {
 	private Map<String, String> _return;
 
-	public FileDescriptorExtractor(){
+	public FileNameDescExtractor(){
 		_return = new HashMap<String,String>();
 	}
 	/**
@@ -41,7 +41,7 @@ public class FileDescriptorExtractor implements IExtractor {
 					if ("lock".equals(field.getName().toLowerCase())) {
 						field.setAccessible(true);
 						Object lock = field.get(obj);
-						if (lock instanceof FileOutputStream) {
+						if ((lock instanceof FileOutputStream) || (lock instanceof FileInputStream)) {
 							java.util.List<java.lang.reflect.Field> attrs2 = getAllFields(lock);
 							Iterator<java.lang.reflect.Field> it2 = attrs2.iterator();
 							while (it2.hasNext()) {
@@ -77,6 +77,13 @@ public class FileDescriptorExtractor implements IExtractor {
 												}
 											}
 										}
+									}
+								}
+								else if("path".equals(field.getName().toLowerCase())){
+									field.setAccessible(true);
+									Object path = field.get(lock);
+									if(path instanceof String){
+										_return.put("path", String.valueOf(path));
 									}
 								}
 							}
@@ -120,6 +127,14 @@ public class FileDescriptorExtractor implements IExtractor {
 									if (handleOs instanceof Long) {
 										_return.put("handle", String.valueOf(handleOs));
 //										handle = String.valueOf(handleOs);
+									}
+								}
+								else if("path".equals(field.getName().toLowerCase())){
+									System.out.println(field.getClass().getName());
+									field.setAccessible(true);
+									Object path = field.get(fd);
+									if(path instanceof String){
+										_return.put("path", String.valueOf(path));
 									}
 								}
 							}

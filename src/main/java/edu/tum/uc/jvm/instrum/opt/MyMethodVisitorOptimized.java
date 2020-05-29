@@ -3,6 +3,7 @@ package edu.tum.uc.jvm.instrum.opt;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -750,11 +751,12 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		boolean isInterfaceMethod = p_opcode == Opcodes.INVOKEINTERFACE;
 
 		boolean isInstanceOrInterfaceMethod = isPublicInstanceMethod || isPrivateInstanceMethod || isInterfaceMethod;
-		
+
 		// Get method invocation offset label
 		Label l = this.getCurrentLabel();
-		if (l == null) System.out.println(this.className+", "+this.methodName+"; "+p_owner+", "+p_name); 
-		
+		if (l == null)
+			System.out.println(this.className + ", " + this.methodName + "; " + p_owner + ", " + p_name);
+
 		int ofs = this.getCurrentLabel().getOffset();
 		List<SinkSource> sources = StaticAnalysis.isSourceWithFlow(fqName, ofs);
 		List<SinkSource> sinks = StaticAnalysis.isSinkWithFlow(fqName, ofs);
@@ -768,7 +770,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 		}
 
 		if (sources != null && sources.size() > 0) {
-			
+
 			// Restfb method invocation
 			if (p_owner.replace("/", ".").toLowerCase().equals("com.restfb.defaultfacebookclient")
 					&& p_name.toLowerCase().equals("fetchobject")) {
@@ -791,20 +793,21 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 						false);
 			}
 
-			if (chopNode == null){
-//				chopNode = new Flow().new Chop(-1, "", "", "", "");
-				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName
-						+ this.descriptor;
-				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call","");
+			if (chopNode == null) {
+				// chopNode = new Flow().new Chop(-1, "", "", "", "");
+				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName + this.descriptor;
+				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call", "");
 			}
 
 			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sources) {
-				if(sourceIds.contains(s.getId())) continue;
+				if (sourceIds.contains(s.getId()))
+					continue;
 
 				sourceIds.add(s.getId());
 			}
-//			System.out.println("SOURCE FOUND: "+this.fqName+", "+p_owner+"."+p_name+", "+String.join(",", sourceIds));
+			// System.out.println("SOURCE FOUND: "+this.fqName+",
+			// "+p_owner+"."+p_name+", "+String.join(",", sourceIds));
 
 			String[] wrapperDesc = InstrumMethodWrapper.createSourceWrapper(p_opcode, p_owner, p_name, p_desc, cv,
 					this.className, sources);
@@ -848,13 +851,12 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			}
 			// mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode ==
 			// Opcodes.INVOKEINTERFACE);
-			System.out.println("SOURCE: "+sourceIds+", "+p_owner+"."+p_name);
+			System.out.println("SOURCE: " + sourceIds + ", " + p_owner + "." + p_name);
 		} else if (sinks != null && sinks.size() > 0) {
-			if (chopNode == null){
-//				chopNode = new Flow().new Chop(-1, "", "", "", "");
-				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName
-						+ this.descriptor;
-				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call","");
+			if (chopNode == null) {
+				// chopNode = new Flow().new Chop(-1, "", "", "", "");
+				String ownerMethod = this.className.replace("/", ".") + "." + this.methodName + this.descriptor;
+				chopNode = new Flow().new Chop(ofs, ownerMethod, "", "call", "");
 			}
 
 			String[] wrapperDesc = InstrumMethodWrapper.createSinkWrapper(p_opcode, p_owner, p_name, p_desc, cv,
@@ -863,22 +865,26 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			List<String> sinkIds = new LinkedList<String>();
 			List<String> sourceIds = new LinkedList<String>();
 			for (SinkSource s : sinks) {
-				if(sinkIds.contains(s.getId())) continue;
+				if (sinkIds.contains(s.getId()))
+					continue;
 				sinkIds.add(s.getId());
-				for(Flow f : StaticAnalysis.getFlows()){
-					if(s.getId().equals(f.getSink())){
+				for (Flow f : StaticAnalysis.getFlows()) {
+					if (s.getId().equals(f.getSink())) {
 						sourceIds.addAll(f.getSource());
 					}
 				}
 			}
-//			System.out.println("SINK FOUND: "+String.join(",", sinkIds)+", "+this.fqName+", "+p_owner+"."+p_name+", "+String.join(",", sourceIds));
+			// System.out.println("SINK FOUND: "+String.join(",", sinkIds)+",
+			// "+this.fqName+", "+p_owner+"."+p_name+", "+String.join(",",
+			// sourceIds));
 
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);// Load parent object
 			}
-			mv.visitLdcInsn(this.methodName + this.descriptor);// load parent method name
+			mv.visitLdcInsn(this.methodName + this.descriptor);// load parent
+																// method name
 			mv.visitLdcInsn(String.join("|", sinkIds));// Load sinksourceIds
 			mv.visitLdcInsn(chopNode.getLabelWithSource());
 			mv.visitLdcInsn(String.join("|", sourceIds));
@@ -907,15 +913,17 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitInsn(Opcodes.SWAP);
 				mv.visitInsn(Opcodes.POP);
 			}
-			System.out.println("SINK: "+sinkIds+", "+p_owner+"."+p_name);
+			System.out.println("SINK: " + sinkIds + ", " + p_owner + "." + p_name);
 			// mv.visitMethodInsn(p_opcode, p_owner, p_name, p_desc, p_opcode ==
 			// Opcodes.INVOKEINTERFACE);
 		}
 		// check for the chopnode to be present here and that it has the correct
 		// operation
 		else if (chopNode != null && chopNode.getOperation().equals(Flow.OP_CALL) && this.ift) {
-			System.out.println("CHOP: "+chopNode.getLabel()+", "+chopNode.getOwnerMethod()+", "+p_owner+"."+p_name);
-//			System.out.println("INSTRUMENTING "+chopNode.getLabelWithSource()+", "+chopNode.getOwnerMethod());
+			// System.out.println("CHOP: "+chopNode.getLabel()+",
+			// "+chopNode.getOwnerMethod()+", "+p_owner+"."+p_name);
+			// System.out.println("INSTRUMENTING
+			// "+chopNode.getLabelWithSource()+", "+chopNode.getOwnerMethod());
 			StringBuilder desc = new StringBuilder();
 			// Generate new method signature
 			Type[] argT = Type.getArgumentTypes(p_desc);
@@ -963,6 +971,9 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			int offsetIndex = paramIndex++;
 			// paramIndex++;
 
+			// Parameter for chop label
+			desc.append("Ljava/lang/String;");
+			int parentMethodIndex = paramIndex++;
 			desc.append(")");
 
 			// Return type
@@ -1045,7 +1056,8 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				}
 
 				// Load delegate method arguments
-				mv.visitLdcInsn(fqName);
+				// mv.visitLdcInsn(fqName);
+				mv.visitVarInsn(Opcodes.ALOAD, parentMethodIndex);
 				mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
 				mv.visitLdcInsn(p_owner.replace("/", ".") + "|" + p_name + p_desc);
 				mv.visitVarInsn(Opcodes.ALOAD, arrayIndex);
@@ -1145,7 +1157,8 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 					mv.visitVarInsn(Opcodes.ILOAD, offsetIndex);
 
 					// Load delegate method arguments
-					mv.visitLdcInsn(fqName);
+					// mv.visitLdcInsn(fqName);
+					mv.visitVarInsn(Opcodes.ALOAD, parentMethodIndex);
 					mv.visitVarInsn(Opcodes.ALOAD, chopLabelIndex);
 					mv.visitLdcInsn(p_owner.replace("/", ".") + "|" + p_name + p_desc);
 					mv.visitVarInsn(Opcodes.ALOAD, parentObjectIndex);
@@ -1211,12 +1224,15 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 			// Load parent object (or null if parent method is static)
 			if ((accessFlags & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
 				mv.visitInsn(Opcodes.ACONST_NULL);
-			} else if (isConstructor) {
-				mv.visitInsn(Opcodes.ACONST_NULL);
-			} else {
+			}
+			// else if (isConstructor) {
+			// mv.visitInsn(Opcodes.ACONST_NULL);
+			// }
+			else {
 				mv.visitVarInsn(Opcodes.ALOAD, 0);
 			}
 			mv.visitLdcInsn(this.getCurrentLabel().getOffset());
+			mv.visitLdcInsn(fqName);
 			// Invoke wrapper method
 			mv.visitMethodInsn(Opcodes.INVOKESTATIC, className, wrapperMethodName, desc.toString(), false);
 
@@ -1231,7 +1247,7 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 				mv.visitInsn(Opcodes.SWAP);
 				mv.visitInsn(Opcodes.POP);
 			}
-			
+
 			// else if(isConstructor && isSuperConstructor){
 			// mv.visitVarInsn(Opcodes.ASTORE, 0);
 			// mv.visitInsn(Opcodes.POP);
@@ -1318,6 +1334,11 @@ public class MyMethodVisitorOptimized extends MethodVisitor {
 
 	@Override
 	public void visitVarInsn(int opcode, int var) {
+		if (!this.ift) {
+			mv.visitVarInsn(opcode, var);
+			return;
+		}
+
 		Chop chopNode = checkChopNode(this.getCurrentLabel(), this.chopNodes);
 		boolean logChopNode = new Boolean(ConfigProperties.getProperty(ConfigProperties.PROPERTIES.LOGCHOPNODES));
 		if (chopNode != null && logChopNode) {
